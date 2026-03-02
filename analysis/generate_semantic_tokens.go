@@ -61,7 +61,7 @@ func GenerateSemanticTokens(tokens []l.Token) []int {
 				if !isFunctionCall {
 					// Check if keyword
 					switch t.Content {
-					case "thread", "wait", "#include", "case", "break", "default", "return", "true", "false", "if", "else", "for", "waittill", "endon":
+					case "thread", "wait", "#include", "case", "break", "default", "return", "true", "false", "if", "else", "for", "waittill", "endon", "self", "level":
 						emit(line, col, len(t.Content), KEYWORD)
 					default:
 						emit(line, col, len(t.Content), VARIABLE)
