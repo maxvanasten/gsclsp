@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	logger := getLogger("/home/max/Code/gsclsp/log.txt")
+	logger := getLogger("./log.txt")
 	logger.Println("Started")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(rpc.Split)
