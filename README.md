@@ -53,4 +53,4 @@ vim.lsp.enable({'gsclsp'})
 
 ### VSCode
 
-WIP.
+You can download the extension by searching for "GSCLSP for GSC" by maxvanasten or by installing it from the marketplace: [GSCLSP for GSC](https://marketplace.visualstudio.com/items?itemName=maxvanasten.gsclsp-vscode)
