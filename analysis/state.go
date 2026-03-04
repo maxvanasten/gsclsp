@@ -1,7 +1,7 @@
 package analysis
 
 import (
-	"bytes"
+	"io"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -38,28 +38,32 @@ func (s *State) UpdateDocument(uri, text string) {
 }
 
 func (s *State) UpdateAst(uri string) {
-	_, file_path, found := bytes.Cut([]byte(uri), []byte("file://"))
-	if !found {
-		fmt.Fprintln(os.Stderr, "FILE NOT FOUND")
-		os.Exit(1)
-	}
-	cmd := exec.Command("gscp", "-p", string(file_path))
-	output, err := cmd.Output()
+	cmd := exec.Command("gscp")
+	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR RUNNING CMD: %v\n", err)
+		fmt.Fprintf(os.Stderr ,"ERROR PIPING STDIN: %v\n", err)
 		os.Exit(1)
 	}
 
-	var parse_result ParseResult
-	if err := json.Unmarshal(output, &parse_result); err != nil {
+	go func() {
+		defer stdin.Close()
+		io.WriteString(stdin, s.Documents[uri])
+	}()
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR COMBINING OUTPUT: %v\n", err)
+		os.Exit(1)
+	}
+
+	var parseResult ParseResult
+	if err := json.Unmarshal(out, &parseResult); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR UNMARSHALING JSON: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Fprintf(os.Stderr, "parse_result!!!!!!!!!!!: %v\n", parse_result.Ast)
-
-	s.Ast[uri] = parse_result.Ast
-	s.Tokens[uri] = parse_result.Tokens
+	s.Ast[uri] = parseResult.Ast
+	s.Tokens[uri] = parseResult.Tokens
 }
 
 func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverResponse {
