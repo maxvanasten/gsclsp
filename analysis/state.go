@@ -1,11 +1,12 @@
 package analysis
 
 import (
-	"io"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/maxvanasten/gsclsp/lsp"
 	l "github.com/maxvanasten/gscp/lexer"
@@ -18,13 +19,14 @@ type ParseResult struct {
 }
 
 type State struct {
-	Documents map[string]string
-	Ast       map[string][]p.Node
-	Tokens    map[string][]l.Token
+	Documents  map[string]string
+	Ast        map[string][]p.Node
+	Tokens     map[string][]l.Token
+	Signatures map[string][]FunctionSignature
 }
 
 func NewState() State {
-	return State{Documents: map[string]string{}, Ast: map[string][]p.Node{}, Tokens: map[string][]l.Token{}}
+	return State{Documents: map[string]string{}, Ast: map[string][]p.Node{}, Tokens: map[string][]l.Token{}, Signatures: map[string][]FunctionSignature{}}
 }
 
 func (s *State) OpenDocument(uri, text string) {
@@ -41,7 +43,7 @@ func (s *State) UpdateAst(uri string) {
 	cmd := exec.Command("gscp")
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		fmt.Fprintf(os.Stderr ,"ERROR PIPING STDIN: %v\n", err)
+		fmt.Fprintf(os.Stderr, "ERROR PIPING STDIN: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -64,10 +66,45 @@ func (s *State) UpdateAst(uri string) {
 
 	s.Ast[uri] = parseResult.Ast
 	s.Tokens[uri] = parseResult.Tokens
+	s.Signatures[uri] = GenerateFunctionSignatures(s.Ast[uri])
+}
+
+func (s *State) GetTokenAtPosition(uri string, position lsp.Position) l.Token {
+	for _, t := range s.Tokens[uri] {
+		tokenLine := t.Line - 1
+		tokenStartCol := t.Col - 1
+		tokenEndCol := t.EndCol - 1
+		if position.Line == tokenLine {
+			if position.Character >= tokenStartCol && position.Character <= tokenEndCol {
+				return t
+			}
+		}
+	}
+
+	return l.Token{}
 }
 
 func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverResponse {
-	// Analyze AST to find if token under cursor matches function signature
+	output := strings.Builder{}
+
+	token := s.GetTokenAtPosition(uri, position)
+	fmt.Fprintf(os.Stderr, "HOVER TOKEN: %v\n", token)
+	if token.Type == l.SYMBOL {
+		fmt.Fprintf(os.Stderr, "signatures: \n%v\n", s.Signatures[uri])
+		for _, s := range s.Signatures[uri] {
+			if s.Name == token.Content {
+				output.WriteString(s.Name)
+				output.WriteString(" (")
+				for i, a := range s.Arguments {
+					output.WriteString(a)
+					if i+1 < len(s.Arguments) {
+						output.WriteString(", ")
+					}
+				}
+				output.WriteString(")")
+			}
+		}
+	}
 
 	return lsp.HoverResponse{
 		Response: lsp.Response{
@@ -75,7 +112,7 @@ func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverRespon
 			ID:  &id,
 		},
 		Result: lsp.HoverResult{
-			Contents: "Hello, from lsp",
+			Contents: output.String(),
 		},
 	}
 }
