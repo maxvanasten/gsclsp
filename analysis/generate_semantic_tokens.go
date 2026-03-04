@@ -38,10 +38,16 @@ func GenerateSemanticTokens(tokens []l.Token) []int {
 		col := t.Col - 1
 
 		switch t.Type {
+		// SYMBOL can be either variable, function name, parameter, file_path
+		// This really should be handled by the lexer already.
 		case l.SYMBOL:
 			if bytes.Contains([]byte(t.Content), []byte{'\\'}) {
+				// TODO: find better token type for file path
 				emit(line, col, len(t.Content), STRING)
-			} else if bytes.Contains([]byte(t.Content), []byte{'.'}) {
+				break
+			}
+
+			if bytes.Contains([]byte(t.Content), []byte{'.'}) {
 				// TODO: Handle multiple . in a variable like player.weapon.name
 				object, prop, _ := bytes.Cut([]byte(t.Content), []byte{'.'})
 
@@ -49,27 +55,26 @@ func GenerateSemanticTokens(tokens []l.Token) []int {
 				if len(prop) > 0 {
 					emit(line, col+len(object)+1, len(prop), PROPERTY)
 				}
-			} else {
-				isFunctionCall := false
-				// Check if next token is open_paren
-				if i+1 < len(tokens) {
-					if tokens[i+1].Type == l.OPEN_PAREN {
-						emit(line, col, len(t.Content), FUNCTION)
-						isFunctionCall = true
-					}
+				break
+			}
+
+			// Check if next token is open_paren
+			if i+1 < len(tokens) {
+				if tokens[i+1].Type == l.OPEN_PAREN {
+					emit(line, col, len(t.Content), FUNCTION)
 				}
-				if !isFunctionCall {
-					// Check if keyword
-					switch t.Content {
-					case "thread", "wait", "#include", "case", "break", "default", "return", "true", "false", "if", "else", "for", "waittill", "endon", "self", "level":
-						emit(line, col, len(t.Content), KEYWORD)
-					default:
-						emit(line, col, len(t.Content), VARIABLE)
-					}
-				}
+			}
+			// Check if keyword
+			switch t.Content {
+			case "thread", "wait", "#include", "case", "break", "default", "return", "true", "false", "if", "else", "for", "waittill", "endon", "self", "level", "switch", "in":
+				emit(line, col, len(t.Content), KEYWORD)
+			default:
+				emit(line, col, len(t.Content), VARIABLE)
 			}
 		case l.STRING:
 			emit(line, col, len(t.Content)+2, STRING)
+		case l.NUMBER:
+			emit(line, col, len(t.Content), NUMBER)
 		}
 	}
 
