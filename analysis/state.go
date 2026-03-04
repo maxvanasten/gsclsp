@@ -39,34 +39,42 @@ func (s *State) UpdateDocument(uri, text string) {
 	s.UpdateAst(uri)
 }
 
-func (s *State) UpdateAst(uri string) {
+func Parse(input string) ParseResult {
 	cmd := exec.Command("gscp")
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR PIPING STDIN: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Parse() error while piping stdin: %v\n", err)
 		os.Exit(1)
 	}
 
 	go func() {
 		defer stdin.Close()
-		io.WriteString(stdin, s.Documents[uri])
+		io.WriteString(stdin, input)
 	}()
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR COMBINING OUTPUT: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Parse() error while combining output: %v\n", err)
 		os.Exit(1)
 	}
 
 	var parseResult ParseResult
-	if err := json.Unmarshal(out, &parseResult); err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR UNMARSHALING JSON: %v\n", err)
+	if err = json.Unmarshal(out, &parseResult); err != nil {
+		fmt.Fprintf(os.Stderr, "Parse() error while unmarshaling json: %v\n", err)
 		os.Exit(1)
 	}
+
+	return parseResult
+}
+
+func (s *State) UpdateAst(uri string) {
+	parseResult := Parse(s.Documents[uri])
 
 	s.Ast[uri] = parseResult.Ast
 	s.Tokens[uri] = parseResult.Tokens
 	s.Signatures[uri] = GenerateFunctionSignatures(s.Ast[uri])
+
+	// TODO: Load included files
 }
 
 func (s *State) GetTokenAtPosition(uri string, position lsp.Position) l.Token {
