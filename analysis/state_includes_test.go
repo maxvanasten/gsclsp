@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/maxvanasten/gsclsp/lsp"
 )
@@ -300,6 +301,72 @@ func TestInlayHintsUseQualifiedStdlibZM(t *testing.T) {
 	response := state.InlayHints(1, uri)
 	if !hasInlayLabel(response.Result, "seconds: ") {
 		t.Fatalf("missing inlay hint for convertsecondstomilliseconds: %v", response.Result)
+	}
+}
+
+func TestIncludeCacheInvalidatesOnFileChange(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	dir := t.TempDir()
+	mainPath := filepath.Join(dir, "test.gsc")
+	helperPath := filepath.Join(dir, "helpers.gsc")
+
+	mainText := "#include helpers;\n" +
+		"main() { helpers(1); }\n"
+	writeFile(t, helperPath, "helpers( foo ) { }\n")
+	writeFile(t, mainPath, mainText)
+
+	uri := uriForPath(mainPath)
+	state.OpenDocument(uri, mainText)
+	if !hasInlayLabel(state.InlayHints(1, uri).Result, "foo: ") {
+		t.Fatal("expected initial include signature to contain foo")
+	}
+
+	time.Sleep(20 * time.Millisecond)
+	writeFile(t, helperPath, "helpers( changed_name ) { }\n")
+	state.UpdateDocument(uri, mainText+" ")
+
+	if !hasInlayLabel(state.InlayHints(1, uri).Result, "changed_name: ") {
+		t.Fatal("expected include cache to invalidate after helper file change")
+	}
+}
+
+func TestIncludeCacheReusesUnchangedFile(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	dir := t.TempDir()
+	mainPath := filepath.Join(dir, "test.gsc")
+	helperPath := filepath.Join(dir, "helpers.gsc")
+
+	mainText := "#include helpers;\n" +
+		"main() { helpers(1); }\n"
+	writeFile(t, helperPath, "helpers( foo ) { }\n")
+	writeFile(t, mainPath, mainText)
+
+	uri := uriForPath(mainPath)
+	state.OpenDocument(uri, mainText)
+	if !hasInlayLabel(state.InlayHints(1, uri).Result, "foo: ") {
+		t.Fatal("expected include signature to contain foo")
+	}
+
+	resolvedPath, ok := resolveIncludePath(uri, "helpers")
+	if !ok {
+		t.Fatal("expected include path to resolve")
+	}
+	resolvedPath = filepath.Clean(resolvedPath)
+	if _, ok := state.includeCache[resolvedPath]; !ok {
+		t.Fatal("expected include to be cached after initial parse")
+	}
+
+	for i := 0; i < 3; i++ {
+		state.UpdateDocument(uri, mainText)
+	}
+
+	if len(state.includeCache) != 1 {
+		t.Fatalf("expected one cache entry, got %d", len(state.includeCache))
+	}
+	if !hasInlayLabel(state.InlayHints(1, uri).Result, "foo: ") {
+		t.Fatal("expected unchanged include cache to keep foo signature")
 	}
 }
 

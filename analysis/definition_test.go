@@ -63,3 +63,57 @@ func TestDefinitionReturnsNilWhenUnknown(t *testing.T) {
 		t.Fatalf("expected nil result, got %+v", *response.Result)
 	}
 }
+
+func TestDefinitionNestedIncludeResolves(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	dir := t.TempDir()
+	mainPath := filepath.Join(dir, "main.gsc")
+	aPath := filepath.Join(dir, "a.gsc")
+	bPath := filepath.Join(dir, "b.gsc")
+
+	writeFile(t, bPath, "deep_helper( value ) { }\n")
+	writeFile(t, aPath, "#include b;\n")
+	mainText := "#include a;\n" +
+		"main() { deep_helper(1); }\n"
+	writeFile(t, mainPath, mainText)
+
+	uri := uriForPath(mainPath)
+	state.OpenDocument(uri, mainText)
+	position := positionForLine(mainText, 1, "deep_helper")
+	response := state.Definition(1, uri, position)
+	if response.Result == nil {
+		t.Fatal("expected nested include definition location")
+	}
+	if response.Result.URI != uriForPath(bPath) {
+		t.Fatalf("unexpected uri: %s", response.Result.URI)
+	}
+}
+
+func TestDefinitionPrefersLocalOverIncluded(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	dir := t.TempDir()
+	mainPath := filepath.Join(dir, "main.gsc")
+	helperPath := filepath.Join(dir, "helpers.gsc")
+
+	writeFile(t, helperPath, "dup_fn( from_include ) { }\n")
+	mainText := "#include helpers;\n" +
+		"dup_fn( from_local ) { }\n" +
+		"main() { dup_fn(1); }\n"
+	writeFile(t, mainPath, mainText)
+
+	uri := uriForPath(mainPath)
+	state.OpenDocument(uri, mainText)
+	position := positionForLine(mainText, 2, "dup_fn")
+	response := state.Definition(1, uri, position)
+	if response.Result == nil {
+		t.Fatal("expected local definition location")
+	}
+	if response.Result.URI != uri {
+		t.Fatalf("expected local uri %s, got %s", uri, response.Result.URI)
+	}
+	if response.Result.Range.Start.Line != 1 {
+		t.Fatalf("expected local declaration line 1, got %d", response.Result.Range.Start.Line)
+	}
+}
