@@ -18,7 +18,7 @@
 ## Installation
 
 #### Dependencies
-`gsclsp` requires the latest version of [gscp](https://github.com/maxvanasten/gscp) installed on your path
+`gsclsp` requires the latest version of [gscp](https://github.com/maxvanasten/gscp) installed on your path, if you use the vscode extension, the appropriate releases of gsclsp and gscp are automatically installed for you.
 
 ### Neovim
 
