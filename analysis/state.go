@@ -56,12 +56,11 @@ func (s *State) UpdateDocument(uri, text string) {
 	s.UpdateAst(uri)
 }
 
-func Parse(input string) ParseResult {
+func Parse(input string) (ParseResult, error) {
 	cmd := exec.Command("gscp")
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Parse() error while piping stdin: %v\n", err)
-		os.Exit(1)
+		return ParseResult{}, fmt.Errorf("parse stdin pipe: %w", err)
 	}
 
 	go func() {
@@ -71,35 +70,35 @@ func Parse(input string) ParseResult {
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Parse() error while combining output: %v\n", err)
-		os.Exit(1)
+		return ParseResult{}, fmt.Errorf("gscp execution failed: %w (%s)", err, strings.TrimSpace(string(out)))
 	}
 
 	var parseResult ParseResult
 	if err = json.Unmarshal(out, &parseResult); err != nil {
-		fmt.Fprintf(os.Stderr, "Parse() error while unmarshaling json: %v\n", err)
-		os.Exit(1)
+		return ParseResult{}, fmt.Errorf("parse output json: %w", err)
 	}
 
-	return parseResult
+	return parseResult, nil
 }
 
 // AddDocument Parses a file and adds all relevant nodes (function signatures) to the states document
-func (s *State) AddDocument(uri, filePath string) {
+func (s *State) AddDocument(uri, filePath string) error {
 	resolvedPath, ok := resolveIncludePath(uri, filePath)
 	if !ok {
-		fmt.Fprintf(os.Stderr, "ERROR RESOLVING INCLUDE (state.AddDocument): %s\n", filePath)
-		return
+		return fmt.Errorf("resolve include path: %s", filePath)
 	}
 	data, err := os.ReadFile(resolvedPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR READING FILE (state.AddDocument): %v\n", err)
-		return
+		return fmt.Errorf("read include file %q: %w", resolvedPath, err)
 	}
 
-	parseResult := Parse(string(data))
+	parseResult, err := Parse(string(data))
+	if err != nil {
+		return fmt.Errorf("parse include file %q: %w", resolvedPath, err)
+	}
 
 	s.Signatures[uri] = mergeSignatures(s.Signatures[uri], GenerateFunctionSignatures(parseResult.Ast))
+	return nil
 }
 
 func resolveIncludePath(uri, includePath string) (string, bool) {
@@ -142,7 +141,10 @@ func uriToPath(uri string) string {
 }
 
 func (s *State) UpdateAst(uri string) {
-	s.parseAndStore(uri)
+	if err := s.parseAndStore(uri); err != nil {
+		s.Diagnostics[uri] = []lsp.Diagnostic{parseFailureDiagnostic(err)}
+		return
+	}
 	s.mergeBuiltins(uri)
 	stdlib := s.loadStdlib()
 	includePaths := collectIncludePaths(s.Ast[uri])
@@ -150,12 +152,16 @@ func (s *State) UpdateAst(uri string) {
 	s.applyIncludes(uri, includePaths, stdlibGroup, stdlib)
 }
 
-func (s *State) parseAndStore(uri string) {
-	parseResult := Parse(s.Documents[uri])
+func (s *State) parseAndStore(uri string) error {
+	parseResult, err := Parse(s.Documents[uri])
+	if err != nil {
+		return err
+	}
 	s.Ast[uri] = parseResult.Ast
 	s.Tokens[uri] = parseResult.Tokens
 	s.Signatures[uri] = GenerateFunctionSignatures(s.Ast[uri])
 	s.Diagnostics[uri] = toLspDiagnostics(parseResult.Diagnostics)
+	return nil
 }
 
 func (s *State) mergeBuiltins(uri string) {
@@ -200,7 +206,9 @@ func (s *State) applyIncludes(uri string, includePaths []string, stdlibGroup str
 			continue
 		}
 
-		s.AddDocument(uri, includePath)
+		if err := s.AddDocument(uri, includePath); err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR APPLYING INCLUDE %q: %v\n", includePath, err)
+		}
 	}
 }
 
@@ -289,24 +297,21 @@ func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverRespon
 }
 
 func (s *State) Definition(id int, uri string, position lsp.Position) lsp.DefinitionResponse {
+	var location *lsp.Location
+	name := s.GetTokenAtPosition(uri, position).Content
+	if callName := findFunctionCallNameAtPosition(s.Ast[uri], position); callName != "" {
+		name = callName
+	}
+	if resolved, ok := s.resolveDefinitionLocation(uri, name); ok {
+		location = &resolved
+	}
+
 	return lsp.DefinitionResponse{
 		Response: lsp.Response{
 			RPC: "2.0",
 			ID:  &id,
 		},
-		Result: lsp.Location{
-			URI: uri,
-			Range: lsp.Range{
-				Start: lsp.Position{
-					Line:      position.Line - 1,
-					Character: 0,
-				},
-				End: lsp.Position{
-					Line:      position.Line - 1,
-					Character: 0,
-				},
-			},
-		},
+		Result: location,
 	}
 }
 

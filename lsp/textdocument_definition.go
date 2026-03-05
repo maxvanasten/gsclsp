@@ -11,5 +11,5 @@ type DefinitionParams struct {
 
 type DefinitionResponse struct {
 	Response
-	Result Location `json:"result"`
+	Result *Location `json:"result"`
 }

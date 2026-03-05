@@ -29,14 +29,14 @@ func main() {
 			logger.Printf("Got an error: %s", err)
 			continue
 		}
-		handleMessage(logger, writer, state, method, contents)
+		handleMessage(logger, writer, &state, method, contents)
 	}
 	if err := scanner.Err(); err != nil {
 		logger.Printf("Scanner error: %s", err)
 	}
 }
 
-func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, method string, contents []byte) {
+func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, method string, contents []byte) {
 	logger.Printf("Received message with method: %s", method)
 
 	switch method {
@@ -78,7 +78,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, m
 		response := state.Hover(request.ID, request.Params.TextDocument.URI, request.Params.Position)
 		writeResponse(writer, response)
 
-	case "textdocument/definition":
+	case "textDocument/definition", "textdocument/definition":
 		var request lsp.DefinitionRequest
 		if !decodeRequest(logger, contents, &request, "textDocument/definition") {
 			return

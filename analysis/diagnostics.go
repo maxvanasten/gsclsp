@@ -1,6 +1,7 @@
 package analysis
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/maxvanasten/gsclsp/lsp"
@@ -53,5 +54,17 @@ func mapSeverity(severity string) lsp.DiagnosticSeverity {
 		return lsp.DiagnosticSeverityHint
 	default:
 		return 0
+	}
+}
+
+func parseFailureDiagnostic(err error) lsp.Diagnostic {
+	return lsp.Diagnostic{
+		Range: lsp.Range{
+			Start: lsp.Position{Line: 0, Character: 0},
+			End:   lsp.Position{Line: 0, Character: 0},
+		},
+		Severity: lsp.DiagnosticSeverityError,
+		Source:   "gsclsp",
+		Message:  fmt.Sprintf("parser error: %v", err),
 	}
 }

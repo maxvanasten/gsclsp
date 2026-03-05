@@ -82,7 +82,10 @@ func buildSignatureMap(root string) (map[string][]analysis.FunctionSignature, er
 			return err
 		}
 
-		parseResult := analysis.Parse(string(data))
+		parseResult, err := analysis.Parse(string(data))
+		if err != nil {
+			return fmt.Errorf("parse %s: %w", path, err)
+		}
 		signatures := analysis.GenerateFunctionSignatures(parseResult.Ast)
 		if len(signatures) == 0 {
 			return nil

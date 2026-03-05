@@ -45,7 +45,10 @@ func decodeSemanticTokens(data []int) []decodedSemanticToken {
 func TestSemanticTokensIncludePathWithoutSeparators(t *testing.T) {
 	requireGscp(t)
 	input := "#include file;\n"
-	parseResult := Parse(input)
+	parseResult, err := Parse(input)
+	if err != nil {
+		t.Fatalf("parse failed: %v", err)
+	}
 	semanticTokens := GenerateSemanticTokens(parseResult.Tokens)
 	decoded := decodeSemanticTokens(semanticTokens)
 
