@@ -86,6 +86,14 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 
 		response := state.Definition(request.ID, request.Params.TextDocument.URI, request.Params.Position)
 		writeResponse(writer, response)
+	case "textDocument/completion":
+		var request lsp.CompletionRequest
+		if !decodeRequest(logger, contents, &request, "textDocument/completion") {
+			return
+		}
+
+		response := state.Completion(request.ID, request.Params.TextDocument.URI, request.Params.Position)
+		writeResponse(writer, response)
 	case "textDocument/semanticTokens/full":
 		var request lsp.SemanticTokensRequest
 		if !decodeRequest(logger, contents, &request, "textDocument/semanticTokens/full") {
