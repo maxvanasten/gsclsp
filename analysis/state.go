@@ -11,24 +11,33 @@ import (
 	"strings"
 
 	"github.com/maxvanasten/gsclsp/lsp"
+	"github.com/maxvanasten/gscp/diagnostics"
 	l "github.com/maxvanasten/gscp/lexer"
 	p "github.com/maxvanasten/gscp/parser"
 )
 
 type ParseResult struct {
-	Ast    []p.Node  `json:"ast"`
-	Tokens []l.Token `json:"tokens"`
+	Ast         []p.Node                 `json:"ast"`
+	Tokens      []l.Token                `json:"tokens"`
+	Diagnostics []diagnostics.Diagnostic `json:"diagnostics"`
 }
 
 type State struct {
-	Documents  map[string]string
-	Ast        map[string][]p.Node
-	Tokens     map[string][]l.Token
-	Signatures map[string][]FunctionSignature
+	Documents   map[string]string
+	Ast         map[string][]p.Node
+	Tokens      map[string][]l.Token
+	Signatures  map[string][]FunctionSignature
+	Diagnostics map[string][]lsp.Diagnostic
 }
 
 func NewState() State {
-	return State{Documents: map[string]string{}, Ast: map[string][]p.Node{}, Tokens: map[string][]l.Token{}, Signatures: map[string][]FunctionSignature{}}
+	return State{
+		Documents:   map[string]string{},
+		Ast:         map[string][]p.Node{},
+		Tokens:      map[string][]l.Token{},
+		Signatures:  map[string][]FunctionSignature{},
+		Diagnostics: map[string][]lsp.Diagnostic{},
+	}
 }
 
 func (s *State) OpenDocument(uri, text string) {
@@ -136,6 +145,7 @@ func (s *State) UpdateAst(uri string) {
 	s.Ast[uri] = parseResult.Ast
 	s.Tokens[uri] = parseResult.Tokens
 	s.Signatures[uri] = GenerateFunctionSignatures(s.Ast[uri])
+	s.Diagnostics[uri] = toLspDiagnostics(parseResult.Diagnostics)
 
 	builtins, err := BuiltinsSignatures()
 	if err != nil {

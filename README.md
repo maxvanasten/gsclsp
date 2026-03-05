@@ -12,10 +12,7 @@
 - Completion
 - Inline hints (arguments in function calls)
 - Hover definitions for function calls (will show the function signature)
-
-### Planned
-
-- Parse included files aswell to provide accurate information
+- Diagnostics
 
 ## Installation
 
