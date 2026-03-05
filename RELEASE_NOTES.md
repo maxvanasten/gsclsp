@@ -1,5 +1,12 @@
 # Release Notes
 
+## 0.0.6.5
+
+- Adds LSP `textDocument/completion` capability advertisement and request routing.
+- Implements contextual completions for functions, keywords, include paths, and qualified path/function calls.
+- Adds snippet-style function insertion text with parameter placeholders for faster call authoring.
+- Expands regression coverage for completion routing, capability advertisement, and completion context behavior.
+
 ## 0.0.6.4
 
 - Fixes LSP method routing for `textDocument/definition` while keeping legacy compatibility.

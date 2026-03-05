@@ -149,4 +149,4 @@ Important test notes:
 
 ## Version
 
-Current server version reported in `initialize` response: `0.0.6.4`.
+Current server version reported in `initialize` response: `0.0.6.5`.
