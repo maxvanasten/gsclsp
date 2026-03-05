@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	logger := getLogger("./log.txt")
+	logger := getLogger()
 	logger.Println("Started")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Buffer(make([]byte, 0, 64*1024), 10*1024*1024)
@@ -137,11 +137,6 @@ func publishDiagnostics(writer io.Writer, uri string, diagnostics []lsp.Diagnost
 	writeResponse(writer, msg)
 }
 
-func getLogger(filename string) *log.Logger {
-	logfile, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o666)
-	if err != nil {
-		panic("Error opening log file")
-	}
-
-	return log.New(logfile, "[gsclsp] ", log.Ldate|log.Ltime|log.Lshortfile)
+func getLogger() *log.Logger {
+	return log.New(os.Stderr, "[gsclsp] ", log.Ldate|log.Ltime|log.Lshortfile)
 }
