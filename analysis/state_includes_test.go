@@ -222,6 +222,19 @@ func TestInlayHintsUseBuiltinWithoutIncludes(t *testing.T) {
 	}
 }
 
+func TestInlayHintsUseBuiltinMethodWithoutIncludes(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "main() { self.gpp_ui_health_counter setValue(0); }\n"
+
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+	if !hasInlayLabel(response.Result, "value: ") {
+		t.Fatalf("missing builtin setValue inlay hint: %v", response.Result)
+	}
+}
+
 func TestBuiltinDoesNotOverrideLocalDeclaration(t *testing.T) {
 	requireGscp(t)
 	state := NewState()

@@ -20,6 +20,7 @@
 
   {"Name":"usebuttonpressed","Arguments":[]},
   {"Name":"adsbuttonpressed","Arguments":[]},
+  {"Name":"setValue","Arguments":["value"]},
   {"Name":"setCursorHint","Arguments":["hint"]},
   {"Name":"setHintString","Arguments":["text"]}
 ]
