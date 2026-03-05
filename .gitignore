@@ -5,3 +5,4 @@ build-releases.sh
 test/*
 !scripts/build.sh
 !scripts/build-releases.sh
+build-local.sh
