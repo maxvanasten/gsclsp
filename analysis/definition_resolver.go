@@ -1,7 +1,6 @@
 package analysis
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -19,7 +18,7 @@ func (s *State) resolveDefinitionLocation(uri, name string) (lsp.Location, bool)
 		if !ok {
 			return lsp.Location{}, false
 		}
-		return findDefinitionInFile(pathToURI(resolvedPath), funcName)
+		return s.findDefinitionInFile(pathToURI(resolvedPath), funcName)
 	}
 
 	if loc, ok := findDefinitionInNodes(uri, s.Ast[uri], name); ok {
@@ -28,10 +27,10 @@ func (s *State) resolveDefinitionLocation(uri, name string) (lsp.Location, bool)
 
 	visited := map[string]bool{}
 	includePaths := collectIncludePaths(s.Ast[uri])
-	return resolveDefinitionFromIncludes(uri, includePaths, name, visited)
+	return s.resolveDefinitionFromIncludes(uri, includePaths, name, visited)
 }
 
-func resolveDefinitionFromIncludes(uri string, includePaths []string, functionName string, visited map[string]bool) (lsp.Location, bool) {
+func (s *State) resolveDefinitionFromIncludes(uri string, includePaths []string, functionName string, visited map[string]bool) (lsp.Location, bool) {
 	for _, includePath := range includePaths {
 		resolvedPath, ok := resolveIncludePath(uri, includePath)
 		if !ok {
@@ -44,21 +43,17 @@ func resolveDefinitionFromIncludes(uri string, includePaths []string, functionNa
 		visited[resolvedPath] = true
 
 		includeURI := pathToURI(resolvedPath)
-		data, err := os.ReadFile(resolvedPath)
-		if err != nil {
-			continue
-		}
-		parseResult, err := Parse(string(data))
+		entry, err := s.getParsedInclude(resolvedPath)
 		if err != nil {
 			continue
 		}
 
-		if loc, ok := findDefinitionInNodes(includeURI, parseResult.Ast, functionName); ok {
+		if loc, ok := findDefinitionInNodes(includeURI, entry.Ast, functionName); ok {
 			return loc, true
 		}
 
-		nestedIncludes := collectIncludePaths(parseResult.Ast)
-		if loc, ok := resolveDefinitionFromIncludes(includeURI, nestedIncludes, functionName, visited); ok {
+		nestedIncludes := collectIncludePaths(entry.Ast)
+		if loc, ok := s.resolveDefinitionFromIncludes(includeURI, nestedIncludes, functionName, visited); ok {
 			return loc, true
 		}
 	}
@@ -66,22 +61,18 @@ func resolveDefinitionFromIncludes(uri string, includePaths []string, functionNa
 	return lsp.Location{}, false
 }
 
-func findDefinitionInFile(uri, functionName string) (lsp.Location, bool) {
+func (s *State) findDefinitionInFile(uri, functionName string) (lsp.Location, bool) {
 	path := uriToPath(uri)
 	if path == "" {
 		return lsp.Location{}, false
 	}
 
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return lsp.Location{}, false
-	}
-	parseResult, err := Parse(string(data))
+	entry, err := s.getParsedInclude(path)
 	if err != nil {
 		return lsp.Location{}, false
 	}
 
-	return findDefinitionInNodes(uri, parseResult.Ast, functionName)
+	return findDefinitionInNodes(uri, entry.Ast, functionName)
 }
 
 func findDefinitionInNodes(uri string, nodes []p.Node, functionName string) (lsp.Location, bool) {

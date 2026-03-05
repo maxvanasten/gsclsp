@@ -28,6 +28,7 @@ type State struct {
 	Tokens         map[string][]l.Token
 	Signatures     map[string][]FunctionSignature
 	Diagnostics    map[string][]lsp.Diagnostic
+	includeCache   map[string]includeCacheEntry
 	stdlib         map[string]map[string][]FunctionSignature
 	builtins       []FunctionSignature
 	stdlibErr      error
@@ -36,13 +37,21 @@ type State struct {
 	builtinsLoaded bool
 }
 
+type includeCacheEntry struct {
+	ModTimeUnixNano int64
+	Size            int64
+	Ast             []p.Node
+	Signatures      []FunctionSignature
+}
+
 func NewState() State {
 	return State{
-		Documents:   map[string]string{},
-		Ast:         map[string][]p.Node{},
-		Tokens:      map[string][]l.Token{},
-		Signatures:  map[string][]FunctionSignature{},
-		Diagnostics: map[string][]lsp.Diagnostic{},
+		Documents:    map[string]string{},
+		Ast:          map[string][]p.Node{},
+		Tokens:       map[string][]l.Token{},
+		Signatures:   map[string][]FunctionSignature{},
+		Diagnostics:  map[string][]lsp.Diagnostic{},
+		includeCache: map[string]includeCacheEntry{},
 	}
 }
 
@@ -52,6 +61,9 @@ func (s *State) OpenDocument(uri, text string) {
 }
 
 func (s *State) UpdateDocument(uri, text string) {
+	if existing, ok := s.Documents[uri]; ok && existing == text {
+		return
+	}
 	s.Documents[uri] = text
 	s.UpdateAst(uri)
 }
@@ -87,18 +99,45 @@ func (s *State) AddDocument(uri, filePath string) error {
 	if !ok {
 		return fmt.Errorf("resolve include path: %s", filePath)
 	}
-	data, err := os.ReadFile(resolvedPath)
-	if err != nil {
-		return fmt.Errorf("read include file %q: %w", resolvedPath, err)
-	}
 
-	parseResult, err := Parse(string(data))
+	entry, err := s.getParsedInclude(resolvedPath)
 	if err != nil {
 		return fmt.Errorf("parse include file %q: %w", resolvedPath, err)
 	}
-
-	s.Signatures[uri] = mergeSignatures(s.Signatures[uri], GenerateFunctionSignatures(parseResult.Ast))
+	s.Signatures[uri] = mergeSignatures(s.Signatures[uri], entry.Signatures)
 	return nil
+}
+
+func (s *State) getParsedInclude(path string) (includeCacheEntry, error) {
+	path = filepath.Clean(path)
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return includeCacheEntry{}, fmt.Errorf("stat include file: %w", err)
+	}
+
+	if cached, ok := s.includeCache[path]; ok {
+		if cached.ModTimeUnixNano == fileInfo.ModTime().UnixNano() && cached.Size == fileInfo.Size() {
+			return cached, nil
+		}
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return includeCacheEntry{}, fmt.Errorf("read include file: %w", err)
+	}
+	parseResult, err := Parse(string(data))
+	if err != nil {
+		return includeCacheEntry{}, err
+	}
+
+	entry := includeCacheEntry{
+		ModTimeUnixNano: fileInfo.ModTime().UnixNano(),
+		Size:            fileInfo.Size(),
+		Ast:             parseResult.Ast,
+		Signatures:      GenerateFunctionSignatures(parseResult.Ast),
+	}
+	s.includeCache[path] = entry
+	return entry, nil
 }
 
 func resolveIncludePath(uri, includePath string) (string, bool) {
