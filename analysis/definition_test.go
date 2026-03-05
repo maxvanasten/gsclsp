@@ -117,3 +117,44 @@ func TestDefinitionPrefersLocalOverIncluded(t *testing.T) {
 		t.Fatalf("expected local declaration line 1, got %d", response.Result.Range.Start.Line)
 	}
 }
+
+func TestDefinitionQualifiedMissingIncludeReturnsNil(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "main() { does_not_exist\\helpers::target_fn(); }\n"
+
+	state.OpenDocument(uri, text)
+	position := positionForLine(text, 0, "target_fn")
+	response := state.Definition(1, uri, position)
+	if response.Result != nil {
+		t.Fatalf("expected nil result, got %+v", *response.Result)
+	}
+}
+
+func TestDefinitionAmbiguousIncludedOrderIsDeterministic(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	dir := t.TempDir()
+	mainPath := filepath.Join(dir, "main.gsc")
+	firstPath := filepath.Join(dir, "first.gsc")
+	secondPath := filepath.Join(dir, "second.gsc")
+
+	writeFile(t, firstPath, "dup_fn( first_arg ) { }\n")
+	writeFile(t, secondPath, "dup_fn( second_arg ) { }\n")
+	mainText := "#include first;\n" +
+		"#include second;\n" +
+		"main() { dup_fn(1); }\n"
+	writeFile(t, mainPath, mainText)
+
+	uri := uriForPath(mainPath)
+	state.OpenDocument(uri, mainText)
+	position := positionForLine(mainText, 2, "dup_fn")
+	response := state.Definition(1, uri, position)
+	if response.Result == nil {
+		t.Fatal("expected deterministic definition location")
+	}
+	if response.Result.URI != uriForPath(firstPath) {
+		t.Fatalf("expected first include to win, got %s", response.Result.URI)
+	}
+}
