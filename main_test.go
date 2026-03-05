@@ -127,3 +127,49 @@ func TestHandleMessageCompletionMethod(t *testing.T) {
 		t.Fatalf("unexpected completion items: %+v", response.Result.Items)
 	}
 }
+
+func TestHandleMessageDocumentFormattingMethod(t *testing.T) {
+	t.Helper()
+	state := analysis.NewState()
+	logger := log.New(io.Discard, "", 0)
+	var out bytes.Buffer
+
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "main(){wait 0.05;}"
+
+	request := lsp.DocumentFormattingRequest{
+		Request: lsp.Request{RPC: "2.0", ID: 4, Method: "textDocument/formatting"},
+		Params: lsp.DocumentFormattingParams{
+			TextDocument: lsp.TextDocumentIdentifier{URI: uri},
+			Options: lsp.FormattingOptions{
+				TabSize:      2,
+				InsertSpaces: true,
+			},
+		},
+	}
+	contents, err := json.Marshal(request)
+	if err != nil {
+		t.Fatalf("marshal request: %v", err)
+	}
+
+	handleMessage(logger, &out, &state, "textDocument/formatting", contents)
+
+	_, payload, err := rpc.DecodeMessage(out.Bytes())
+	if err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+
+	var response lsp.DocumentFormattingResponse
+	if err := json.Unmarshal(payload, &response); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if response.ID == nil || *response.ID != 4 {
+		t.Fatalf("unexpected response id: %v", response.ID)
+	}
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one text edit, got %d", len(response.Result))
+	}
+	if response.Result[0].NewText == "" {
+		t.Fatal("expected formatted content")
+	}
+}

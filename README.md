@@ -15,6 +15,7 @@ VS Code extension: [GSCLSP for GSC](https://marketplace.visualstudio.com/items?i
 - Inlay hints for function call arguments
 - Go to definition for local and included functions
 - Diagnostics from the `gscp` parser
+- Document formatting (`textDocument/formatting`)
 
 ## Supported LSP capabilities
 
@@ -23,6 +24,7 @@ During `initialize`, the server advertises:
 - `textDocumentSync`: full document sync (`1`)
 - `hoverProvider`: `true`
 - `definitionProvider`: `true`
+- `documentFormattingProvider`: `true`
 - `semanticTokensProvider`: full document support (`full: true`, `range: false`)
 - `inlayHintProvider`: `true`
 

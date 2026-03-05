@@ -15,6 +15,7 @@ const (
 	NUMBER
 	FUNCTION
 	PROPERTY
+	COMMENT
 )
 
 var keywordTokens = map[string]struct{}{
@@ -81,6 +82,21 @@ func GenerateSemanticTokens(tokens []l.Token) []int {
 			emit(line, col, len(t.Content)+2, STRING)
 		case l.NUMBER:
 			emit(line, col, len(t.Content), NUMBER)
+		case l.LINE_COMMENT:
+			emit(line, col, len(t.Content), COMMENT)
+		case l.BLOCK_COMMENT:
+			segments := strings.Split(t.Content, "\n")
+			for segmentIndex, segment := range segments {
+				if segment == "" {
+					continue
+				}
+				segmentLine := line + segmentIndex
+				segmentCol := 0
+				if segmentIndex == 0 {
+					segmentCol = col
+				}
+				emit(segmentLine, segmentCol, len(segment), COMMENT)
+			}
 		}
 	}
 

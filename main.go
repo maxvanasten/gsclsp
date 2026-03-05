@@ -112,6 +112,14 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		response := state.InlayHints(request.ID, request.Params.TextDocument.URI)
 		writeResponse(writer, response)
 		logger.Printf("inlay_hints: %v", response.Result)
+	case "textDocument/formatting":
+		var request lsp.DocumentFormattingRequest
+		if !decodeRequest(logger, contents, &request, "textDocument/formatting") {
+			return
+		}
+
+		response := state.Formatting(request.ID, request.Params.TextDocument.URI, request.Params.Options)
+		writeResponse(writer, response)
 	}
 }
 

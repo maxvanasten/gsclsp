@@ -25,12 +25,13 @@ type InitializeResult struct {
 }
 
 type ServerCapabilities struct {
-	TextDocumentSync       int                    `json:"textDocumentSync"`
-	HoverProvider          bool                   `json:"hoverProvider"`
-	DefinitionProvider     bool                   `json:"definitionProvider"`
-	CompletionProvider     *CompletionOptions     `json:"completionProvider,omitempty"`
-	SemanticTokensProvider SemanticTokensProvider `json:"semanticTokensProvider"`
-	InlayHintProvider      bool                   `json:"inlayHintProvider"`
+	TextDocumentSync           int                    `json:"textDocumentSync"`
+	HoverProvider              bool                   `json:"hoverProvider"`
+	DefinitionProvider         bool                   `json:"definitionProvider"`
+	DocumentFormattingProvider bool                   `json:"documentFormattingProvider"`
+	CompletionProvider         *CompletionOptions     `json:"completionProvider,omitempty"`
+	SemanticTokensProvider     SemanticTokensProvider `json:"semanticTokensProvider"`
+	InlayHintProvider          bool                   `json:"inlayHintProvider"`
 }
 
 type ServerInfo struct {
@@ -46,9 +47,10 @@ func NewInitializeResponse(id int) InitializeResponse {
 		},
 		Result: InitializeResult{
 			Capabilities: ServerCapabilities{
-				TextDocumentSync:   1,
-				HoverProvider:      true,
-				DefinitionProvider: true,
+				TextDocumentSync:           1,
+				HoverProvider:              true,
+				DefinitionProvider:         true,
+				DocumentFormattingProvider: true,
 				CompletionProvider: &CompletionOptions{
 					ResolveProvider:   false,
 					TriggerCharacters: []string{"\\", ":", "."},
@@ -62,6 +64,7 @@ func NewInitializeResponse(id int) InitializeResponse {
 							"number",
 							"function",
 							"property",
+							"comment",
 						},
 						TokenModifiers: []string{},
 					},

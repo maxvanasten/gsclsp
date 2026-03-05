@@ -1,6 +1,7 @@
 package analysis
 
 import (
+	"strings"
 	"testing"
 
 	l "github.com/maxvanasten/gscp/lexer"
@@ -11,6 +12,87 @@ type decodedSemanticToken struct {
 	Col    int
 	Length int
 	Type   TokenType
+}
+
+func TestSemanticTokensLineComment(t *testing.T) {
+	input := "main(){\n// keep\n}"
+	lexer := l.NewLexer([]byte(input))
+	tokens := lexer.GetTokens()
+	data := GenerateSemanticTokens(tokens)
+	decoded := decodeSemanticTokens(data)
+
+	var commentToken l.Token
+	foundLexerComment := false
+	for _, tok := range tokens {
+		if tok.Type == l.LINE_COMMENT {
+			commentToken = tok
+			foundLexerComment = true
+			break
+		}
+	}
+	if !foundLexerComment {
+		t.Fatal("missing lexer line comment token")
+	}
+
+	line := commentToken.Line - 1
+	col := commentToken.Col - 1
+	length := len(commentToken.Content)
+	for _, token := range decoded {
+		if token.Line == line && token.Col == col && token.Length == length {
+			if token.Type != COMMENT {
+				t.Fatalf("expected comment semantic token, got %v", token.Type)
+			}
+			return
+		}
+	}
+
+	t.Fatal("missing semantic token for line comment")
+}
+
+func TestSemanticTokensMultilineBlockComment(t *testing.T) {
+	input := "main(){\n/# keep\nblock #/\n}"
+	lexer := l.NewLexer([]byte(input))
+	tokens := lexer.GetTokens()
+	data := GenerateSemanticTokens(tokens)
+	decoded := decodeSemanticTokens(data)
+
+	var blockComment l.Token
+	foundBlock := false
+	for _, tok := range tokens {
+		if tok.Type == l.BLOCK_COMMENT {
+			blockComment = tok
+			foundBlock = true
+			break
+		}
+	}
+	if !foundBlock {
+		t.Fatal("missing lexer block comment token")
+	}
+
+	segments := strings.Split(blockComment.Content, "\n")
+	for i, segment := range segments {
+		if segment == "" {
+			continue
+		}
+		line := blockComment.Line - 1 + i
+		col := 0
+		if i == 0 {
+			col = blockComment.Col - 1
+		}
+		matched := false
+		for _, token := range decoded {
+			if token.Line == line && token.Col == col && token.Length == len(segment) {
+				if token.Type != COMMENT {
+					t.Fatalf("expected comment semantic token, got %v", token.Type)
+				}
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			t.Fatalf("missing semantic token for comment segment %q", segment)
+		}
+	}
 }
 
 func decodeSemanticTokens(data []int) []decodedSemanticToken {
