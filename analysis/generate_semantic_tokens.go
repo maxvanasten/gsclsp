@@ -1,7 +1,7 @@
 package analysis
 
 import (
-	"bytes"
+	"strings"
 
 	l "github.com/maxvanasten/gscp/lexer"
 )
@@ -16,6 +16,14 @@ const (
 	FUNCTION
 	PROPERTY
 )
+
+var keywordTokens = map[string]struct{}{
+	"thread": {}, "wait": {}, "#include": {}, "case": {}, "break": {}, "default": {},
+	"return": {}, "true": {}, "false": {}, "if": {}, "else": {}, "for": {}, "foreach": {},
+	"while": {}, "do": {}, "continue": {}, "waittill": {}, "waittillmatch": {},
+	"waittillframeend": {}, "endon": {}, "self": {}, "level": {}, "switch": {}, "in": {},
+	"notify": {}, "breakpoint": {},
+}
 
 func GenerateSemanticTokens(tokens []l.Token) []int {
 	semanticTokens := []int{}
@@ -41,44 +49,34 @@ func GenerateSemanticTokens(tokens []l.Token) []int {
 		// SYMBOL can be either variable, function name, parameter, file_path
 		// This really should be handled by the lexer already.
 		case l.SYMBOL:
-			isIncludePath := false
-			if i > 0 {
-				prev := tokens[i-1]
-				if prev.Type == l.SYMBOL && prev.Content == "#include" && prev.Line == t.Line {
-					isIncludePath = true
-				}
-			}
-
-			if isIncludePath || bytes.Contains([]byte(t.Content), []byte{'\\'}) || bytes.Contains([]byte(t.Content), []byte{'/'}) {
+			if isIncludePathToken(tokens, i) || strings.ContainsAny(t.Content, "\\/") {
 				// TODO: find better token type for file path
 				emit(line, col, len(t.Content), STRING)
 				break
 			}
 
-			if bytes.Contains([]byte(t.Content), []byte{'.'}) {
+			if strings.Contains(t.Content, ".") {
 				// TODO: Handle multiple . in a variable like player.weapon.name
-				object, prop, _ := bytes.Cut([]byte(t.Content), []byte{'.'})
+				object, prop, _ := strings.Cut(t.Content, ".")
 
 				emit(line, col, len(object), VARIABLE)
-				if len(prop) > 0 {
+				if prop != "" {
 					emit(line, col+len(object)+1, len(prop), PROPERTY)
 				}
 				break
 			}
 
 			// Check if keyword
-			switch t.Content {
-			case "thread", "wait", "#include", "case", "break", "default", "return", "true", "false", "if", "else", "for", "foreach", "while", "do", "continue", "waittill", "waittillmatch", "waittillframeend", "endon", "self", "level", "switch", "in", "notify", "breakpoint":
+			if _, ok := keywordTokens[t.Content]; ok {
 				emit(line, col, len(t.Content), KEYWORD)
 				break
-			default:
-				// Check if next token is open_paren
-				if i+1 < len(tokens) && tokens[i+1].Type == l.OPEN_PAREN {
-					emit(line, col, len(t.Content), FUNCTION)
-					break
-				}
-				emit(line, col, len(t.Content), VARIABLE)
 			}
+			// Check if next token is open_paren
+			if i+1 < len(tokens) && tokens[i+1].Type == l.OPEN_PAREN {
+				emit(line, col, len(t.Content), FUNCTION)
+				break
+			}
+			emit(line, col, len(t.Content), VARIABLE)
 		case l.STRING:
 			emit(line, col, len(t.Content)+2, STRING)
 		case l.NUMBER:
@@ -87,4 +85,13 @@ func GenerateSemanticTokens(tokens []l.Token) []int {
 	}
 
 	return semanticTokens
+}
+
+func isIncludePathToken(tokens []l.Token, index int) bool {
+	if index <= 0 || index >= len(tokens) {
+		return false
+	}
+	prev := tokens[index-1]
+	current := tokens[index]
+	return prev.Type == l.SYMBOL && prev.Content == "#include" && prev.Line == current.Line
 }

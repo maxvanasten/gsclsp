@@ -23,11 +23,17 @@ type ParseResult struct {
 }
 
 type State struct {
-	Documents   map[string]string
-	Ast         map[string][]p.Node
-	Tokens      map[string][]l.Token
-	Signatures  map[string][]FunctionSignature
-	Diagnostics map[string][]lsp.Diagnostic
+	Documents      map[string]string
+	Ast            map[string][]p.Node
+	Tokens         map[string][]l.Token
+	Signatures     map[string][]FunctionSignature
+	Diagnostics    map[string][]lsp.Diagnostic
+	stdlib         map[string]map[string][]FunctionSignature
+	builtins       []FunctionSignature
+	stdlibErr      error
+	builtinsErr    error
+	stdlibLoaded   bool
+	builtinsLoaded bool
 }
 
 func NewState() State {
@@ -97,12 +103,8 @@ func (s *State) AddDocument(uri, filePath string) {
 }
 
 func resolveIncludePath(uri, includePath string) (string, bool) {
-	includePath = strings.ReplaceAll(includePath, "\\", "/")
-	includePath = strings.TrimSpace(includePath)
-	includePath = strings.TrimSuffix(includePath, ".gsc")
-	includePath = strings.TrimPrefix(includePath, "/")
+	includePath = normalizeIncludePathBase(includePath)
 	includePath = strings.TrimPrefix(includePath, "./")
-	includePath = strings.TrimPrefix(includePath, ".\\")
 	if includePath == "" {
 		return "", false
 	}
@@ -140,60 +142,84 @@ func uriToPath(uri string) string {
 }
 
 func (s *State) UpdateAst(uri string) {
-	parseResult := Parse(s.Documents[uri])
+	s.parseAndStore(uri)
+	s.mergeBuiltins(uri)
+	stdlib := s.loadStdlib()
+	includePaths := collectIncludePaths(s.Ast[uri])
+	stdlibGroup := guessStdlibGroup(uri)
+	s.applyIncludes(uri, includePaths, stdlibGroup, stdlib)
+}
 
+func (s *State) parseAndStore(uri string) {
+	parseResult := Parse(s.Documents[uri])
 	s.Ast[uri] = parseResult.Ast
 	s.Tokens[uri] = parseResult.Tokens
 	s.Signatures[uri] = GenerateFunctionSignatures(s.Ast[uri])
 	s.Diagnostics[uri] = toLspDiagnostics(parseResult.Diagnostics)
+}
 
-	builtins, err := BuiltinsSignatures()
+func (s *State) mergeBuiltins(uri string) {
+	builtins, err := s.loadBuiltins()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR LOADING BUILTIN SIGNATURES: %v\n", err)
-	} else {
-		s.Signatures[uri] = mergeSignatures(s.Signatures[uri], builtins)
+		return
 	}
+	s.Signatures[uri] = mergeSignatures(s.Signatures[uri], builtins)
+}
 
-	stdlib, err := StdlibSignatures()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR LOADING STDLIB SIGNATURES: %v\n", err)
+func (s *State) loadBuiltins() ([]FunctionSignature, error) {
+	if s.builtinsLoaded {
+		return s.builtins, s.builtinsErr
 	}
+	s.builtins, s.builtinsErr = BuiltinsSignatures()
+	s.builtinsLoaded = true
+	return s.builtins, s.builtinsErr
+}
 
-	includePaths := collectIncludePaths(s.Ast[uri])
-	stdlibGroup := guessStdlibGroup(uri)
+func (s *State) loadStdlib() map[string]map[string][]FunctionSignature {
+	if s.stdlibLoaded {
+		return s.stdlib
+	}
+	s.stdlib, s.stdlibErr = StdlibSignatures()
+	s.stdlibLoaded = true
+	if s.stdlibErr != nil {
+		fmt.Fprintf(os.Stderr, "ERROR LOADING STDLIB SIGNATURES: %v\n", s.stdlibErr)
+	}
+	return s.stdlib
+}
 
+func (s *State) applyIncludes(uri string, includePaths []string, stdlibGroup string, stdlib map[string]map[string][]FunctionSignature) {
 	for _, includePath := range includePaths {
 		key := normalizeIncludeKey(includePath)
 		if key == "" {
 			continue
 		}
 
-		var matched bool
-		if stdlib != nil {
-			if stdlibGroup != "" {
-				if sigs, ok := stdlib[stdlibGroup][key]; ok {
-					s.Signatures[uri] = mergeSignatures(s.Signatures[uri], sigs)
-					matched = true
-				}
-			}
-			if !matched {
-				if sigs, ok := stdlib["mp"][key]; ok {
-					s.Signatures[uri] = mergeSignatures(s.Signatures[uri], sigs)
-					matched = true
-				}
-			}
-			if !matched {
-				if sigs, ok := stdlib["zm"][key]; ok {
-					s.Signatures[uri] = mergeSignatures(s.Signatures[uri], sigs)
-					matched = true
-				}
-			}
+		if sigs, ok := lookupStdlibSignatures(stdlib, stdlibGroup, key); ok {
+			s.Signatures[uri] = mergeSignatures(s.Signatures[uri], sigs)
+			continue
 		}
 
-		if !matched {
-			s.AddDocument(uri, includePath)
+		s.AddDocument(uri, includePath)
+	}
+}
+
+func lookupStdlibSignatures(stdlib map[string]map[string][]FunctionSignature, stdlibGroup, key string) ([]FunctionSignature, bool) {
+	if stdlib == nil {
+		return nil, false
+	}
+	if stdlibGroup != "" {
+		if sigs, ok := stdlib[stdlibGroup][key]; ok {
+			return sigs, true
 		}
 	}
+	if sigs, ok := stdlib["mp"][key]; ok {
+		return sigs, true
+	}
+	if sigs, ok := stdlib["zm"][key]; ok {
+		return sigs, true
+	}
+	return nil, false
 }
 
 func collectIncludePaths(nodes []p.Node) []string {
@@ -212,14 +238,15 @@ func collectIncludePaths(nodes []p.Node) []string {
 
 func (s *State) GetTokenAtPosition(uri string, position lsp.Position) l.Token {
 	for _, t := range s.Tokens[uri] {
-		tokenLine := t.Line - 1
-		tokenStartCol := t.Col - 1
-		tokenEndCol := t.EndCol - 1
-		if position.Line == tokenLine {
-			if position.Character >= tokenStartCol && position.Character <= tokenEndCol {
-				return t
-			}
+		if position.Line != t.Line-1 {
+			continue
 		}
+		startCol := t.Col - 1
+		endCol := t.EndCol - 1
+		if position.Character < startCol || position.Character > endCol {
+			continue
+		}
+		return t
 	}
 
 	return l.Token{}
@@ -229,10 +256,8 @@ func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverRespon
 	output := strings.Builder{}
 
 	token := s.GetTokenAtPosition(uri, position)
-	fmt.Fprintf(os.Stderr, "HOVER TOKEN: %v\n", token)
 	if token.Type == l.SYMBOL {
-		fmt.Fprintf(os.Stderr, "signatures: \n%v\n", s.Signatures[uri])
-		stdlib, _ := StdlibSignatures()
+		stdlib := s.loadStdlib()
 		name := token.Content
 		sig, ok := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
 		if !ok {
@@ -300,13 +325,11 @@ func (s *State) SemanticTokens(id int, uri string) lsp.SemanticTokensResponse {
 }
 
 func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
-	stdlib, _ := StdlibSignatures()
+	stdlib := s.loadStdlib()
 	resolver := func(name string) (FunctionSignature, bool) {
 		return resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
 	}
 	inlayHints := GenerateInlayHints(s.Signatures[uri], s.Ast[uri], s.Tokens[uri], resolver)
-
-	fmt.Fprintf(os.Stderr, "inlayHints: %v\n", inlayHints)
 
 	return lsp.InlayHintResponse{
 		Response: lsp.Response{

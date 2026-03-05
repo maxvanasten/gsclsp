@@ -319,3 +319,37 @@ func positionForLine(text string, line int, needle string) lsp.Position {
 	}
 	return lsp.Position{Line: line, Character: col}
 }
+
+func TestNormalizeIncludePathBase(t *testing.T) {
+	cases := map[string]string{
+		" common_scripts\\utility.gsc ": "common_scripts/utility",
+		"/maps/mp/zombies/_zm_utility":  "maps/mp/zombies/_zm_utility",
+		"./helpers":                     "./helpers",
+		".\\helpers":                    "./helpers",
+	}
+	for input, expected := range cases {
+		if got := normalizeIncludePathBase(input); got != expected {
+			t.Fatalf("normalizeIncludePathBase(%q) = %q, want %q", input, got, expected)
+		}
+	}
+}
+
+func TestResolveIncludePathRelativePrefixes(t *testing.T) {
+	root := t.TempDir()
+	mainPath := filepath.Join(root, "test.gsc")
+	helperPath := filepath.Join(root, "helpers.gsc")
+
+	writeFile(t, mainPath, "main() { helpers(); }\n")
+	writeFile(t, helperPath, "helpers() { }\n")
+
+	uri := uriForPath(mainPath)
+	for _, includePath := range []string{"./helpers", ".\\helpers"} {
+		resolved, ok := resolveIncludePath(uri, includePath)
+		if !ok {
+			t.Fatalf("resolveIncludePath(%q) failed", includePath)
+		}
+		if filepath.Clean(resolved) != filepath.Clean(helperPath) {
+			t.Fatalf("resolveIncludePath(%q) = %q, want %q", includePath, resolved, helperPath)
+		}
+	}
+}

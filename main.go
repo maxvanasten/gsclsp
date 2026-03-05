@@ -16,6 +16,7 @@ func main() {
 	logger := getLogger("./log.txt")
 	logger.Println("Started")
 	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Buffer(make([]byte, 0, 64*1024), 10*1024*1024)
 	scanner.Split(rpc.Split)
 
 	state := analysis.NewState()
@@ -30,6 +31,9 @@ func main() {
 		}
 		handleMessage(logger, writer, state, method, contents)
 	}
+	if err := scanner.Err(); err != nil {
+		logger.Printf("Scanner error: %s", err)
+	}
 }
 
 func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, method string, contents []byte) {
@@ -38,9 +42,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, m
 	switch method {
 	case "initialize":
 		var request lsp.InitializeRequest
-		if err := json.Unmarshal(contents, &request); err != nil {
-			logger.Printf("Json unmarshaling err: %s", err)
-		}
+		decodeRequest(logger, contents, &request, "Json unmarshaling err")
 
 		logger.Printf("Connected to: %s %s", request.Params.ClientInfo.Name, request.Params.ClientInfo.Version)
 
@@ -50,9 +52,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, m
 		logger.Print("Sent the reply")
 	case "textDocument/didOpen":
 		var request lsp.DidOpenTextDocumentNotification
-		if err := json.Unmarshal(contents, &request); err != nil {
-			logger.Printf("Json unmarsheling err: %s", err)
-		}
+		decodeRequest(logger, contents, &request, "Json unmarsheling err")
 
 		logger.Printf("Opened: %s", request.Params.TextDocument.URI)
 
@@ -60,8 +60,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, m
 		publishDiagnostics(writer, request.Params.TextDocument.URI, state.Diagnostics[request.Params.TextDocument.URI])
 	case "textDocument/didChange":
 		var request lsp.TextDocumentDidChangeNotification
-		if err := json.Unmarshal(contents, &request); err != nil {
-			logger.Printf("textDocument/didChange: %s", err)
+		if !decodeRequest(logger, contents, &request, "textDocument/didChange") {
 			return
 		}
 
@@ -72,8 +71,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, m
 		publishDiagnostics(writer, request.Params.TextDocument.URI, state.Diagnostics[request.Params.TextDocument.URI])
 	case "textDocument/hover":
 		var request lsp.HoverRequest
-		if err := json.Unmarshal(contents, &request); err != nil {
-			logger.Printf("textDocument/hover: %s", err)
+		if !decodeRequest(logger, contents, &request, "textDocument/hover") {
 			return
 		}
 
@@ -82,8 +80,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, m
 
 	case "textdocument/definition":
 		var request lsp.DefinitionRequest
-		if err := json.Unmarshal(contents, &request); err != nil {
-			logger.Printf("textDocument/definition: %s", err)
+		if !decodeRequest(logger, contents, &request, "textDocument/definition") {
 			return
 		}
 
@@ -91,8 +88,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, m
 		writeResponse(writer, response)
 	case "textDocument/semanticTokens/full":
 		var request lsp.SemanticTokensRequest
-		if err := json.Unmarshal(contents, &request); err != nil {
-			logger.Printf("textDocument/semanticTokens/full: %s", err)
+		if !decodeRequest(logger, contents, &request, "textDocument/semanticTokens/full") {
 			return
 		}
 
@@ -101,8 +97,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, m
 		logger.Printf("semantic_tokens: %v", response.Result.Data)
 	case "textDocument/inlayHint":
 		var request lsp.InlayHintRequest
-		if err := json.Unmarshal(contents, &request); err != nil {
-			logger.Printf("textDocument/inlayHint: %s", err)
+		if !decodeRequest(logger, contents, &request, "textDocument/inlayHint") {
 			return
 		}
 
@@ -110,6 +105,14 @@ func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, m
 		writeResponse(writer, response)
 		logger.Printf("inlay_hints: %v", response.Result)
 	}
+}
+
+func decodeRequest(logger *log.Logger, contents []byte, target any, errPrefix string) bool {
+	if err := json.Unmarshal(contents, target); err != nil {
+		logger.Printf("%s: %s", errPrefix, err)
+		return false
+	}
+	return true
 }
 
 func writeResponse(writer io.Writer, msg any) {

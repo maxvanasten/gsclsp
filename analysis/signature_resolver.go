@@ -78,8 +78,7 @@ func resolveSignatureForName(name, uri string, local []FunctionSignature, stdlib
 		return sig, true
 	}
 
-	if qualifier, funcName, ok := splitQualifiedName(name); ok {
-		_ = qualifier
+	if _, funcName, ok := splitQualifiedName(name); ok {
 		if sig, ok := findSignatureByName(local, funcName); ok {
 			return sig, true
 		}

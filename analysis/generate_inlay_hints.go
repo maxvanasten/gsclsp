@@ -16,99 +16,96 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 		}
 	}
 
+	tokenIndex := indexTokensByLine(tokens)
+
 	for _, n := range nodes {
-		if n.Type == "function_call" {
-			lookupName := functionCallLookupName(n)
-			sig, ok := resolve(lookupName)
-			if ok && len(sig.Arguments) > 0 {
-				labels := sig.Arguments
-				if n.Line <= 0 || n.Col <= 0 {
-					continue
-				}
-				anchorLine := n.Line - 1
-				if anchorLine < 0 {
-					anchorLine = 0
-				}
-				anchorCol := n.Col - 1
-				if n.Data.FunctionName != "" {
-					anchorCol = n.Col - 1 + len(n.Data.FunctionName) + 1
-				}
-				if anchorCol < 0 {
-					anchorCol = 0
-				}
-				callName := functionCallTokenName(n)
-				if !callClosedOnLine(n, tokens, callName) {
-					paramIndex, stubCol, ok := openCallParamAnchor(n, tokens, callName)
-					if !ok || paramIndex >= len(labels) {
-						continue
-					}
-					label := strings.Builder{}
-					label.WriteString(labels[paramIndex])
-					label.WriteString(": ")
-					if stubCol < 0 {
-						stubCol = anchorCol
-					}
-					hints = append(hints, lsp.InlayHint{
-						Position: lsp.Position{
-							Line:      anchorLine,
-							Character: stubCol,
-						},
-						Label: label.String(),
-					})
-					continue
-				}
-				for i, a := range n.Children {
-					if i < len(labels) {
-						label := strings.Builder{}
-						label.WriteString(labels[i])
-						label.WriteString(": ")
-						line := anchorLine
-						col := a.Col - 1
-						if col <= 0 {
-							col = anchorCol
-						}
-						hints = append(hints, lsp.InlayHint{
-							Position: lsp.Position{
-								Line:      line,
-								Character: col,
-							},
-							Label: label.String(),
-						})
-					}
-				}
-			}
-		} else {
+		if n.Type != "function_call" {
 			if len(n.Children) > 0 {
 				hints = append(hints, GenerateInlayHints(signatures, n.Children, tokens, resolve)...)
 			}
+			continue
+		}
+
+		callName := functionCallName(n)
+		sig, ok := resolve(callName)
+		if !ok || len(sig.Arguments) == 0 {
+			continue
+		}
+		if n.Line <= 0 || n.Col <= 0 {
+			continue
+		}
+		labels := sig.Arguments
+		anchorLine := n.Line - 1
+		if anchorLine < 0 {
+			anchorLine = 0
+		}
+		anchorCol := n.Col - 1
+		if n.Data.FunctionName != "" {
+			anchorCol = n.Col - 1 + len(n.Data.FunctionName) + 1
+		}
+		if anchorCol < 0 {
+			anchorCol = 0
+		}
+		lineTokens := tokenIndex[n.Line]
+		if !callClosedOnLine(lineTokens, callName) {
+			paramIndex, stubCol, ok := openCallParamAnchor(lineTokens, callName)
+			if !ok || paramIndex >= len(labels) {
+				continue
+			}
+			label := labels[paramIndex] + ": "
+			if stubCol < 0 {
+				stubCol = anchorCol
+			}
+			hints = append(hints, lsp.InlayHint{
+				Position: lsp.Position{
+					Line:      anchorLine,
+					Character: stubCol,
+				},
+				Label: label,
+			})
+			continue
+		}
+		for i, a := range n.Children {
+			if i >= len(labels) {
+				break
+			}
+			label := labels[i] + ": "
+			col := a.Col - 1
+			if col <= 0 {
+				col = anchorCol
+			}
+			hints = append(hints, lsp.InlayHint{
+				Position: lsp.Position{
+					Line:      anchorLine,
+					Character: col,
+				},
+				Label: label,
+			})
 		}
 	}
 
 	return hints
 }
 
-func callClosedOnLine(n p.Node, tokens []l.Token, functionName string) bool {
-	if n.Line <= 0 || n.Data.FunctionName == "" {
-		return false
-	}
-	for i, t := range tokens {
-		if t.Type != l.SYMBOL || !tokenMatchesFunction(t.Content, functionName) || t.Line != n.Line {
+func callClosedOnLine(lineTokens []l.Token, functionName string) bool {
+	for i, t := range lineTokens {
+		if t.Type != l.SYMBOL || !tokenMatchesFunction(t.Content, functionName) {
 			continue
 		}
 		seenOpen := false
 		depthParen := 0
-		for j := i + 1; j < len(tokens); j++ {
-			if tokens[j].Type == l.NEWLINE || tokens[j].Type == l.TERMINATOR {
+		for j := i + 1; j < len(lineTokens); j++ {
+			if lineTokens[j].Type == l.NEWLINE || lineTokens[j].Type == l.TERMINATOR {
 				break
 			}
-			if tokens[j].Type == l.OPEN_PAREN {
+			if lineTokens[j].Type == l.OPEN_PAREN {
 				if depthParen == 0 {
 					seenOpen = true
 				}
 				depthParen++
 				continue
 			}
-			if tokens[j].Type == l.CLOSE_PAREN {
+			if lineTokens[j].Type == l.CLOSE_PAREN {
 				if depthParen > 0 {
 					depthParen--
 					if depthParen == 0 {
@@ -121,12 +118,9 @@ func callClosedOnLine(n p.Node, tokens []l.Token, functionName string) bool {
 	return false
 }
 
-func openCallParamAnchor(n p.Node, tokens []l.Token, functionName string) (int, int, bool) {
-	if n.Line <= 0 || n.Data.FunctionName == "" {
-		return 0, 0, false
-	}
-	for i, t := range tokens {
-		if t.Type != l.SYMBOL || !tokenMatchesFunction(t.Content, functionName) || t.Line != n.Line {
+func openCallParamAnchor(lineTokens []l.Token, functionName string) (int, int, bool) {
+	for i, t := range lineTokens {
+		if t.Type != l.SYMBOL || !tokenMatchesFunction(t.Content, functionName) {
 			continue
 		}
 		seenOpen := false
@@ -135,14 +129,14 @@ func openCallParamAnchor(n p.Node, tokens []l.Token, functionName string) (int, 
 		depthCurly := 0
 		commaCount := 0
 		currentCol := 0
-		for j := i + 1; j < len(tokens); j++ {
-			if tokens[j].Type == l.NEWLINE || tokens[j].Type == l.TERMINATOR {
+		for j := i + 1; j < len(lineTokens); j++ {
+			if lineTokens[j].Type == l.NEWLINE || lineTokens[j].Type == l.TERMINATOR {
 				break
 			}
-			if tokens[j].Type == l.OPEN_PAREN {
+			if lineTokens[j].Type == l.OPEN_PAREN {
 				if depthParen == 0 {
 					seenOpen = true
-					currentCol = tokens[j].EndCol + 1
+					currentCol = lineTokens[j].EndCol + 1
 				}
 				depthParen++
 				continue
@@ -150,7 +144,7 @@ func openCallParamAnchor(n p.Node, tokens []l.Token, functionName string) (int, 
 			if !seenOpen {
 				continue
 			}
-			switch tokens[j].Type {
+			switch lineTokens[j].Type {
 			case l.CLOSE_PAREN:
 				if depthParen > 0 {
 					depthParen--
@@ -170,7 +164,7 @@ func openCallParamAnchor(n p.Node, tokens []l.Token, functionName string) (int, 
 			case l.COMMA:
 				if depthParen == 1 && depthBracket == 0 && depthCurly == 0 {
 					commaCount++
-					currentCol = tokens[j].EndCol + 1
+					currentCol = lineTokens[j].EndCol + 1
 				}
 			}
 		}
@@ -200,16 +194,20 @@ func tokenMatchesFunction(tokenContent, functionName string) bool {
 	return false
 }
 
-func functionCallLookupName(n p.Node) string {
+func functionCallName(n p.Node) string {
 	if n.Data.Path != "" {
 		return n.Data.Path + "::" + n.Data.FunctionName
 	}
 	return n.Data.FunctionName
 }
 
-func functionCallTokenName(n p.Node) string {
-	if n.Data.Path != "" {
-		return n.Data.Path + "::" + n.Data.FunctionName
+func indexTokensByLine(tokens []l.Token) map[int][]l.Token {
+	if len(tokens) == 0 {
+		return map[int][]l.Token{}
 	}
-	return n.Data.FunctionName
+	indexed := make(map[int][]l.Token)
+	for _, t := range tokens {
+		indexed[t.Line] = append(indexed[t.Line], t)
+	}
+	return indexed
 }

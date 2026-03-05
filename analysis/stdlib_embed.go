@@ -36,12 +36,16 @@ func StdlibSignatures() (map[string]map[string][]FunctionSignature, error) {
 	return stdlibData, stdlibErr
 }
 
-func normalizeIncludeKey(path string) string {
+func normalizeIncludePathBase(path string) string {
 	path = strings.ReplaceAll(path, "\\", "/")
 	path = strings.TrimSpace(path)
 	path = strings.TrimSuffix(path, ".gsc")
 	path = strings.TrimPrefix(path, "/")
-	return strings.ToLower(path)
+	return path
+}
+
+func normalizeIncludeKey(path string) string {
+	return strings.ToLower(normalizeIncludePathBase(path))
 }
 
 func guessStdlibGroup(uri string) string {
