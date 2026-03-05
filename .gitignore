@@ -2,3 +2,4 @@ build.sh
 log.txt
 dist/*
 build-releases.sh
+test/*
