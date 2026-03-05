@@ -7,6 +7,15 @@ func TestInitializeResponseAdvertisesCompletionProvider(t *testing.T) {
 	if !resp.Result.Capabilities.DocumentFormattingProvider {
 		t.Fatal("expected documentFormattingProvider to be true")
 	}
+	if !resp.Result.Capabilities.CodeActionProvider {
+		t.Fatal("expected codeActionProvider to be true")
+	}
+	if len(resp.Result.Capabilities.ExecuteCommandProvider.Commands) == 0 {
+		t.Fatal("expected executeCommandProvider commands")
+	}
+	if resp.Result.Capabilities.ExecuteCommandProvider.Commands[0] != "gsclsp.bundleMod" {
+		t.Fatalf("unexpected execute command: %q", resp.Result.Capabilities.ExecuteCommandProvider.Commands[0])
+	}
 	foundComment := false
 	for _, tokenType := range resp.Result.Capabilities.SemanticTokensProvider.Legend.TokenTypes {
 		if tokenType == "comment" {

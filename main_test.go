@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/maxvanasten/gsclsp/analysis"
@@ -45,6 +48,99 @@ func TestHandleMessageDefinitionMethodCanonical(t *testing.T) {
 	}
 	if response.ID == nil || *response.ID != 1 {
 		t.Fatalf("unexpected response id: %v", response.ID)
+	}
+}
+
+func TestHandleMessageCodeActionMethod(t *testing.T) {
+	t.Helper()
+	state := analysis.NewState()
+	logger := log.New(io.Discard, "", 0)
+	var out bytes.Buffer
+
+	request := lsp.CodeActionRequest{
+		Request: lsp.Request{RPC: "2.0", ID: 5, Method: "textDocument/codeAction"},
+		Params: lsp.CodeActionParams{
+			TextDocument: lsp.TextDocumentIdentifier{URI: "file:///tmp/test.gsc"},
+			Range:        lsp.Range{},
+			Context:      lsp.CodeActionContext{},
+		},
+	}
+	contents, err := json.Marshal(request)
+	if err != nil {
+		t.Fatalf("marshal request: %v", err)
+	}
+
+	handleMessage(logger, &out, &state, "textDocument/codeAction", contents)
+
+	_, payload, err := rpc.DecodeMessage(out.Bytes())
+	if err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+
+	var response lsp.CodeActionResponse
+	if err := json.Unmarshal(payload, &response); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if response.ID == nil || *response.ID != 5 {
+		t.Fatalf("unexpected response id: %v", response.ID)
+	}
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one code action, got %d", len(response.Result))
+	}
+	action := response.Result[0]
+	if action.Command == nil || action.Command.Command != "gsclsp.bundleMod" {
+		t.Fatalf("unexpected code action command: %+v", action.Command)
+	}
+}
+
+func TestHandleMessageExecuteCommandBundleMod(t *testing.T) {
+	t.Helper()
+	state := analysis.NewState()
+	logger := log.New(io.Discard, "", 0)
+	var out bytes.Buffer
+
+	root := t.TempDir()
+	sourceRoot := filepath.Join(root, "zm_test")
+	if err := os.MkdirAll(sourceRoot, 0o755); err != nil {
+		t.Fatalf("mkdir source root: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(sourceRoot, "main.gsc"), []byte("main(){}"), 0o644); err != nil {
+		t.Fatalf("write source script: %v", err)
+	}
+
+	uri := "file://" + filepath.ToSlash(filepath.Join(sourceRoot, "main.gsc"))
+	request := lsp.ExecuteCommandRequest{
+		Request: lsp.Request{RPC: "2.0", ID: 6, Method: "workspace/executeCommand"},
+		Params: lsp.ExecuteCommandParams{
+			Command:   "gsclsp.bundleMod",
+			Arguments: []any{uri},
+		},
+	}
+	contents, err := json.Marshal(request)
+	if err != nil {
+		t.Fatalf("marshal request: %v", err)
+	}
+
+	handleMessage(logger, &out, &state, "workspace/executeCommand", contents)
+
+	_, payload, err := rpc.DecodeMessage(out.Bytes())
+	if err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+
+	var response lsp.ExecuteCommandResponse
+	if err := json.Unmarshal(payload, &response); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if response.ID == nil || *response.ID != 6 {
+		t.Fatalf("unexpected response id: %v", response.ID)
+	}
+	result, ok := response.Result.(string)
+	if !ok || !strings.Contains(result, "Bundled") {
+		t.Fatalf("unexpected execute command result: %#v", response.Result)
+	}
+	if _, err := os.Stat(filepath.Join(sourceRoot, "zm_test", "scripts", "main.gsc")); err != nil {
+		t.Fatalf("expected bundled script: %v", err)
 	}
 }
 

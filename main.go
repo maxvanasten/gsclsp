@@ -120,7 +120,70 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 
 		response := state.Formatting(request.ID, request.Params.TextDocument.URI, request.Params.Options)
 		writeResponse(writer, response)
+	case "textDocument/codeAction":
+		var request lsp.CodeActionRequest
+		if !decodeRequest(logger, contents, &request, "textDocument/codeAction") {
+			return
+		}
+
+		response := lsp.CodeActionResponse{
+			Response: lsp.Response{RPC: "2.0", ID: &request.ID},
+			Result: []lsp.CodeAction{
+				{
+					Title: "Bundle scripts into mod folder",
+					Kind:  "source",
+					Command: &lsp.Command{
+						Title:     "Bundle scripts into mod folder",
+						Command:   "gsclsp.bundleMod",
+						Arguments: []any{request.Params.TextDocument.URI},
+					},
+				},
+			},
+		}
+		writeResponse(writer, response)
+	case "workspace/executeCommand":
+		var request lsp.ExecuteCommandRequest
+		if !decodeRequest(logger, contents, &request, "workspace/executeCommand") {
+			return
+		}
+
+		result := "unsupported command"
+		switch request.Params.Command {
+		case "gsclsp.bundleMod":
+			uri, ok := commandURI(request.Params.Arguments)
+			if !ok {
+				result = "bundle failed: missing document uri argument"
+				break
+			}
+			message, err := analysis.BundleModForURI(uri)
+			if err != nil {
+				result = "bundle failed: " + err.Error()
+				break
+			}
+			result = message
+		}
+
+		response := lsp.ExecuteCommandResponse{
+			Response: lsp.Response{RPC: "2.0", ID: &request.ID},
+			Result:   result,
+		}
+		writeResponse(writer, response)
 	}
+}
+
+func commandURI(arguments []any) (string, bool) {
+	if len(arguments) == 0 {
+		return "", false
+	}
+	if value, ok := arguments[0].(string); ok && value != "" {
+		return value, true
+	}
+	if value, ok := arguments[0].(map[string]any); ok {
+		if uri, exists := value["uri"].(string); exists && uri != "" {
+			return uri, true
+		}
+	}
+	return "", false
 }
 
 func decodeRequest(logger *log.Logger, contents []byte, target any, errPrefix string) bool {

@@ -1,5 +1,13 @@
 # Release Notes
 
+## 0.0.6.7
+
+- Adds LSP code action support with `textDocument/codeAction` and `workspace/executeCommand`.
+- Introduces `gsclsp.bundleMod` to bundle scripts into a nested mod folder named after the current directory.
+- Rebuilds bundle output from scratch on each run to remove stale files from previous bundles.
+- Recursively copies `.gsc` files while preserving relative paths, skipping hidden directories, and keeping originals untouched.
+- Advertises comment semantic tokens in the legend and adds regression coverage for comment highlighting and bundling behavior.
+
 ## 0.0.6.5
 
 - Adds LSP `textDocument/completion` capability advertisement and request routing.

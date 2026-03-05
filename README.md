@@ -16,6 +16,7 @@ VS Code extension: [GSCLSP for GSC](https://marketplace.visualstudio.com/items?i
 - Go to definition for local and included functions
 - Diagnostics from the `gscp` parser
 - Document formatting (`textDocument/formatting`)
+- Code actions for bundling scripts into mod structure (`textDocument/codeAction` + `workspace/executeCommand`)
 
 ## Supported LSP capabilities
 
@@ -25,6 +26,8 @@ During `initialize`, the server advertises:
 - `hoverProvider`: `true`
 - `definitionProvider`: `true`
 - `documentFormattingProvider`: `true`
+- `codeActionProvider`: `true`
+- `executeCommandProvider`: `gsclsp.bundleMod`
 - `semanticTokensProvider`: full document support (`full: true`, `range: false`)
 - `inlayHintProvider`: `true`
 
@@ -36,6 +39,16 @@ Semantic token legend:
 - `number`
 - `function`
 - `property`
+- `comment`
+
+Bundle code action behavior:
+
+- Creates a nested mod folder named after the current directory
+- Replaces the existing nested mod folder on each run (no stale leftovers)
+- Writes `<modName>/mod.json` with default metadata
+- Recursively copies `.gsc` files into `<modName>/scripts` while preserving relative paths
+- Skips hidden directories (for example `.git`)
+- Keeps original source `.gsc` files in place
 
 ## How it works
 
@@ -151,4 +164,4 @@ Important test notes:
 
 ## Version
 
-Current server version reported in `initialize` response: `0.0.6.5`.
+Current server version reported in `initialize` response: `0.0.6.7`.
