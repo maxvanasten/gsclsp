@@ -192,7 +192,7 @@ func (s *State) SemanticTokens(id int, uri string) lsp.SemanticTokensResponse {
 }
 
 func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
-	inlayHints := GenerateInlayHints(s.Signatures[uri], s.Ast[uri])
+	inlayHints := GenerateInlayHints(s.Signatures[uri], s.Ast[uri], s.Tokens[uri])
 
 	fmt.Fprintf(os.Stderr, "inlayHints: %v\n", inlayHints)
 
