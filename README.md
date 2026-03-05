@@ -2,6 +2,8 @@
 
 `gsclsp` is a language server implementation for the .gsc language used in older Call of Duty titles.
 
+[VSCode extension](https://marketplace.visualstudio.com/items?itemName=maxvanasten.gsclsp-vscode)
+
 ## Features
 
 ### Implemented
