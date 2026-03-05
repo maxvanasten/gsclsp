@@ -25,11 +25,11 @@ type InitializeResult struct {
 }
 
 type ServerCapabilities struct {
-	TextDocumentSync int  `json:"textDocumentSync"`
-	HoverProvider    bool `json:"hoverProvider"`
-	DefinitionProvider bool `json:"definitionProvider"`
+	TextDocumentSync       int                    `json:"textDocumentSync"`
+	HoverProvider          bool                   `json:"hoverProvider"`
+	DefinitionProvider     bool                   `json:"definitionProvider"`
 	SemanticTokensProvider SemanticTokensProvider `json:"semanticTokensProvider"`
-	InlayHintProvider bool `json:"inlayHintProvider"`
+	InlayHintProvider      bool                   `json:"inlayHintProvider"`
 }
 
 type ServerInfo struct {
@@ -45,12 +45,12 @@ func NewInitializeResponse(id int) InitializeResponse {
 		},
 		Result: InitializeResult{
 			Capabilities: ServerCapabilities{
-				TextDocumentSync: 1,
-				HoverProvider: true,
+				TextDocumentSync:   1,
+				HoverProvider:      true,
 				DefinitionProvider: true,
 				SemanticTokensProvider: SemanticTokensProvider{
 					Legend: SemanticTokensLegend{
-						TokenTypes:     []string{
+						TokenTypes: []string{
 							"variable",
 							"keyword",
 							"string",
@@ -60,14 +60,14 @@ func NewInitializeResponse(id int) InitializeResponse {
 						},
 						TokenModifiers: []string{},
 					},
-					Full:   true,
-					Range:  false,
+					Full:  true,
+					Range: false,
 				},
 				InlayHintProvider: true,
 			},
 			ServerInfo: ServerInfo{
 				Name:    "gsclsp",
-				Version: "0.0.6.3",
+				Version: "0.0.6.4",
 			},
 		},
 	}
