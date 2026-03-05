@@ -98,16 +98,25 @@ func callClosedOnLine(n p.Node, tokens []l.Token, functionName string) bool {
 			continue
 		}
 		seenOpen := false
+		depthParen := 0
 		for j := i + 1; j < len(tokens); j++ {
 			if tokens[j].Type == l.NEWLINE || tokens[j].Type == l.TERMINATOR {
 				break
 			}
 			if tokens[j].Type == l.OPEN_PAREN {
-				seenOpen = true
+				if depthParen == 0 {
+					seenOpen = true
+				}
+				depthParen++
 				continue
 			}
 			if tokens[j].Type == l.CLOSE_PAREN {
-				return seenOpen
+				if depthParen > 0 {
+					depthParen--
+					if depthParen == 0 {
+						return seenOpen
+					}
+				}
 			}
 		}
 	}
@@ -123,6 +132,9 @@ func openCallParamAnchor(n p.Node, tokens []l.Token, functionName string) (int, 
 			continue
 		}
 		seenOpen := false
+		depthParen := 0
+		depthBracket := 0
+		depthCurly := 0
 		commaCount := 0
 		currentCol := 0
 		for j := i + 1; j < len(tokens); j++ {
@@ -130,16 +142,38 @@ func openCallParamAnchor(n p.Node, tokens []l.Token, functionName string) (int, 
 				break
 			}
 			if tokens[j].Type == l.OPEN_PAREN {
-				seenOpen = true
-				currentCol = tokens[j].EndCol + 1
+				if depthParen == 0 {
+					seenOpen = true
+					currentCol = tokens[j].EndCol + 1
+				}
+				depthParen++
 				continue
 			}
 			if !seenOpen {
 				continue
 			}
-			if tokens[j].Type == l.COMMA {
-				commaCount++
-				currentCol = tokens[j].EndCol + 1
+			switch tokens[j].Type {
+			case l.CLOSE_PAREN:
+				if depthParen > 0 {
+					depthParen--
+				}
+			case l.OPEN_BRACKET:
+				depthBracket++
+			case l.CLOSE_BRACKET:
+				if depthBracket > 0 {
+					depthBracket--
+				}
+			case l.OPEN_CURLY:
+				depthCurly++
+			case l.CLOSE_CURLY:
+				if depthCurly > 0 {
+					depthCurly--
+				}
+			case l.COMMA:
+				if depthParen == 1 && depthBracket == 0 && depthCurly == 0 {
+					commaCount++
+					currentCol = tokens[j].EndCol + 1
+				}
 			}
 		}
 		if seenOpen {
