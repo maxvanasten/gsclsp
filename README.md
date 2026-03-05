@@ -1,67 +1,118 @@
 # gsclsp
 
-`gsclsp` is a language server implementation for the .gsc language used in older Call of Duty titles.
+`gsclsp` is a Language Server Protocol (LSP) server for `.gsc` scripts used in older Call of Duty titles.
 
-[VSCode extension](https://marketplace.visualstudio.com/items?itemName=maxvanasten.gsclsp-vscode)
+It runs over standard LSP stdio (`stdin`/`stdout`) and uses [`gscp`](https://github.com/maxvanasten/gscp) for parsing and diagnostics.
+
+VS Code extension: [GSCLSP for GSC](https://marketplace.visualstudio.com/items?itemName=maxvanasten.gsclsp-vscode)
 
 ## Features
 
-### Implemented
+`gsclsp` currently provides:
 
-- Semantic tokens (provides syntax highlighting)
-- Completion
-- Inline hints (arguments in function calls)
-- Hover definitions for function calls (will show the function signature)
-- Diagnostics
+- Semantic tokens (syntax-aware highlighting)
+- Hover signatures for function calls
+- Inlay hints for function call arguments
+- Go to definition for local and included functions
+- Diagnostics from the `gscp` parser
+
+## Supported LSP capabilities
+
+During `initialize`, the server advertises:
+
+- `textDocumentSync`: full document sync (`1`)
+- `hoverProvider`: `true`
+- `definitionProvider`: `true`
+- `semanticTokensProvider`: full document support (`full: true`, `range: false`)
+- `inlayHintProvider`: `true`
+
+Semantic token legend:
+
+- `variable`
+- `keyword`
+- `string`
+- `number`
+- `function`
+- `property`
+
+## How it works
+
+At a high level:
+
+1. `gsclsp` receives LSP messages over stdio.
+2. On document open/change, it invokes `gscp` to parse text.
+3. It stores AST/tokens/signatures per document in memory.
+4. It augments signatures with embedded builtins and stdlib signature bundles.
+5. It serves hover/definition/inlay/semantic-token responses from this analysis state.
+
+Include handling details:
+
+- Supports local `#include` resolution relative to the current file URI
+- Supports recursive include traversal for definition lookup
+- Uses include file caching (mtime + file size) to avoid reparsing unchanged includes
+- Supports qualified calls like `maps\\mp\\zombies\\_zm_utility::init_utility`
+- Uses URI path heuristics (`/mp/` or `/zm/`) to prefer matching stdlib groups
+
+## Requirements
+
+- Go `1.25+` (module currently targets `go 1.25.7`)
+- [`gscp`](https://github.com/maxvanasten/gscp) installed and available on `PATH`
+
+`gscp` is required at runtime for parsing and diagnostics.
 
 ## Installation
 
-#### Dependencies
-`gsclsp` requires the latest version of [gscp](https://github.com/maxvanasten/gscp) installed on your path, if you use the vscode extension, the appropriate releases of gsclsp and gscp are automatically installed for you.
+### Option 1: VS Code (recommended for VS Code users)
 
-### Neovim
+Install from the marketplace:
 
-#### Build
+- [GSCLSP for GSC](https://marketplace.visualstudio.com/items?itemName=maxvanasten.gsclsp-vscode)
+
+The extension manages compatible `gsclsp` and `gscp` releases for you.
+
+### Option 2: Build from source
 
 ```bash
-# Clone gsclsp
 git clone https://github.com/maxvanasten/gsclsp
-# Build gsclsp from source
+cd gsclsp
 go build
-# (OPTIONAL) Move gsclsp to /usr/bin so its accessible anywhere
-sudo mv ./gsclsp /usr/bin/gsclsp
-
 ```
 
-#### Portable build scripts
+This produces a `gsclsp` binary in the repository root.
 
-The repository now includes tracked, portable scripts under `scripts/`.
+Optional install:
 
 ```bash
-# Build with stdlib regeneration
-GSCLSP_MP_ROOT="/path/to/t6-source/mp/core" \
-GSCLSP_ZM_ROOT="/path/to/t6-source/zm/core" \
-./scripts/build.sh
-
-# Build without regenerating stdlib signatures
-GSCLSP_SKIP_STDLIBGEN=1 ./scripts/build.sh
-
-# Optional install target path
-GSCLSP_INSTALL_PATH="/usr/local/bin/gsclsp" \
-GSCLSP_SKIP_STDLIBGEN=1 \
-./scripts/build.sh
+sudo mv ./gsclsp /usr/local/bin/gsclsp
 ```
 
-```bash
-# Cross-platform release artifacts in ./dist
-GSCLSP_MP_ROOT="/path/to/t6-source/mp/core" \
-GSCLSP_ZM_ROOT="/path/to/t6-source/zm/core" \
-./scripts/build-releases.sh
+## Neovim setup
+
+Example Neovim LSP configuration:
+
+```lua
+vim.filetype.add({
+  extension = {
+    gsc = "gsc",
+  },
+})
+
+vim.lsp.config["gsclsp"] = {
+  cmd = { "gsclsp" },
+  filetypes = { "gsc" },
+  single_file_support = true,
+}
+
+vim.lsp.enable({ "gsclsp" })
 ```
 
-#### stdlib signature generation
+If `gsclsp` is not on your `PATH`, replace `cmd` with an absolute binary path.
 
-You can also run the generator directly:
+## Stdlib signature generation
+
+The repository embeds signature bundles in `analysis/stdlib_signatures.json` and `analysis/builtins_signatures.json`.
+
+To regenerate stdlib signatures from local script roots:
 
 ```bash
 go run ./cmd/stdlibgen \
@@ -70,24 +121,32 @@ go run ./cmd/stdlibgen \
   --out "analysis/stdlib_signatures.json"
 ```
 
-#### .config/nvim
+Notes:
 
-```lua
-vim.filetype.add({
-  extension = {
-    gsc = 'gsc',
-  },
-})
+- Both `--mp-root` and `--zm-root` are required.
+- The generator walks `.gsc` files, parses with `gscp`, and writes a JSON bundle keyed by normalized include paths.
 
-vim.lsp.config['gsclsp'] = {
-  cmd = { 'gsclsp' }, -- Or relative filepath if you have not moved ./gsclsp to /usr/bin
-  filetypes = { 'gsc' },
-  single_file_support = true,
-}
+## Development
 
-vim.lsp.enable({'gsclsp'})
+Run tests:
+
+```bash
+go test ./...
 ```
 
-### VSCode
+Important test notes:
 
-You can download the extension by searching for "GSCLSP for GSC" by maxvanasten or by installing it from the marketplace: [GSCLSP for GSC](https://marketplace.visualstudio.com/items?itemName=maxvanasten.gsclsp-vscode)
+- Many analysis tests require `gscp` to be installed.
+- `TestInlayHintsUseIncludedLocalOpenCall` expects a fixture file at `test/two.gsc` (or `../test/two.gsc`) in your local environment.
+
+## Project structure
+
+- `main.go`: LSP message loop and request routing
+- `analysis/`: parser integration, signatures, diagnostics, hover/definition/inlay/semantic token logic
+- `lsp/`: LSP request/response structs and capability definitions
+- `rpc/`: LSP framing (`Content-Length`) encode/decode helpers
+- `cmd/stdlibgen/`: CLI tool to generate stdlib signature bundles
+
+## Version
+
+Current server version reported in `initialize` response: `0.0.6.4`.
