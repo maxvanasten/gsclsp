@@ -41,7 +41,15 @@ func GenerateSemanticTokens(tokens []l.Token) []int {
 		// SYMBOL can be either variable, function name, parameter, file_path
 		// This really should be handled by the lexer already.
 		case l.SYMBOL:
-			if bytes.Contains([]byte(t.Content), []byte{'\\'}) {
+			isIncludePath := false
+			if i > 0 {
+				prev := tokens[i-1]
+				if prev.Type == l.SYMBOL && prev.Content == "#include" && prev.Line == t.Line {
+					isIncludePath = true
+				}
+			}
+
+			if isIncludePath || bytes.Contains([]byte(t.Content), []byte{'\\'}) || bytes.Contains([]byte(t.Content), []byte{'/'}) {
 				// TODO: find better token type for file path
 				emit(line, col, len(t.Content), STRING)
 				break
@@ -66,7 +74,7 @@ func GenerateSemanticTokens(tokens []l.Token) []int {
 			}
 			// Check if keyword
 			switch t.Content {
-			case "thread", "wait", "#include", "case", "break", "default", "return", "true", "false", "if", "else", "for", "waittill", "endon", "self", "level", "switch", "in":
+			case "thread", "wait", "#include", "case", "break", "default", "return", "true", "false", "if", "else", "for", "waittill", "endon", "self", "level", "switch", "in", "notify":
 				emit(line, col, len(t.Content), KEYWORD)
 			default:
 				emit(line, col, len(t.Content), VARIABLE)
