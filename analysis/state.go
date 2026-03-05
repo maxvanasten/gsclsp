@@ -72,8 +72,8 @@ func (s *State) AddDocument(uri, rootDir string, filePath string) {
 	relPath := strings.Builder{}
 	wd, err := os.Getwd()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR READING FILE (state.AddDocument): %v\n", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "ERROR GETTING WD (state.AddDocument): %v\n", err)
+		return
 	}
 	relPath.WriteString(wd)
 	relPath.WriteString(rootDir)
@@ -83,12 +83,12 @@ func (s *State) AddDocument(uri, rootDir string, filePath string) {
 	data, err := os.ReadFile(relPath.String())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR READING FILE (state.AddDocument): %v\n", err)
-		os.Exit(1)
+		return
 	}
 
 	parseResult := Parse(string(data))
 
-	s.Signatures[uri] = append(s.Signatures[uri], GenerateFunctionSignatures(parseResult.Ast)...)
+	s.Signatures[uri] = mergeSignatures(s.Signatures[uri], GenerateFunctionSignatures(parseResult.Ast))
 }
 
 func (s *State) UpdateAst(uri string) {
@@ -98,13 +98,67 @@ func (s *State) UpdateAst(uri string) {
 	s.Tokens[uri] = parseResult.Tokens
 	s.Signatures[uri] = GenerateFunctionSignatures(s.Ast[uri])
 
-	// TODO: Load included files
-	// Convert filepath to actual location relative to gsclsp/lib
-	// for _, n := range s.Ast[uri] {
-	//		if n.Type == "include_statement" {
-	//		s.AddDocument(uri, "/lib/zm/core/", n.Data.Path)
-	//	}
-	//}
+	builtins, err := BuiltinsSignatures()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR LOADING BUILTIN SIGNATURES: %v\n", err)
+	} else {
+		s.Signatures[uri] = mergeSignatures(s.Signatures[uri], builtins)
+	}
+
+	stdlib, err := StdlibSignatures()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR LOADING STDLIB SIGNATURES: %v\n", err)
+	}
+
+	includePaths := collectIncludePaths(s.Ast[uri])
+	stdlibGroup := guessStdlibGroup(uri)
+
+	for _, includePath := range includePaths {
+		key := normalizeIncludeKey(includePath)
+		if key == "" {
+			continue
+		}
+
+		var matched bool
+		if stdlib != nil {
+			if stdlibGroup != "" {
+				if sigs, ok := stdlib[stdlibGroup][key]; ok {
+					s.Signatures[uri] = mergeSignatures(s.Signatures[uri], sigs)
+					matched = true
+				}
+			}
+			if !matched {
+				if sigs, ok := stdlib["mp"][key]; ok {
+					s.Signatures[uri] = mergeSignatures(s.Signatures[uri], sigs)
+					matched = true
+				}
+			}
+			if !matched {
+				if sigs, ok := stdlib["zm"][key]; ok {
+					s.Signatures[uri] = mergeSignatures(s.Signatures[uri], sigs)
+					matched = true
+				}
+			}
+		}
+
+		if !matched {
+			s.AddDocument(uri, "./lib/", includePath)
+		}
+	}
+}
+
+func collectIncludePaths(nodes []p.Node) []string {
+	paths := []string{}
+	for _, n := range nodes {
+		if n.Type == "include_statement" && n.Data.Path != "" {
+			paths = append(paths, n.Data.Path)
+		}
+		if len(n.Children) > 0 {
+			paths = append(paths, collectIncludePaths(n.Children)...)
+		}
+	}
+
+	return paths
 }
 
 func (s *State) GetTokenAtPosition(uri string, position lsp.Position) l.Token {
@@ -129,18 +183,23 @@ func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverRespon
 	fmt.Fprintf(os.Stderr, "HOVER TOKEN: %v\n", token)
 	if token.Type == l.SYMBOL {
 		fmt.Fprintf(os.Stderr, "signatures: \n%v\n", s.Signatures[uri])
-		for _, s := range s.Signatures[uri] {
-			if s.Name == token.Content {
-				output.WriteString(s.Name)
-				output.WriteString(" (")
-				for i, a := range s.Arguments {
-					output.WriteString(a)
-					if i+1 < len(s.Arguments) {
-						output.WriteString(", ")
-					}
+		stdlib, _ := StdlibSignatures()
+		name := token.Content
+		sig, ok := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+		if !ok {
+			name = findFunctionCallNameAtPosition(s.Ast[uri], position)
+			sig, ok = resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+		}
+		if ok {
+			output.WriteString(sig.Name)
+			output.WriteString(" (")
+			for i, a := range sig.Arguments {
+				output.WriteString(a)
+				if i+1 < len(sig.Arguments) {
+					output.WriteString(", ")
 				}
-				output.WriteString(")")
 			}
+			output.WriteString(")")
 		}
 	}
 
@@ -192,7 +251,11 @@ func (s *State) SemanticTokens(id int, uri string) lsp.SemanticTokensResponse {
 }
 
 func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
-	inlayHints := GenerateInlayHints(s.Signatures[uri], s.Ast[uri], s.Tokens[uri])
+	stdlib, _ := StdlibSignatures()
+	resolver := func(name string) (FunctionSignature, bool) {
+		return resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+	}
+	inlayHints := GenerateInlayHints(s.Signatures[uri], s.Ast[uri], s.Tokens[uri], resolver)
 
 	fmt.Fprintf(os.Stderr, "inlayHints: %v\n", inlayHints)
 

@@ -8,21 +8,21 @@ import (
 	p "github.com/maxvanasten/gscp/parser"
 )
 
-func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens []l.Token) []lsp.InlayHint {
+func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens []l.Token, resolve SignatureResolver) []lsp.InlayHint {
 	hints := []lsp.InlayHint{}
+	if resolve == nil {
+		resolve = func(name string) (FunctionSignature, bool) {
+			return findSignatureByName(signatures, name)
+		}
+	}
 
 	for _, n := range nodes {
 		if n.Type == "function_call" {
 			if len(n.Children) > 0 {
-				// See if we can find it in signatures
-				labels := []string{}
-				for _, s := range signatures {
-					if s.Name == n.Data.FunctionName {
-						labels = append(labels, s.Arguments...)
-					}
-				}
-
-				if len(labels) > 0 {
+				lookupName := functionCallLookupName(n)
+				sig, ok := resolve(lookupName)
+				if ok && len(sig.Arguments) > 0 {
+					labels := sig.Arguments
 					if n.Line <= 0 || n.Col <= 0 {
 						continue
 					}
@@ -37,8 +37,9 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 					if anchorCol < 0 {
 						anchorCol = 0
 					}
-					if !callClosedOnLine(n, tokens) {
-						paramIndex, stubCol, ok := openCallParamAnchor(n, tokens)
+					callName := functionCallTokenName(n)
+					if !callClosedOnLine(n, tokens, callName) {
+						paramIndex, stubCol, ok := openCallParamAnchor(n, tokens, callName)
 						if !ok || paramIndex >= len(labels) {
 							continue
 						}
@@ -80,7 +81,7 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 			}
 		} else {
 			if len(n.Children) > 0 {
-				hints = append(hints, GenerateInlayHints(signatures, n.Children, tokens)...)
+				hints = append(hints, GenerateInlayHints(signatures, n.Children, tokens, resolve)...)
 			}
 		}
 	}
@@ -88,12 +89,12 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 	return hints
 }
 
-func callClosedOnLine(n p.Node, tokens []l.Token) bool {
+func callClosedOnLine(n p.Node, tokens []l.Token, functionName string) bool {
 	if n.Line <= 0 || n.Data.FunctionName == "" {
 		return false
 	}
 	for i, t := range tokens {
-		if t.Type != l.SYMBOL || t.Content != n.Data.FunctionName || t.Line != n.Line {
+		if t.Type != l.SYMBOL || !tokenMatchesFunction(t.Content, functionName) || t.Line != n.Line {
 			continue
 		}
 		seenOpen := false
@@ -113,12 +114,12 @@ func callClosedOnLine(n p.Node, tokens []l.Token) bool {
 	return false
 }
 
-func openCallParamAnchor(n p.Node, tokens []l.Token) (int, int, bool) {
+func openCallParamAnchor(n p.Node, tokens []l.Token, functionName string) (int, int, bool) {
 	if n.Line <= 0 || n.Data.FunctionName == "" {
 		return 0, 0, false
 	}
 	for i, t := range tokens {
-		if t.Type != l.SYMBOL || t.Content != n.Data.FunctionName || t.Line != n.Line {
+		if t.Type != l.SYMBOL || !tokenMatchesFunction(t.Content, functionName) || t.Line != n.Line {
 			continue
 		}
 		seenOpen := false
@@ -146,4 +147,37 @@ func openCallParamAnchor(n p.Node, tokens []l.Token) (int, int, bool) {
 		}
 	}
 	return 0, 0, false
+}
+
+func tokenMatchesFunction(tokenContent, functionName string) bool {
+	if tokenContent == functionName {
+		return true
+	}
+	if strings.HasSuffix(tokenContent, "::"+functionName) {
+		return true
+	}
+	if strings.HasSuffix(functionName, "::"+tokenContent) {
+		return true
+	}
+	if _, funcName, ok := splitQualifiedName(tokenContent); ok {
+		return funcName == functionName
+	}
+	if _, funcName, ok := splitQualifiedName(functionName); ok {
+		return tokenContent == funcName
+	}
+	return false
+}
+
+func functionCallLookupName(n p.Node) string {
+	if n.Data.Path != "" {
+		return n.Data.Path + "::" + n.Data.FunctionName
+	}
+	return n.Data.FunctionName
+}
+
+func functionCallTokenName(n p.Node) string {
+	if n.Data.Path != "" {
+		return n.Data.Path + "::" + n.Data.FunctionName
+	}
+	return n.Data.FunctionName
 }

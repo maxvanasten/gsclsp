@@ -1,0 +1,25 @@
+[
+  {"Name":"iPrintLn","Arguments":["text"]},
+  {"Name":"iprintlnbold","Arguments":["text"]},
+  {"Name":"print","Arguments":["text"]},
+  {"Name":"println","Arguments":["text"]},
+
+  {"Name":"getentarray","Arguments":["targetname","fieldname"]},
+  {"Name":"getEntArray","Arguments":["targetname","fieldname"]},
+  {"Name":"spawn","Arguments":["classname","origin","angle","radius","height"]},
+
+  {"Name":"getdvar","Arguments":["name"]},
+  {"Name":"setdvar","Arguments":["name","value"]},
+  {"Name":"tolower","Arguments":["text"]},
+  {"Name":"toupper","Arguments":["text"]},
+  {"Name":"isdefined","Arguments":["value"]},
+
+  {"Name":"wait","Arguments":["seconds"]},
+  {"Name":"waittill","Arguments":["event","obj1","arg2"]},
+  {"Name":"endon","Arguments":["message"]},
+
+  {"Name":"usebuttonpressed","Arguments":[]},
+  {"Name":"adsbuttonpressed","Arguments":[]},
+  {"Name":"setCursorHint","Arguments":["hint"]},
+  {"Name":"setHintString","Arguments":["text"]}
+]
