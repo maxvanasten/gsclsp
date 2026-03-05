@@ -3,3 +3,5 @@ log.txt
 dist/*
 build-releases.sh
 test/*
+!scripts/build.sh
+!scripts/build-releases.sh
