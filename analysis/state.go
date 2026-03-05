@@ -67,6 +67,30 @@ func Parse(input string) ParseResult {
 	return parseResult
 }
 
+// AddDocument Parses a file and adds all relevant nodes (function signatures) to the states document
+func (s *State) AddDocument(uri, rootDir string, filePath string) {
+	relPath := strings.Builder{}
+	wd, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR READING FILE (state.AddDocument): %v\n", err)
+		os.Exit(1)
+	}
+	relPath.WriteString(wd)
+	relPath.WriteString(rootDir)
+	filePath = strings.ReplaceAll(filePath, "\\", "/")
+	relPath.WriteString(filePath)
+	relPath.WriteString(".gsc")
+	data, err := os.ReadFile(relPath.String())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR READING FILE (state.AddDocument): %v\n", err)
+		os.Exit(1)
+	}
+
+	parseResult := Parse(string(data))
+
+	s.Signatures[uri] = append(s.Signatures[uri], GenerateFunctionSignatures(parseResult.Ast)...)
+}
+
 func (s *State) UpdateAst(uri string) {
 	parseResult := Parse(s.Documents[uri])
 
@@ -75,6 +99,12 @@ func (s *State) UpdateAst(uri string) {
 	s.Signatures[uri] = GenerateFunctionSignatures(s.Ast[uri])
 
 	// TODO: Load included files
+	// Convert filepath to actual location relative to gsclsp/lib
+	// for _, n := range s.Ast[uri] {
+	//		if n.Type == "include_statement" {
+	//		s.AddDocument(uri, "/lib/zm/core/", n.Data.Path)
+	//	}
+	//}
 }
 
 func (s *State) GetTokenAtPosition(uri string, position lsp.Position) l.Token {
@@ -158,5 +188,19 @@ func (s *State) SemanticTokens(id int, uri string) lsp.SemanticTokensResponse {
 		Result: lsp.SemanticTokensResult{
 			Data: tokens,
 		},
+	}
+}
+
+func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
+	inlayHints := GenerateInlayHints(s.Signatures[uri], s.Ast[uri])
+
+	fmt.Fprintf(os.Stderr, "inlayHints: %v\n", inlayHints)
+
+	return lsp.InlayHintResponse{
+		Response: lsp.Response{
+			RPC: "2.0",
+			ID:  &id,
+		},
+		Result: inlayHints,
 	}
 }

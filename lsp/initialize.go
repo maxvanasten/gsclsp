@@ -29,6 +29,7 @@ type ServerCapabilities struct {
 	HoverProvider    bool `json:"hoverProvider"`
 	DefinitionProvider bool `json:"definitionProvider"`
 	SemanticTokensProvider SemanticTokensProvider `json:"semanticTokensProvider"`
+	InlayHintProvider bool `json:"inlayHintProvider"`
 }
 
 type ServerInfo struct {
@@ -62,10 +63,11 @@ func NewInitializeResponse(id int) InitializeResponse {
 					Full:   true,
 					Range:  false,
 				},
+				InlayHintProvider: true,
 			},
 			ServerInfo: ServerInfo{
 				Name:    "gsclsp",
-				Version: "0.0.1",
+				Version: "0.0.3",
 			},
 		},
 	}

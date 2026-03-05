@@ -97,6 +97,16 @@ func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, m
 		response := state.SemanticTokens(request.ID, request.Params.TextDocument.URI)
 		writeResponse(writer, response)
 		logger.Printf("semantic_tokens: %v", response.Result.Data)
+	case "textDocument/inlayHint":
+		var request lsp.InlayHintRequest
+		if err := json.Unmarshal(contents, &request); err != nil {
+			logger.Printf("textDocument/inlayHint: %s", err)
+			return
+		}
+
+		response := state.InlayHints(request.ID, request.Params.TextDocument.URI)
+		writeResponse(writer, response)
+		logger.Printf("inlay_hints: %v", response.Result)
 	}
 }
 
