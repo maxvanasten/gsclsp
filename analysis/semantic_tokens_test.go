@@ -1,6 +1,10 @@
 package analysis
 
-import "testing"
+import (
+	"testing"
+
+	l "github.com/maxvanasten/gscp/lexer"
+)
 
 type decodedSemanticToken struct {
 	Line   int
@@ -70,4 +74,93 @@ func TestSemanticTokensIncludePathWithoutSeparators(t *testing.T) {
 	}
 
 	t.Fatalf("missing semantic token for include path")
+}
+
+func TestSemanticTokensKeywordOverFunction(t *testing.T) {
+	input := "if(true){switch(true){for(i=0;i<1;i++){}}}"
+	lexer := l.NewLexer([]byte(input))
+	tokens := lexer.GetTokens()
+	data := GenerateSemanticTokens(tokens)
+	decoded := decodeSemanticTokens(data)
+
+	seenKeyword := map[string]bool{"if": false, "switch": false, "for": false}
+	for _, token := range tokens {
+		if token.Type != l.SYMBOL {
+			continue
+		}
+		if _, ok := seenKeyword[token.Content]; !ok {
+			continue
+		}
+		line := token.Line - 1
+		col := token.Col - 1
+		length := len(token.Content)
+		matched := false
+		for _, decodedToken := range decoded {
+			if decodedToken.Line == line && decodedToken.Col == col && decodedToken.Length == length {
+				matched = true
+				if decodedToken.Type != KEYWORD {
+					t.Fatalf("expected keyword token for %s, got %v", token.Content, decodedToken.Type)
+				}
+				break
+			}
+		}
+		if !matched {
+			t.Fatalf("missing semantic token for %s", token.Content)
+		}
+		seenKeyword[token.Content] = true
+	}
+	for name, ok := range seenKeyword {
+		if !ok {
+			t.Fatalf("missing keyword token for %s", name)
+		}
+	}
+}
+
+func TestSemanticTokensBO2Keywords(t *testing.T) {
+	input := "foreach(i in arr){} while(true){} do{}while(false); continue; waittillmatch(\"evt\"); waittillframeend; breakpoint;"
+	lexer := l.NewLexer([]byte(input))
+	tokens := lexer.GetTokens()
+	data := GenerateSemanticTokens(tokens)
+	decoded := decodeSemanticTokens(data)
+
+	seenKeyword := map[string]bool{
+		"foreach":          false,
+		"in":               false,
+		"while":            false,
+		"do":               false,
+		"continue":         false,
+		"waittillmatch":    false,
+		"waittillframeend": false,
+		"breakpoint":       false,
+	}
+	for _, token := range tokens {
+		if token.Type != l.SYMBOL {
+			continue
+		}
+		if _, ok := seenKeyword[token.Content]; !ok {
+			continue
+		}
+		line := token.Line - 1
+		col := token.Col - 1
+		length := len(token.Content)
+		matched := false
+		for _, decodedToken := range decoded {
+			if decodedToken.Line == line && decodedToken.Col == col && decodedToken.Length == length {
+				matched = true
+				if decodedToken.Type != KEYWORD {
+					t.Fatalf("expected keyword token for %s, got %v", token.Content, decodedToken.Type)
+				}
+				break
+			}
+		}
+		if !matched {
+			t.Fatalf("missing semantic token for %s", token.Content)
+		}
+		seenKeyword[token.Content] = true
+	}
+	for name, ok := range seenKeyword {
+		if !ok {
+			t.Fatalf("missing keyword token for %s", name)
+		}
+	}
 }

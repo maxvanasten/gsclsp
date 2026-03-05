@@ -66,17 +66,17 @@ func GenerateSemanticTokens(tokens []l.Token) []int {
 				break
 			}
 
-			// Check if next token is open_paren
-			if i+1 < len(tokens) {
-				if tokens[i+1].Type == l.OPEN_PAREN {
-					emit(line, col, len(t.Content), FUNCTION)
-				}
-			}
 			// Check if keyword
 			switch t.Content {
-			case "thread", "wait", "#include", "case", "break", "default", "return", "true", "false", "if", "else", "for", "waittill", "endon", "self", "level", "switch", "in", "notify":
+			case "thread", "wait", "#include", "case", "break", "default", "return", "true", "false", "if", "else", "for", "foreach", "while", "do", "continue", "waittill", "waittillmatch", "waittillframeend", "endon", "self", "level", "switch", "in", "notify", "breakpoint":
 				emit(line, col, len(t.Content), KEYWORD)
+				break
 			default:
+				// Check if next token is open_paren
+				if i+1 < len(tokens) && tokens[i+1].Type == l.OPEN_PAREN {
+					emit(line, col, len(t.Content), FUNCTION)
+					break
+				}
 				emit(line, col, len(t.Content), VARIABLE)
 			}
 		case l.STRING:

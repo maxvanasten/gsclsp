@@ -1,7 +1,9 @@
 package analysis
 
 import (
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -13,6 +15,21 @@ func requireGscp(t *testing.T) {
 	if _, err := exec.LookPath("gscp"); err != nil {
 		t.Fatalf("gscp is required for tests: %v", err)
 	}
+}
+
+func writeFile(t *testing.T, path, content string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatalf("mkdir %s: %v", path, err)
+	}
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatalf("write %s: %v", path, err)
+	}
+}
+
+func uriForPath(path string) string {
+	path = filepath.ToSlash(path)
+	return "file://" + path
 }
 
 func TestStdlibBundleHasCommonUtility(t *testing.T) {
@@ -77,6 +94,75 @@ func TestInlayHintsUseIncludedStdlibMP(t *testing.T) {
 	response := state.InlayHints(1, uri)
 	if !hasInlayLabel(response.Result, "array: ") {
 		t.Fatalf("missing inlay hint for array_copy: %v", response.Result)
+	}
+}
+
+func TestInlayHintsUseIncludedLocalFile(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	dir := t.TempDir()
+	mainPath := filepath.Join(dir, "test.gsc")
+	helperPath := filepath.Join(dir, "helpers.gsc")
+
+	writeFile(t, helperPath, "helpers( foo ) { }\n")
+	text := "#include helpers;\n" +
+		"main() { helpers(bar); }\n"
+	writeFile(t, mainPath, text)
+
+	uri := uriForPath(mainPath)
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+	if !hasInlayLabel(response.Result, "foo: ") {
+		t.Fatalf("missing inlay hint for local helpers: %v", response.Result)
+	}
+}
+
+func TestInlayHintsUseIncludedLocalNestedFile(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	dir := t.TempDir()
+	mainPath := filepath.Join(dir, "test.gsc")
+	helperPath := filepath.Join(dir, "common", "helpers.gsc")
+
+	writeFile(t, helperPath, "nested_helper( value ) { }\n")
+	text := "#include common\\helpers;\n" +
+		"main() { nested_helper(thing); }\n"
+	writeFile(t, mainPath, text)
+
+	uri := uriForPath(mainPath)
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+	if !hasInlayLabel(response.Result, "value: ") {
+		t.Fatalf("missing inlay hint for nested local helpers: %v", response.Result)
+	}
+}
+
+func TestInlayHintsUseIncludedLocalOpenCall(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	mainPath := filepath.Join(wd, "test", "two.gsc")
+	if _, err := os.Stat(mainPath); err != nil {
+		parentPath := filepath.Join(filepath.Dir(wd), "test", "two.gsc")
+		if _, err := os.Stat(parentPath); err == nil {
+			mainPath = parentPath
+		}
+	}
+	data, err := os.ReadFile(mainPath)
+	if err != nil {
+		t.Fatalf("read %s: %v", mainPath, err)
+	}
+	text := string(data)
+
+	uri := uriForPath(mainPath)
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+	if !hasInlayLabel(response.Result, "name: ") {
+		t.Fatalf("missing inlay hint for open local call: %v", response.Result)
 	}
 }
 

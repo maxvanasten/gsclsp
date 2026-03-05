@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/maxvanasten/gsclsp/lsp"
@@ -68,19 +70,13 @@ func Parse(input string) ParseResult {
 }
 
 // AddDocument Parses a file and adds all relevant nodes (function signatures) to the states document
-func (s *State) AddDocument(uri, rootDir string, filePath string) {
-	relPath := strings.Builder{}
-	wd, err := os.Getwd()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR GETTING WD (state.AddDocument): %v\n", err)
+func (s *State) AddDocument(uri, filePath string) {
+	resolvedPath, ok := resolveIncludePath(uri, filePath)
+	if !ok {
+		fmt.Fprintf(os.Stderr, "ERROR RESOLVING INCLUDE (state.AddDocument): %s\n", filePath)
 		return
 	}
-	relPath.WriteString(wd)
-	relPath.WriteString(rootDir)
-	filePath = strings.ReplaceAll(filePath, "\\", "/")
-	relPath.WriteString(filePath)
-	relPath.WriteString(".gsc")
-	data, err := os.ReadFile(relPath.String())
+	data, err := os.ReadFile(resolvedPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR READING FILE (state.AddDocument): %v\n", err)
 		return
@@ -89,6 +85,49 @@ func (s *State) AddDocument(uri, rootDir string, filePath string) {
 	parseResult := Parse(string(data))
 
 	s.Signatures[uri] = mergeSignatures(s.Signatures[uri], GenerateFunctionSignatures(parseResult.Ast))
+}
+
+func resolveIncludePath(uri, includePath string) (string, bool) {
+	includePath = strings.ReplaceAll(includePath, "\\", "/")
+	includePath = strings.TrimSpace(includePath)
+	includePath = strings.TrimSuffix(includePath, ".gsc")
+	includePath = strings.TrimPrefix(includePath, "/")
+	includePath = strings.TrimPrefix(includePath, "./")
+	includePath = strings.TrimPrefix(includePath, ".\\")
+	if includePath == "" {
+		return "", false
+	}
+
+	relativePath := filepath.FromSlash(includePath + ".gsc")
+	if filepath.IsAbs(relativePath) {
+		if _, err := os.Stat(relativePath); err == nil {
+			return relativePath, true
+		}
+		return "", false
+	}
+
+	if docPath := uriToPath(uri); docPath != "" {
+		candidate := filepath.Join(filepath.Dir(docPath), relativePath)
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate, true
+		}
+	}
+
+	return "", false
+}
+
+func uriToPath(uri string) string {
+	if uri == "" {
+		return ""
+	}
+	if strings.HasPrefix(uri, "file://") {
+		parsed, err := url.Parse(uri)
+		if err == nil {
+			return filepath.FromSlash(parsed.Path)
+		}
+		return filepath.FromSlash(strings.TrimPrefix(uri, "file://"))
+	}
+	return uri
 }
 
 func (s *State) UpdateAst(uri string) {
@@ -142,7 +181,7 @@ func (s *State) UpdateAst(uri string) {
 		}
 
 		if !matched {
-			s.AddDocument(uri, "./lib/", includePath)
+			s.AddDocument(uri, includePath)
 		}
 	}
 }

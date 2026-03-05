@@ -18,64 +18,62 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 
 	for _, n := range nodes {
 		if n.Type == "function_call" {
-			if len(n.Children) > 0 {
-				lookupName := functionCallLookupName(n)
-				sig, ok := resolve(lookupName)
-				if ok && len(sig.Arguments) > 0 {
-					labels := sig.Arguments
-					if n.Line <= 0 || n.Col <= 0 {
+			lookupName := functionCallLookupName(n)
+			sig, ok := resolve(lookupName)
+			if ok && len(sig.Arguments) > 0 {
+				labels := sig.Arguments
+				if n.Line <= 0 || n.Col <= 0 {
+					continue
+				}
+				anchorLine := n.Line - 1
+				if anchorLine < 0 {
+					anchorLine = 0
+				}
+				anchorCol := n.Col - 1
+				if n.Data.FunctionName != "" {
+					anchorCol = n.Col - 1 + len(n.Data.FunctionName) + 1
+				}
+				if anchorCol < 0 {
+					anchorCol = 0
+				}
+				callName := functionCallTokenName(n)
+				if !callClosedOnLine(n, tokens, callName) {
+					paramIndex, stubCol, ok := openCallParamAnchor(n, tokens, callName)
+					if !ok || paramIndex >= len(labels) {
 						continue
 					}
-					anchorLine := n.Line - 1
-					if anchorLine < 0 {
-						anchorLine = 0
+					label := strings.Builder{}
+					label.WriteString(labels[paramIndex])
+					label.WriteString(": ")
+					if stubCol < 0 {
+						stubCol = anchorCol
 					}
-					anchorCol := n.Col - 1
-					if n.Data.FunctionName != "" {
-						anchorCol = n.Col - 1 + len(n.Data.FunctionName) + 1
-					}
-					if anchorCol < 0 {
-						anchorCol = 0
-					}
-					callName := functionCallTokenName(n)
-					if !callClosedOnLine(n, tokens, callName) {
-						paramIndex, stubCol, ok := openCallParamAnchor(n, tokens, callName)
-						if !ok || paramIndex >= len(labels) {
-							continue
-						}
+					hints = append(hints, lsp.InlayHint{
+						Position: lsp.Position{
+							Line:      anchorLine,
+							Character: stubCol,
+						},
+						Label: label.String(),
+					})
+					continue
+				}
+				for i, a := range n.Children {
+					if i < len(labels) {
 						label := strings.Builder{}
-						label.WriteString(labels[paramIndex])
+						label.WriteString(labels[i])
 						label.WriteString(": ")
-						if stubCol < 0 {
-							stubCol = anchorCol
+						line := anchorLine
+						col := a.Col - 1
+						if col <= 0 {
+							col = anchorCol
 						}
 						hints = append(hints, lsp.InlayHint{
 							Position: lsp.Position{
-								Line:      anchorLine,
-								Character: stubCol,
+								Line:      line,
+								Character: col,
 							},
 							Label: label.String(),
 						})
-						continue
-					}
-					for i, a := range n.Children {
-						if i < len(labels) {
-							label := strings.Builder{}
-							label.WriteString(labels[i])
-							label.WriteString(": ")
-							line := anchorLine
-							col := a.Col - 1
-							if col <= 0 {
-								col = anchorCol
-							}
-							hints = append(hints, lsp.InlayHint{
-								Position: lsp.Position{
-									Line:      line,
-									Character: col,
-								},
-								Label: label.String(),
-							})
-						}
 					}
 				}
 			}
