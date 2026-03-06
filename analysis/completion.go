@@ -27,12 +27,13 @@ type completionContext struct {
 	PathPrefix      string
 	Qualifier       string
 	QualifiedPrefix string
+	ReplaceStart    int
 }
 
 func (s *State) Completion(id int, uri string, position lsp.Position) lsp.CompletionResponse {
 	ctx := detectCompletionContext(s.Documents[uri], position)
 	stdlib := s.loadStdlib()
-	items := s.completionItemsForContext(uri, ctx, stdlib, maxCompletionItems)
+	items := s.completionItemsForContext(uri, position, ctx, stdlib, maxCompletionItems)
 
 	return lsp.CompletionResponse{
 		Response: lsp.Response{
@@ -46,16 +47,17 @@ func (s *State) Completion(id int, uri string, position lsp.Position) lsp.Comple
 	}
 }
 
-func (s *State) completionItemsForContext(uri string, ctx completionContext, stdlib map[string]map[string][]FunctionSignature, limit int) []lsp.CompletionItem {
+func (s *State) completionItemsForContext(uri string, position lsp.Position, ctx completionContext, stdlib map[string]map[string][]FunctionSignature, limit int) []lsp.CompletionItem {
 	items := []lsp.CompletionItem{}
+	replaceRange := completionReplaceRange(position, ctx)
 
 	switch ctx.Mode {
 	case completionModeIncludePath:
-		items = mergeCompletionItems(items, completionPathItems(collectIncludePathCandidates(uri, stdlib), ctx.PathPrefix))
+		items = mergeCompletionItems(items, completionPathItems(collectIncludePathCandidates(uri, stdlib), ctx.PathPrefix, replaceRange))
 	case completionModeQualifiedFunction:
 		items = mergeCompletionItems(items, completionFunctionItems(resolveQualifiedCompletionSignatures(s, uri, ctx.Qualifier, stdlib), ctx.QualifiedPrefix))
 	case completionModeQualifiedPath:
-		items = mergeCompletionItems(items, completionPathItems(collectIncludePathCandidates(uri, stdlib), ctx.PathPrefix))
+		items = mergeCompletionItems(items, completionPathItems(collectIncludePathCandidates(uri, stdlib), ctx.PathPrefix, replaceRange))
 	default:
 		items = mergeCompletionItems(items, completionFunctionItems(s.Signatures[uri], ctx.Prefix))
 		items = mergeCompletionItems(items, completionKeywordItems(ctx.Prefix))
@@ -134,7 +136,7 @@ func completionKeywordItems(prefix string) []lsp.CompletionItem {
 	return items
 }
 
-func completionPathItems(candidates []string, prefix string) []lsp.CompletionItem {
+func completionPathItems(candidates []string, prefix string, replaceRange *lsp.Range) []lsp.CompletionItem {
 	prefixKey := normalizeIncludeKey(prefix)
 	items := make([]lsp.CompletionItem, 0, len(candidates))
 	for _, candidate := range candidates {
@@ -142,11 +144,19 @@ func completionPathItems(candidates []string, prefix string) []lsp.CompletionIte
 			continue
 		}
 		pathLabel := slashPathToGsc(candidate)
-		items = append(items, lsp.CompletionItem{
+		item := lsp.CompletionItem{
 			Label:      pathLabel,
 			Kind:       lsp.CompletionItemKindModule,
 			InsertText: pathLabel,
-		})
+		}
+		if replaceRange != nil {
+			rangeValue := *replaceRange
+			item.TextEdit = &lsp.TextEdit{
+				Range:   rangeValue,
+				NewText: pathLabel,
+			}
+		}
+		items = append(items, item)
 	}
 
 	sort.Slice(items, func(i, j int) bool {
@@ -292,20 +302,21 @@ func completionKindPriority(kind int) int {
 
 func detectCompletionContext(doc string, position lsp.Position) completionContext {
 	linePrefix := linePrefixAtPosition(doc, position)
-	if ok, includePrefix := includePathPrefixFromLine(linePrefix); ok {
-		return completionContext{Mode: completionModeIncludePath, PathPrefix: includePrefix}
+	if ok, includePrefix, start := includePathPrefixFromLine(linePrefix); ok {
+		return completionContext{Mode: completionModeIncludePath, PathPrefix: includePrefix, ReplaceStart: start}
 	}
 
 	token := completionTokenAtLineEnd(linePrefix)
+	replaceStart := len(linePrefix) - len(token)
 	if qualifier, qualifiedPrefix, ok := splitQualifiedPrefix(token); ok {
-		return completionContext{Mode: completionModeQualifiedFunction, Qualifier: qualifier, QualifiedPrefix: qualifiedPrefix}
+		return completionContext{Mode: completionModeQualifiedFunction, Qualifier: qualifier, QualifiedPrefix: qualifiedPrefix, ReplaceStart: replaceStart}
 	}
 
 	if strings.ContainsAny(token, `\\/`) {
-		return completionContext{Mode: completionModeQualifiedPath, PathPrefix: token}
+		return completionContext{Mode: completionModeQualifiedPath, PathPrefix: token, ReplaceStart: replaceStart}
 	}
 
-	return completionContext{Mode: completionModeDefault, Prefix: completionPrefixAtPosition(doc, position)}
+	return completionContext{Mode: completionModeDefault, Prefix: completionPrefixAtPosition(doc, position), ReplaceStart: replaceStart}
 }
 
 func linePrefixAtPosition(doc string, position lsp.Position) string {
@@ -328,18 +339,34 @@ func linePrefixAtPosition(doc string, position lsp.Position) string {
 	return line[:position.Character]
 }
 
-func includePathPrefixFromLine(linePrefix string) (bool, string) {
+func includePathPrefixFromLine(linePrefix string) (bool, string, int) {
 	lower := strings.ToLower(linePrefix)
 	idx := strings.LastIndex(lower, "#include")
 	if idx < 0 {
-		return false, ""
+		return false, "", 0
 	}
 	tail := linePrefix[idx+len("#include"):]
 	if strings.Contains(tail, ";") {
-		return false, ""
+		return false, "", 0
 	}
+	trimmedTail := strings.TrimLeft(tail, " \t")
+	start := len(linePrefix) - len(trimmedTail)
 
-	return true, strings.TrimLeft(tail, " \t")
+	return true, trimmedTail, start
+}
+
+func completionReplaceRange(position lsp.Position, ctx completionContext) *lsp.Range {
+	if position.Line < 0 || position.Character < 0 {
+		return nil
+	}
+	start := ctx.ReplaceStart
+	if start < 0 || start > position.Character {
+		start = position.Character
+	}
+	return &lsp.Range{
+		Start: lsp.Position{Line: position.Line, Character: start},
+		End:   lsp.Position{Line: position.Line, Character: position.Character},
+	}
 }
 
 func completionTokenAtLineEnd(linePrefix string) string {

@@ -70,6 +70,18 @@ func TestCompletionIncludePathFromStdlib(t *testing.T) {
 	if item.Kind != lsp.CompletionItemKindModule {
 		t.Fatalf("expected module kind, got %d", item.Kind)
 	}
+	if item.TextEdit == nil {
+		t.Fatal("expected include path completion to include textEdit")
+	}
+	if item.TextEdit.NewText != "common_scripts\\utility" {
+		t.Fatalf("unexpected textEdit newText: %q", item.TextEdit.NewText)
+	}
+	if item.TextEdit.Range.Start.Character != len("#include ") {
+		t.Fatalf("unexpected include replace start: %d", item.TextEdit.Range.Start.Character)
+	}
+	if item.TextEdit.Range.End.Character != len("#include common_scripts\\u") {
+		t.Fatalf("unexpected include replace end: %d", item.TextEdit.Range.End.Character)
+	}
 }
 
 func TestCompletionIncludePathFromLocalFiles(t *testing.T) {
@@ -125,6 +137,36 @@ func TestCompletionQualifiedPath(t *testing.T) {
 	}
 	if item.Kind != lsp.CompletionItemKindModule {
 		t.Fatalf("expected module kind, got %d", item.Kind)
+	}
+	if item.TextEdit == nil {
+		t.Fatal("expected qualified path completion to include textEdit")
+	}
+	if item.TextEdit.Range.Start.Character != len("main() { ") {
+		t.Fatalf("unexpected qualified path replace start: %d", item.TextEdit.Range.Start.Character)
+	}
+	if item.TextEdit.Range.End.Character != len("main() { common_scripts\\ut") {
+		t.Fatalf("unexpected qualified path replace end: %d", item.TextEdit.Range.End.Character)
+	}
+}
+
+func TestCompletionQualifiedPathReplacesExistingPrefix(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/zm/maps/mp/zombies/test.gsc"
+	state.Documents[uri] = "main() { maps\\mp }"
+
+	resp := state.Completion(7, uri, lsp.Position{Line: 0, Character: len("main() { maps\\mp")})
+	item := completionItemByLabel(resp.Result.Items, "maps\\mp\\_audio")
+	if item == nil {
+		t.Fatal("expected maps\\mp\\_audio completion")
+	}
+	if item.TextEdit == nil {
+		t.Fatal("expected maps path completion to include textEdit")
+	}
+	if item.TextEdit.Range.Start.Character != len("main() { ") {
+		t.Fatalf("unexpected replace start: %d", item.TextEdit.Range.Start.Character)
+	}
+	if item.TextEdit.Range.End.Character != len("main() { maps\\mp") {
+		t.Fatalf("unexpected replace end: %d", item.TextEdit.Range.End.Character)
 	}
 }
 
