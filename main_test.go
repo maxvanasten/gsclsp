@@ -93,6 +93,89 @@ func TestHandleMessageCodeActionMethod(t *testing.T) {
 	}
 }
 
+func TestHandleMessageCodeActionMethodQuickfixFilter(t *testing.T) {
+	t.Helper()
+	state := analysis.NewState()
+	logger := log.New(io.Discard, "", 0)
+	var out bytes.Buffer
+
+	request := lsp.CodeActionRequest{
+		Request: lsp.Request{RPC: "2.0", ID: 7, Method: "textDocument/codeAction"},
+		Params: lsp.CodeActionParams{
+			TextDocument: lsp.TextDocumentIdentifier{URI: "file:///tmp/test.gsc"},
+			Range:        lsp.Range{},
+			Context: lsp.CodeActionContext{
+				Only: []string{lsp.CodeActionKindQuickFix},
+			},
+		},
+	}
+	contents, err := json.Marshal(request)
+	if err != nil {
+		t.Fatalf("marshal request: %v", err)
+	}
+
+	handleMessage(logger, &out, &state, "textDocument/codeAction", contents)
+
+	_, payload, err := rpc.DecodeMessage(out.Bytes())
+	if err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+
+	var response lsp.CodeActionResponse
+	if err := json.Unmarshal(payload, &response); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if response.ID == nil || *response.ID != 7 {
+		t.Fatalf("unexpected response id: %v", response.ID)
+	}
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one code action, got %d", len(response.Result))
+	}
+	if response.Result[0].Kind != lsp.CodeActionKindQuickFix {
+		t.Fatalf("expected quickfix action kind, got %q", response.Result[0].Kind)
+	}
+}
+
+func TestHandleMessageCodeActionMethodUnsupportedFilter(t *testing.T) {
+	t.Helper()
+	state := analysis.NewState()
+	logger := log.New(io.Discard, "", 0)
+	var out bytes.Buffer
+
+	request := lsp.CodeActionRequest{
+		Request: lsp.Request{RPC: "2.0", ID: 8, Method: "textDocument/codeAction"},
+		Params: lsp.CodeActionParams{
+			TextDocument: lsp.TextDocumentIdentifier{URI: "file:///tmp/test.gsc"},
+			Range:        lsp.Range{},
+			Context: lsp.CodeActionContext{
+				Only: []string{"refactor"},
+			},
+		},
+	}
+	contents, err := json.Marshal(request)
+	if err != nil {
+		t.Fatalf("marshal request: %v", err)
+	}
+
+	handleMessage(logger, &out, &state, "textDocument/codeAction", contents)
+
+	_, payload, err := rpc.DecodeMessage(out.Bytes())
+	if err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+
+	var response lsp.CodeActionResponse
+	if err := json.Unmarshal(payload, &response); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if response.ID == nil || *response.ID != 8 {
+		t.Fatalf("unexpected response id: %v", response.ID)
+	}
+	if len(response.Result) != 0 {
+		t.Fatalf("expected zero code actions for unsupported filter, got %d", len(response.Result))
+	}
+}
+
 func TestHandleMessageExecuteCommandBundleMod(t *testing.T) {
 	t.Helper()
 	state := analysis.NewState()

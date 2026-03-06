@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/maxvanasten/gsclsp/analysis"
 	"github.com/maxvanasten/gsclsp/lsp"
@@ -126,12 +127,26 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 			return
 		}
 
+		actionKind := lsp.CodeActionKindSource
+		if !includesRequestedCodeActionKind(request.Params.Context.Only, actionKind) {
+			if includesRequestedCodeActionKind(request.Params.Context.Only, lsp.CodeActionKindQuickFix) {
+				actionKind = lsp.CodeActionKindQuickFix
+			} else {
+				response := lsp.CodeActionResponse{
+					Response: lsp.Response{RPC: "2.0", ID: &request.ID},
+					Result:   []lsp.CodeAction{},
+				}
+				writeResponse(writer, response)
+				return
+			}
+		}
+
 		response := lsp.CodeActionResponse{
 			Response: lsp.Response{RPC: "2.0", ID: &request.ID},
 			Result: []lsp.CodeAction{
 				{
 					Title: "Bundle scripts into mod folder",
-					Kind:  "source",
+					Kind:  actionKind,
 					Command: &lsp.Command{
 						Title:     "Bundle scripts into mod folder",
 						Command:   "gsclsp.bundleMod",
@@ -184,6 +199,18 @@ func commandURI(arguments []any) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+func includesRequestedCodeActionKind(only []string, actionKind string) bool {
+	if len(only) == 0 {
+		return true
+	}
+	for _, requestedKind := range only {
+		if requestedKind == actionKind || strings.HasPrefix(actionKind, requestedKind+".") {
+			return true
+		}
+	}
+	return false
 }
 
 func decodeRequest(logger *log.Logger, contents []byte, target any, errPrefix string) bool {

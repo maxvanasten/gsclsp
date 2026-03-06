@@ -29,7 +29,7 @@ type ServerCapabilities struct {
 	HoverProvider              bool                   `json:"hoverProvider"`
 	DefinitionProvider         bool                   `json:"definitionProvider"`
 	DocumentFormattingProvider bool                   `json:"documentFormattingProvider"`
-	CodeActionProvider         bool                   `json:"codeActionProvider"`
+	CodeActionProvider         CodeActionOptions      `json:"codeActionProvider"`
 	ExecuteCommandProvider     ExecuteCommandOptions  `json:"executeCommandProvider"`
 	CompletionProvider         *CompletionOptions     `json:"completionProvider,omitempty"`
 	SemanticTokensProvider     SemanticTokensProvider `json:"semanticTokensProvider"`
@@ -53,7 +53,9 @@ func NewInitializeResponse(id int) InitializeResponse {
 				HoverProvider:              true,
 				DefinitionProvider:         true,
 				DocumentFormattingProvider: true,
-				CodeActionProvider:         true,
+				CodeActionProvider: CodeActionOptions{
+					CodeActionKinds: []string{CodeActionKindSource, CodeActionKindQuickFix},
+				},
 				ExecuteCommandProvider: ExecuteCommandOptions{
 					Commands: []string{"gsclsp.bundleMod"},
 				},

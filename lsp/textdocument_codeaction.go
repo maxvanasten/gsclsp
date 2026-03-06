@@ -13,6 +13,7 @@ type CodeActionParams struct {
 
 type CodeActionContext struct {
 	Diagnostics []Diagnostic `json:"diagnostics"`
+	Only        []string     `json:"only,omitempty"`
 }
 
 type CodeAction struct {
@@ -20,6 +21,13 @@ type CodeAction struct {
 	Kind    string   `json:"kind,omitempty"`
 	Command *Command `json:"command,omitempty"`
 }
+
+type CodeActionOptions struct {
+	CodeActionKinds []string `json:"codeActionKinds,omitempty"`
+}
+
+const CodeActionKindQuickFix = "quickfix"
+const CodeActionKindSource = "source"
 
 type Command struct {
 	Title     string `json:"title"`
