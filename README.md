@@ -13,7 +13,7 @@ VS Code extension: [GSCLSP for GSC](https://marketplace.visualstudio.com/items?i
 - Semantic tokens (syntax-aware highlighting)
 - Hover signatures for function calls
 - Inlay hints for function call arguments
-- Go to definition for local and included functions
+- Go to definition for local, included, and stdlib functions
 - Diagnostics from the `gscp` parser
 - Document formatting (`textDocument/formatting`)
 - Code actions for bundling scripts into mod structure (`textDocument/codeAction` + `workspace/executeCommand`)
@@ -125,7 +125,7 @@ If `gsclsp` is not on your `PATH`, replace `cmd` with an absolute binary path.
 
 ## Stdlib signature generation
 
-The repository embeds signature bundles in `analysis/stdlib_signatures.json` and `analysis/builtins_signatures.json`.
+The repository embeds signature bundles in `analysis/stdlib_signatures.json`, declaration bundles in `analysis/stdlib_declarations.json`, and builtins in `analysis/builtins_signatures.json`.
 
 To regenerate stdlib signatures from local script roots:
 
@@ -135,7 +135,8 @@ go run ./cmd/stdlibgen \
   --zm-root "/path/to/t6-source/zm/core" \
   --mp-maps-root "/path/to/t6-source/mp/maps" \
   --zm-maps-root "/path/to/t6-source/zm/maps" \
-  --out "analysis/stdlib_signatures.json"
+  --out "analysis/stdlib_signatures.json" \
+  --out-declarations "analysis/stdlib_declarations.json"
 ```
 
 Notes:

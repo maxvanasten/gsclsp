@@ -16,7 +16,7 @@ func (s *State) resolveDefinitionLocation(uri, name string) (lsp.Location, bool)
 	if qualifier, funcName, ok := splitQualifiedName(name); ok {
 		resolvedPath, ok := resolveIncludePath(uri, qualifier)
 		if !ok {
-			return lsp.Location{}, false
+			return s.resolveStdlibDefinitionLocation(uri, name)
 		}
 		return s.findDefinitionInFile(pathToURI(resolvedPath), funcName)
 	}
@@ -27,7 +27,101 @@ func (s *State) resolveDefinitionLocation(uri, name string) (lsp.Location, bool)
 
 	visited := map[string]bool{}
 	includePaths := collectIncludePaths(s.Ast[uri])
-	return s.resolveDefinitionFromIncludes(uri, includePaths, name, visited)
+	if loc, ok := s.resolveDefinitionFromIncludes(uri, includePaths, name, visited); ok {
+		return loc, true
+	}
+
+	return s.resolveStdlibDefinitionLocation(uri, name)
+}
+
+func (s *State) resolveStdlibDefinitionLocation(uri, name string) (lsp.Location, bool) {
+	stdlib := s.loadStdlib()
+	if stdlib == nil {
+		return lsp.Location{}, false
+	}
+	declarations := s.loadStdlibDeclarations()
+	stdlibGroup := guessStdlibGroup(uri)
+
+	if qualifier, funcName, ok := splitQualifiedName(name); ok {
+		key := normalizeIncludeKey(qualifier)
+		if key == "" {
+			return lsp.Location{}, false
+		}
+		sigs, group, ok := lookupStdlibSignaturesWithGroup(stdlib, stdlibGroup, key)
+		if !ok {
+			return lsp.Location{}, false
+		}
+		if _, ok := findSignatureByName(sigs, funcName); !ok {
+			return lsp.Location{}, false
+		}
+		decls, _ := lookupStdlibDeclarationsForGroup(declarations, group, key)
+		return s.stdlibDefinitionLocation(group, key, funcName, sigs, decls)
+	}
+
+	for _, includePath := range collectIncludePaths(s.Ast[uri]) {
+		key := normalizeIncludeKey(includePath)
+		if key == "" {
+			continue
+		}
+		sigs, group, ok := lookupStdlibSignaturesWithGroup(stdlib, stdlibGroup, key)
+		if !ok {
+			continue
+		}
+		if _, ok := findSignatureByName(sigs, name); !ok {
+			continue
+		}
+		decls, _ := lookupStdlibDeclarationsForGroup(declarations, group, key)
+		return s.stdlibDefinitionLocation(group, key, name, sigs, decls)
+	}
+
+	return lsp.Location{}, false
+}
+
+func (s *State) stdlibDefinitionLocation(group, key, functionName string, signatures []FunctionSignature, declarations []StdlibDeclaration) (lsp.Location, bool) {
+	file, err := s.ensureStdlibDefinitionFile(group, key, declarations, signatures)
+	if err != nil {
+		return lsp.Location{}, false
+	}
+
+	rangeValue, ok := file.Ranges[strings.ToLower(functionName)]
+	if !ok {
+		return lsp.Location{}, false
+	}
+
+	return lsp.Location{
+		URI:   file.URI,
+		Range: rangeValue,
+	}, true
+}
+
+func lookupStdlibSignaturesWithGroup(stdlib map[string]map[string][]FunctionSignature, stdlibGroup, key string) ([]FunctionSignature, string, bool) {
+	if stdlib == nil {
+		return nil, "", false
+	}
+	if stdlibGroup != "" {
+		if sigs, ok := stdlib[stdlibGroup][key]; ok {
+			return sigs, stdlibGroup, true
+		}
+	}
+	if sigs, ok := stdlib["mp"][key]; ok {
+		return sigs, "mp", true
+	}
+	if sigs, ok := stdlib["zm"][key]; ok {
+		return sigs, "zm", true
+	}
+	return nil, "", false
+}
+
+func lookupStdlibDeclarationsForGroup(declarations map[string]map[string][]StdlibDeclaration, group, key string) ([]StdlibDeclaration, bool) {
+	if declarations == nil {
+		return nil, false
+	}
+	if group != "" {
+		if decls, ok := declarations[group][key]; ok {
+			return decls, true
+		}
+	}
+	return nil, false
 }
 
 func (s *State) resolveDefinitionFromIncludes(uri string, includePaths []string, functionName string, visited map[string]bool) (lsp.Location, bool) {

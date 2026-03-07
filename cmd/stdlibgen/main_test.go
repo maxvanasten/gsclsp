@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/maxvanasten/gsclsp/analysis"
+	p "github.com/maxvanasten/gscp/parser"
 )
 
 func TestNormalizeKeyWithoutPrefix(t *testing.T) {
@@ -58,15 +59,27 @@ func TestMergeSignatureMapsMergesSharedKeys(t *testing.T) {
 }
 
 func TestBuildGroupSignatureMapSkipsEmptyRoots(t *testing.T) {
-	m, duplicates, err := buildGroupSignatureMap([]signatureRoot{{Path: ""}, {Path: "   "}})
+	m, declarations, duplicates, err := buildGroupSignatureMap([]signatureRoot{{Path: ""}, {Path: "   "}})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if len(m) != 0 {
 		t.Fatalf("expected empty map, got %d keys", len(m))
 	}
+	if len(declarations) != 0 {
+		t.Fatalf("expected empty declarations, got %d keys", len(declarations))
+	}
 	if len(duplicates) != 0 {
 		t.Fatalf("expected no duplicates, got %d", len(duplicates))
+	}
+}
+
+func TestSliceNodeText(t *testing.T) {
+	source := "alpha() {\n  beta();\n}\n"
+	node := p.Node{Line: 1, Col: 1, Length: len("alpha() {\n  beta();\n}")}
+	got := sliceNodeText(source, node)
+	if got != "alpha() {\n  beta();\n}" {
+		t.Fatalf("unexpected node slice: %q", got)
 	}
 }
 

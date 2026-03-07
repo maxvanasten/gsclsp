@@ -1,7 +1,9 @@
 package analysis
 
 import (
+	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -156,5 +158,96 @@ func TestDefinitionAmbiguousIncludedOrderIsDeterministic(t *testing.T) {
 	}
 	if response.Result.URI != uriForPath(firstPath) {
 		t.Fatalf("expected first include to win, got %s", response.Result.URI)
+	}
+}
+
+func TestDefinitionFindsIncludedStdlibDeclaration(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	state.stdlib = map[string]map[string][]FunctionSignature{
+		"mp": {
+			"common_scripts/utility": {{Name: "array_copy", Arguments: []string{"array"}}},
+		},
+	}
+	state.stdlibLoaded = true
+	state.stdlibDecls = map[string]map[string][]StdlibDeclaration{
+		"mp": {
+			"common_scripts/utility": {{
+				Name:        "array_copy",
+				Arguments:   []string{"array"},
+				Declaration: "array_copy( array ) {\n\treturn array;\n}",
+			}},
+		},
+	}
+	state.stdlibDeclsOk = true
+
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "#include common_scripts\\utility;\n" +
+		"main() { array_copy(foo); }\n"
+
+	state.OpenDocument(uri, text)
+	position := positionForLine(text, 1, "array_copy")
+	response := state.Definition(1, uri, position)
+	if response.Result == nil {
+		t.Fatal("expected stdlib definition location")
+	}
+	if !strings.Contains(response.Result.URI, "gsclsp-stdlib-defs-") {
+		t.Fatalf("expected temp stdlib definition uri, got %s", response.Result.URI)
+	}
+	if response.Result.Range.Start.Line != 0 {
+		t.Fatalf("expected declaration on first line, got %d", response.Result.Range.Start.Line)
+	}
+	if response.Result.Range.Start.Character != 0 {
+		t.Fatalf("expected declaration at first character, got %d", response.Result.Range.Start.Character)
+	}
+	definitionPath := uriToPath(response.Result.URI)
+	contents, err := os.ReadFile(definitionPath)
+	if err != nil {
+		t.Fatalf("expected generated stdlib definition file: %v", err)
+	}
+	if !strings.Contains(string(contents), "return array;") {
+		t.Fatalf("expected declaration body to be present, got %q", string(contents))
+	}
+}
+
+func TestDefinitionFindsQualifiedStdlibDeclaration(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	state.stdlib = map[string]map[string][]FunctionSignature{
+		"mp": {
+			"common_scripts/utility": {{Name: "array_copy", Arguments: []string{"array"}}},
+		},
+	}
+	state.stdlibLoaded = true
+	state.stdlibDecls = map[string]map[string][]StdlibDeclaration{
+		"mp": {
+			"common_scripts/utility": {{
+				Name:        "array_copy",
+				Arguments:   []string{"array"},
+				Declaration: "array_copy( array ) {\n\treturn array;\n}",
+			}},
+		},
+	}
+	state.stdlibDeclsOk = true
+
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "main() { common_scripts\\utility::array_copy(foo); }\n"
+
+	state.OpenDocument(uri, text)
+	position := positionForLine(text, 0, "array_copy")
+	response := state.Definition(1, uri, position)
+	if response.Result == nil {
+		t.Fatal("expected qualified stdlib definition location")
+	}
+	if !strings.Contains(response.Result.URI, "gsclsp-stdlib-defs-") {
+		t.Fatalf("expected temp stdlib definition uri, got %s", response.Result.URI)
+	}
+	definitionPath := uriToPath(response.Result.URI)
+	contents, err := os.ReadFile(definitionPath)
+	if err != nil {
+		t.Fatalf("expected generated stdlib definition file: %v", err)
+	}
+	if !strings.Contains(string(contents), "array_copy( array )") {
+		t.Fatalf("expected declaration signature to be present, got %q", string(contents))
 	}
 }

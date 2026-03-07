@@ -30,11 +30,17 @@ type State struct {
 	Diagnostics    map[string][]lsp.Diagnostic
 	includeCache   map[string]includeCacheEntry
 	stdlib         map[string]map[string][]FunctionSignature
+	stdlibDecls    map[string]map[string][]StdlibDeclaration
 	builtins       []FunctionSignature
 	stdlibErr      error
+	stdlibDeclsErr error
 	builtinsErr    error
 	stdlibLoaded   bool
+	stdlibDeclsOk  bool
 	builtinsLoaded bool
+
+	stdlibDefinitionRoot  string
+	stdlibDefinitionFiles map[string]stdlibDefinitionFile
 }
 
 type includeCacheEntry struct {
@@ -52,12 +58,13 @@ type inlayCallResolution struct {
 
 func NewState() State {
 	return State{
-		Documents:    map[string]string{},
-		Ast:          map[string][]p.Node{},
-		Tokens:       map[string][]l.Token{},
-		Signatures:   map[string][]FunctionSignature{},
-		Diagnostics:  map[string][]lsp.Diagnostic{},
-		includeCache: map[string]includeCacheEntry{},
+		Documents:             map[string]string{},
+		Ast:                   map[string][]p.Node{},
+		Tokens:                map[string][]l.Token{},
+		Signatures:            map[string][]FunctionSignature{},
+		Diagnostics:           map[string][]lsp.Diagnostic{},
+		includeCache:          map[string]includeCacheEntry{},
+		stdlibDefinitionFiles: map[string]stdlibDefinitionFile{},
 	}
 }
 
@@ -237,6 +244,18 @@ func (s *State) loadStdlib() map[string]map[string][]FunctionSignature {
 		fmt.Fprintf(os.Stderr, "ERROR LOADING STDLIB SIGNATURES: %v\n", s.stdlibErr)
 	}
 	return s.stdlib
+}
+
+func (s *State) loadStdlibDeclarations() map[string]map[string][]StdlibDeclaration {
+	if s.stdlibDeclsOk {
+		return s.stdlibDecls
+	}
+	s.stdlibDecls, s.stdlibDeclsErr = StdlibDeclarations()
+	s.stdlibDeclsOk = true
+	if s.stdlibDeclsErr != nil {
+		fmt.Fprintf(os.Stderr, "ERROR LOADING STDLIB DECLARATIONS: %v\n", s.stdlibDeclsErr)
+	}
+	return s.stdlibDecls
 }
 
 func (s *State) applyIncludes(uri string, includePaths []string, stdlibGroup string, stdlib map[string]map[string][]FunctionSignature) {

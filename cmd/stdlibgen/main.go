@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/maxvanasten/gsclsp/analysis"
+	p "github.com/maxvanasten/gscp/parser"
 )
 
 type outputBundle struct {
@@ -17,12 +18,18 @@ type outputBundle struct {
 	ZM map[string][]analysis.FunctionSignature `json:"zm"`
 }
 
+type declarationOutputBundle struct {
+	MP map[string][]analysis.StdlibDeclaration `json:"mp"`
+	ZM map[string][]analysis.StdlibDeclaration `json:"zm"`
+}
+
 func main() {
 	mpRoot := flag.String("mp-root", "", "Path to mp core root")
 	zmRoot := flag.String("zm-root", "", "Path to zm core root")
 	mpMapsRoot := flag.String("mp-maps-root", "", "Optional path to mp map scripts root")
 	zmMapsRoot := flag.String("zm-maps-root", "", "Optional path to zm map scripts root")
-	outPath := flag.String("out", "analysis/stdlib_signatures.json", "Output json path")
+	outPath := flag.String("out", "analysis/stdlib_signatures.json", "Output signatures json path")
+	outDeclarationsPath := flag.String("out-declarations", "analysis/stdlib_declarations.json", "Output declarations json path")
 	flag.Parse()
 
 	if *mpRoot == "" || *zmRoot == "" {
@@ -30,7 +37,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	mpMap, mpDuplicates, err := buildGroupSignatureMap([]signatureRoot{
+	mpSignatures, mpDeclarations, mpDuplicates, err := buildGroupSignatureMap([]signatureRoot{
 		{Path: *mpRoot, Label: "mp core"},
 		{Path: *mpMapsRoot, Label: "mp maps", MapRoot: true},
 	})
@@ -39,7 +46,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	zmMap, zmDuplicates, err := buildGroupSignatureMap([]signatureRoot{
+	zmSignatures, zmDeclarations, zmDuplicates, err := buildGroupSignatureMap([]signatureRoot{
 		{Path: *zmRoot, Label: "zm core"},
 		{Path: *zmMapsRoot, Label: "zm maps", MapRoot: true},
 	})
@@ -51,15 +58,25 @@ func main() {
 	reportDuplicateKeys("mp", mpDuplicates)
 	reportDuplicateKeys("zm", zmDuplicates)
 
-	bundle := outputBundle{MP: mpMap, ZM: zmMap}
-	payload, err := json.Marshal(bundle)
+	signaturePayload, err := json.Marshal(outputBundle{MP: mpSignatures, ZM: zmSignatures})
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to marshal json: %v\n", err)
+		fmt.Fprintf(os.Stderr, "failed to marshal signatures json: %v\n", err)
 		os.Exit(1)
 	}
 
-	if err := os.WriteFile(*outPath, payload, 0o644); err != nil {
-		fmt.Fprintf(os.Stderr, "failed to write output: %v\n", err)
+	if err := os.WriteFile(*outPath, signaturePayload, 0o644); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to write signatures output: %v\n", err)
+		os.Exit(1)
+	}
+
+	declarationsPayload, err := json.Marshal(declarationOutputBundle{MP: mpDeclarations, ZM: zmDeclarations})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to marshal declarations json: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := os.WriteFile(*outDeclarationsPath, declarationsPayload, 0o644); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to write declarations output: %v\n", err)
 		os.Exit(1)
 	}
 }
@@ -76,8 +93,9 @@ type duplicateSignatureKey struct {
 	Sources []string
 }
 
-func buildGroupSignatureMap(roots []signatureRoot) (map[string][]analysis.FunctionSignature, []duplicateSignatureKey, error) {
-	output := map[string][]analysis.FunctionSignature{}
+func buildGroupSignatureMap(roots []signatureRoot) (map[string][]analysis.FunctionSignature, map[string][]analysis.StdlibDeclaration, []duplicateSignatureKey, error) {
+	signatures := map[string][]analysis.FunctionSignature{}
+	declarations := map[string][]analysis.StdlibDeclaration{}
 	keySources := map[string]map[string]struct{}{}
 	duplicatesSeen := map[string]struct{}{}
 	duplicates := []duplicateSignatureKey{}
@@ -87,25 +105,28 @@ func buildGroupSignatureMap(roots []signatureRoot) (map[string][]analysis.Functi
 			continue
 		}
 
-		built := map[string][]analysis.FunctionSignature{}
+		builtSignatures := map[string][]analysis.FunctionSignature{}
+		builtDeclarations := map[string][]analysis.StdlibDeclaration{}
 		builtSources := map[string][]string{}
 		var err error
+
 		if root.MapRoot {
-			built, builtSources, err = buildMapRootSignatureMap(root.Path)
+			builtSignatures, builtDeclarations, builtSources, err = buildMapRootSignatureMap(root.Path)
 		} else {
-			built, err = buildSignatureMap(root.Path, root.KeyPrefix)
+			builtSignatures, builtDeclarations, err = buildSignatureMap(root.Path, root.KeyPrefix)
 			if err == nil {
-				for key := range built {
+				for key := range builtSignatures {
 					builtSources[key] = []string{root.Label}
 				}
 			}
 		}
 		if err != nil {
-			return nil, nil, fmt.Errorf("%s: %w", root.Label, err)
+			return nil, nil, nil, fmt.Errorf("%s: %w", root.Label, err)
 		}
 
-		for key, add := range built {
-			output[key] = mergeSignatures(output[key], add)
+		for key, add := range builtSignatures {
+			signatures[key] = mergeSignatures(signatures[key], add)
+			declarations[key] = mergeDeclarations(declarations[key], builtDeclarations[key])
 
 			if _, ok := keySources[key]; !ok {
 				keySources[key] = map[string]struct{}{}
@@ -129,11 +150,12 @@ func buildGroupSignatureMap(roots []signatureRoot) (map[string][]analysis.Functi
 		return duplicates[i].Key < duplicates[j].Key
 	})
 
-	return output, duplicates, nil
+	return signatures, declarations, duplicates, nil
 }
 
-func buildSignatureMap(root, keyPrefix string) (map[string][]analysis.FunctionSignature, error) {
-	output := map[string][]analysis.FunctionSignature{}
+func buildSignatureMap(root, keyPrefix string) (map[string][]analysis.FunctionSignature, map[string][]analysis.StdlibDeclaration, error) {
+	signatures := map[string][]analysis.FunctionSignature{}
+	declarations := map[string][]analysis.StdlibDeclaration{}
 	root = filepath.Clean(root)
 
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, walkErr error) error {
@@ -162,32 +184,36 @@ func buildSignatureMap(root, keyPrefix string) (map[string][]analysis.FunctionSi
 			return err
 		}
 
-		parseResult, err := analysis.Parse(string(data))
+		source := string(data)
+		parseResult, err := analysis.Parse(source)
 		if err != nil {
 			return fmt.Errorf("parse %s: %w", path, err)
 		}
-		signatures := analysis.GenerateFunctionSignatures(parseResult.Ast)
-		if len(signatures) == 0 {
+
+		sigs := analysis.GenerateFunctionSignatures(parseResult.Ast)
+		if len(sigs) == 0 {
 			return nil
 		}
 
-		output[key] = mergeSignatures(output[key], signatures)
+		signatures[key] = mergeSignatures(signatures[key], sigs)
+		declarations[key] = mergeDeclarations(declarations[key], extractFunctionDeclarations(parseResult.Ast, source))
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return output, nil
+	return signatures, declarations, nil
 }
 
-func buildMapRootSignatureMap(root string) (map[string][]analysis.FunctionSignature, map[string][]string, error) {
-	output := map[string][]analysis.FunctionSignature{}
+func buildMapRootSignatureMap(root string) (map[string][]analysis.FunctionSignature, map[string][]analysis.StdlibDeclaration, map[string][]string, error) {
+	signatures := map[string][]analysis.FunctionSignature{}
+	declarations := map[string][]analysis.StdlibDeclaration{}
 	sources := map[string]map[string]struct{}{}
 
 	dirs, err := os.ReadDir(root)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	for _, d := range dirs {
@@ -201,13 +227,14 @@ func buildMapRootSignatureMap(root string) (map[string][]analysis.FunctionSignat
 			continue
 		}
 
-		built, err := buildSignatureMap(runtimeRoot, "maps/mp")
+		builtSignatures, builtDeclarations, err := buildSignatureMap(runtimeRoot, "maps/mp")
 		if err != nil {
-			return nil, nil, fmt.Errorf("%s: %w", d.Name(), err)
+			return nil, nil, nil, fmt.Errorf("%s: %w", d.Name(), err)
 		}
 
-		for key, add := range built {
-			output[key] = mergeSignatures(output[key], add)
+		for key, add := range builtSignatures {
+			signatures[key] = mergeSignatures(signatures[key], add)
+			declarations[key] = mergeDeclarations(declarations[key], builtDeclarations[key])
 			if _, exists := sources[key]; !exists {
 				sources[key] = map[string]struct{}{}
 			}
@@ -220,7 +247,80 @@ func buildMapRootSignatureMap(root string) (map[string][]analysis.FunctionSignat
 		flattenedSources[key] = mapKeysSorted(sourceSet)
 	}
 
-	return output, flattenedSources, nil
+	return signatures, declarations, flattenedSources, nil
+}
+
+func extractFunctionDeclarations(nodes []p.Node, source string) []analysis.StdlibDeclaration {
+	declarations := []analysis.StdlibDeclaration{}
+	for _, node := range nodes {
+		if node.Type == "function_declaration" {
+			declaration := sliceNodeText(source, node)
+			if declaration != "" {
+				declarations = append(declarations, analysis.StdlibDeclaration{
+					Name:        node.Data.FunctionName,
+					Arguments:   functionArguments(node),
+					Declaration: strings.TrimRight(declaration, "\n"),
+				})
+			}
+		}
+		if len(node.Children) > 0 {
+			declarations = append(declarations, extractFunctionDeclarations(node.Children, source)...)
+		}
+	}
+	return declarations
+}
+
+func sliceNodeText(source string, node p.Node) string {
+	if node.Line <= 0 || node.Col <= 0 || node.Length <= 0 {
+		return ""
+	}
+
+	start, ok := offsetFromLineCol(source, node.Line, node.Col)
+	if !ok || start < 0 || start >= len(source) {
+		return ""
+	}
+
+	end := start + node.Length
+	if end > len(source) {
+		end = len(source)
+	}
+	if end <= start {
+		return ""
+	}
+
+	return source[start:end]
+}
+
+func offsetFromLineCol(source string, line, col int) (int, bool) {
+	if line <= 0 || col <= 0 {
+		return 0, false
+	}
+	lineIdx := 1
+	lineStart := 0
+	for i := 0; i < len(source) && lineIdx < line; i++ {
+		if source[i] == '\n' {
+			lineIdx++
+			lineStart = i + 1
+		}
+	}
+	if lineIdx != line {
+		return 0, false
+	}
+	offset := lineStart + col - 1
+	if offset < lineStart || offset > len(source) {
+		return 0, false
+	}
+	return offset, true
+}
+
+func functionArguments(node p.Node) []string {
+	args := []string{}
+	if len(node.Children) > 0 {
+		for _, c := range node.Children[0].Children {
+			args = append(args, c.Data.VarName)
+		}
+	}
+	return args
 }
 
 func findMapRuntimeRoot(mapDir string) (string, bool) {
@@ -308,6 +408,28 @@ func mergeSignatures(base, add []analysis.FunctionSignature) []analysis.Function
 			continue
 		}
 		base = append(base, sig)
+		seen[key] = struct{}{}
+	}
+
+	return base
+}
+
+func mergeDeclarations(base, add []analysis.StdlibDeclaration) []analysis.StdlibDeclaration {
+	if len(add) == 0 {
+		return base
+	}
+
+	seen := make(map[string]struct{}, len(base)+len(add))
+	for _, decl := range base {
+		key := signatureKey(analysis.FunctionSignature{Name: decl.Name, Arguments: decl.Arguments})
+		seen[key] = struct{}{}
+	}
+	for _, decl := range add {
+		key := signatureKey(analysis.FunctionSignature{Name: decl.Name, Arguments: decl.Arguments})
+		if _, exists := seen[key]; exists {
+			continue
+		}
+		base = append(base, decl)
 		seen[key] = struct{}{}
 	}
 
