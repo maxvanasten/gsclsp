@@ -54,7 +54,7 @@ func NewInitializeResponse(id int) InitializeResponse {
 				DefinitionProvider:         true,
 				DocumentFormattingProvider: true,
 				CodeActionProvider: CodeActionOptions{
-					CodeActionKinds: []string{CodeActionKindSource, CodeActionKindQuickFix},
+					CodeActionKinds: []string{CodeActionKindQuickFix},
 				},
 				ExecuteCommandProvider: ExecuteCommandOptions{
 					Commands: []string{"gsclsp.bundleMod"},

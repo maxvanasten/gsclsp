@@ -127,18 +127,14 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 			return
 		}
 
-		actionKind := lsp.CodeActionKindSource
+		actionKind := lsp.CodeActionKindQuickFix
 		if !includesRequestedCodeActionKind(request.Params.Context.Only, actionKind) {
-			if includesRequestedCodeActionKind(request.Params.Context.Only, lsp.CodeActionKindQuickFix) {
-				actionKind = lsp.CodeActionKindQuickFix
-			} else {
-				response := lsp.CodeActionResponse{
-					Response: lsp.Response{RPC: "2.0", ID: &request.ID},
-					Result:   []lsp.CodeAction{},
-				}
-				writeResponse(writer, response)
-				return
+			response := lsp.CodeActionResponse{
+				Response: lsp.Response{RPC: "2.0", ID: &request.ID},
+				Result:   []lsp.CodeAction{},
 			}
+			writeResponse(writer, response)
+			return
 		}
 
 		response := lsp.CodeActionResponse{

@@ -10,18 +10,17 @@ func TestInitializeResponseAdvertisesCompletionProvider(t *testing.T) {
 	if len(resp.Result.Capabilities.CodeActionProvider.CodeActionKinds) == 0 {
 		t.Fatal("expected codeActionProvider to advertise kinds")
 	}
-	foundSource := false
 	foundQuickfix := false
 	for _, kind := range resp.Result.Capabilities.CodeActionProvider.CodeActionKinds {
-		if kind == CodeActionKindSource {
-			foundSource = true
-		}
 		if kind == CodeActionKindQuickFix {
 			foundQuickfix = true
 		}
 	}
-	if !foundSource || !foundQuickfix {
-		t.Fatalf("expected source and quickfix codeAction kinds, got %v", resp.Result.Capabilities.CodeActionProvider.CodeActionKinds)
+	if !foundQuickfix {
+		t.Fatalf("expected quickfix codeAction kind, got %v", resp.Result.Capabilities.CodeActionProvider.CodeActionKinds)
+	}
+	if len(resp.Result.Capabilities.CodeActionProvider.CodeActionKinds) != 1 {
+		t.Fatalf("expected only quickfix codeAction kind, got %v", resp.Result.Capabilities.CodeActionProvider.CodeActionKinds)
 	}
 	if len(resp.Result.Capabilities.ExecuteCommandProvider.Commands) == 0 {
 		t.Fatal("expected executeCommandProvider commands")

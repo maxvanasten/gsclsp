@@ -88,6 +88,9 @@ func TestHandleMessageCodeActionMethod(t *testing.T) {
 		t.Fatalf("expected one code action, got %d", len(response.Result))
 	}
 	action := response.Result[0]
+	if action.Kind != lsp.CodeActionKindQuickFix {
+		t.Fatalf("expected quickfix action kind, got %q", action.Kind)
+	}
 	if action.Command == nil || action.Command.Command != "gsclsp.bundleMod" {
 		t.Fatalf("unexpected code action command: %+v", action.Command)
 	}
