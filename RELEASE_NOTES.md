@@ -1,5 +1,12 @@
 # Release Notes
 
+## 0.0.6.10
+
+- Adds stdlib go-to-definition that opens generated read-only `.gsc` files containing full stdlib function declarations and bodies.
+- Extends stdlib generation to embed declaration text alongside signatures, including qualified stdlib definition resolution.
+- Cleans up stdlib definition temp directories reliably with process-exit cleanup and PID-aware stale directory pruning on startup.
+- Improves large-file responsiveness by reducing expensive payload logging, deferring include resolution, and optimizing inlay hint resolution paths.
+
 ## 0.0.6.9
 
 - Adds include-origin inlay hints for unqualified included function calls, shown as `include\\path::` at the call site.
