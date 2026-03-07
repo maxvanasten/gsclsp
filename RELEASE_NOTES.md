@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.0.6.10
+## 0.0.7
 
 - Adds stdlib go-to-definition that opens generated read-only `.gsc` files containing full stdlib function declarations and bodies.
 - Extends stdlib generation to embed declaration text alongside signatures, including qualified stdlib definition resolution.
