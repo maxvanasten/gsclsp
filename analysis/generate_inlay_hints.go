@@ -57,13 +57,10 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 		if anchorLine < 0 {
 			anchorLine = 0
 		}
-		callCol := n.Col - 1
-		if callCol < 0 {
-			callCol = 0
-		}
-		anchorCol := n.Col - 1
+		callCol := functionCallLabelCol(n)
+		anchorCol := callCol
 		if n.Data.FunctionName != "" {
-			anchorCol = n.Col - 1 + len(n.Data.FunctionName) + 1
+			anchorCol = callCol + len(n.Data.FunctionName) + 1
 		}
 		if anchorCol < 0 {
 			anchorCol = 0
@@ -239,6 +236,21 @@ func functionCallName(n p.Node) string {
 		return n.Data.Path + "::" + n.Data.FunctionName
 	}
 	return n.Data.FunctionName
+}
+
+func functionCallLabelCol(n p.Node) int {
+	col := n.Col - 1
+	if col < 0 {
+		col = 0
+	}
+	if n.Data.Method == "" {
+		return col
+	}
+	col += len(n.Data.Method) + 1
+	if col < 0 {
+		return 0
+	}
+	return col
 }
 
 func indexTokensByLine(tokens []l.Token) map[int][]l.Token {

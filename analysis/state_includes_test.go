@@ -219,6 +219,35 @@ func TestInlayHintsUseIncludedStdlibZMCaseInsensitive(t *testing.T) {
 	}
 }
 
+func TestInlayHintOriginForMethodCallAnchorsBeforeFunctionName(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	uri := "file:///tmp/zm/maps/mp/zombies/test.gsc"
+	text := "#include maps\\mp\\gametypes_zm\\_hud_util;\n" +
+		"main() { self.gpp_ui_gg_hud setPoint(); }\n"
+
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+	originLabel := "maps\\mp\\gametypes_zm\\_hud_util::"
+	hint, ok := findInlayHintByLabel(response.Result, originLabel)
+	if !ok {
+		t.Fatalf("missing include origin inlay hint for method call: %v", response.Result)
+	}
+
+	line := strings.Split(text, "\n")[1]
+	functionCol := strings.Index(line, "setPoint")
+	if functionCol < 0 {
+		t.Fatalf("test setup missing function call in line: %q", line)
+	}
+
+	if hint.Position.Line != 1 {
+		t.Fatalf("origin hint line = %d, want 1", hint.Position.Line)
+	}
+	if hint.Position.Character != functionCol {
+		t.Fatalf("origin hint column = %d, want %d", hint.Position.Character, functionCol)
+	}
+}
+
 func TestInlayHintsUseBuiltinWithoutIncludes(t *testing.T) {
 	requireGscp(t)
 	state := NewState()
@@ -404,6 +433,15 @@ func hasInlayLabel(hints []lsp.InlayHint, label string) bool {
 		}
 	}
 	return false
+}
+
+func findInlayHintByLabel(hints []lsp.InlayHint, label string) (lsp.InlayHint, bool) {
+	for _, hint := range hints {
+		if hint.Label == label {
+			return hint, true
+		}
+	}
+	return lsp.InlayHint{}, false
 }
 
 func hasAnyOriginHint(hints []lsp.InlayHint) bool {
