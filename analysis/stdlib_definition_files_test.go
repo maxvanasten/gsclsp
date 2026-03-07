@@ -1,6 +1,8 @@
 package analysis
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -42,5 +44,53 @@ func TestMergeDeclarationEntriesAddsFallbackForMissingDeclaration(t *testing.T) 
 	}
 	if !strings.Contains(entries[0].Declaration, "missing_fn(a, b)") {
 		t.Fatalf("expected fallback declaration for missing_fn, got %q", entries[0].Declaration)
+	}
+}
+
+func TestPruneStdlibDefinitionRootsSkipsActivePID(t *testing.T) {
+	tempDir := t.TempDir()
+	staleRoot := filepath.Join(tempDir, stdlibDefinitionRootPrefix+"101-a")
+	activeRoot := filepath.Join(tempDir, stdlibDefinitionRootPrefix+"202-b")
+	legacyRoot := filepath.Join(tempDir, stdlibDefinitionRootPrefix+"legacy")
+	unrelatedRoot := filepath.Join(tempDir, "not-gsclsp")
+
+	for _, dir := range []string{staleRoot, activeRoot, legacyRoot, unrelatedRoot} {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatalf("mkdir %s: %v", dir, err)
+		}
+	}
+
+	err := pruneStdlibDefinitionRoots(tempDir, func(pid int) bool { return pid == 202 })
+	if err != nil {
+		t.Fatalf("prune roots: %v", err)
+	}
+
+	if _, err := os.Stat(staleRoot); !os.IsNotExist(err) {
+		t.Fatalf("expected stale root removed, stat err: %v", err)
+	}
+	if _, err := os.Stat(activeRoot); err != nil {
+		t.Fatalf("expected active root kept: %v", err)
+	}
+	if _, err := os.Stat(legacyRoot); !os.IsNotExist(err) {
+		t.Fatalf("expected legacy root removed, stat err: %v", err)
+	}
+	if _, err := os.Stat(unrelatedRoot); err != nil {
+		t.Fatalf("expected unrelated root kept: %v", err)
+	}
+}
+
+func TestStateCloseRemovesStdlibDefinitionRoot(t *testing.T) {
+	state := NewState()
+	root := filepath.Join(t.TempDir(), stdlibDefinitionRootPrefix+"777-x")
+	if err := os.MkdirAll(root, 0o755); err != nil {
+		t.Fatalf("mkdir root: %v", err)
+	}
+	state.stdlibDefinitionRoot = root
+
+	if err := state.Close(); err != nil {
+		t.Fatalf("close state: %v", err)
+	}
+	if _, err := os.Stat(root); !os.IsNotExist(err) {
+		t.Fatalf("expected stdlib definition root removed, stat err: %v", err)
 	}
 }

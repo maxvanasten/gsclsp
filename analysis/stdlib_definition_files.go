@@ -5,10 +5,17 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
+	"sync"
+	"syscall"
 
 	"github.com/maxvanasten/gsclsp/lsp"
 )
+
+const stdlibDefinitionRootPrefix = "gsclsp-stdlib-defs-"
+
+var stdlibDefinitionPruneOnce sync.Once
 
 type stdlibDefinitionFile struct {
 	URI    string
@@ -56,12 +63,76 @@ func (s *State) ensureStdlibDefinitionRoot() (string, error) {
 		return s.stdlibDefinitionRoot, nil
 	}
 
-	root, err := os.MkdirTemp("", "gsclsp-stdlib-defs-")
+	stdlibDefinitionPruneOnce.Do(func() {
+		_ = pruneStdlibDefinitionRoots(os.TempDir(), processPIDActive)
+	})
+
+	template := stdlibDefinitionRootPrefix + strconv.Itoa(os.Getpid()) + "-"
+	root, err := os.MkdirTemp("", template)
 	if err != nil {
 		return "", fmt.Errorf("create stdlib definition root: %w", err)
 	}
 	s.stdlibDefinitionRoot = root
 	return root, nil
+}
+
+func pruneStdlibDefinitionRoots(tempDir string, isActive func(int) bool) error {
+	entries, err := os.ReadDir(tempDir)
+	if err != nil {
+		return fmt.Errorf("read temp dir: %w", err)
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		if !strings.HasPrefix(name, stdlibDefinitionRootPrefix) {
+			continue
+		}
+
+		if pid, ok := stdlibDefinitionDirPID(name); ok && isActive != nil && isActive(pid) {
+			continue
+		}
+
+		_ = os.RemoveAll(filepath.Join(tempDir, name))
+	}
+
+	return nil
+}
+
+func stdlibDefinitionDirPID(name string) (int, bool) {
+	if !strings.HasPrefix(name, stdlibDefinitionRootPrefix) {
+		return 0, false
+	}
+	remainder := strings.TrimPrefix(name, stdlibDefinitionRootPrefix)
+	if remainder == "" {
+		return 0, false
+	}
+	pidPart := remainder
+	if idx := strings.IndexByte(remainder, '-'); idx >= 0 {
+		pidPart = remainder[:idx]
+	}
+	pid, err := strconv.Atoi(pidPart)
+	if err != nil || pid <= 0 {
+		return 0, false
+	}
+	return pid, true
+}
+
+func processPIDActive(pid int) bool {
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		return false
+	}
+	err = process.Signal(syscall.Signal(0))
+	if err == nil {
+		return true
+	}
+	if err == syscall.EPERM {
+		return true
+	}
+	return false
 }
 
 func mergeDeclarationEntries(declarations []StdlibDeclaration, signatures []FunctionSignature) []StdlibDeclaration {

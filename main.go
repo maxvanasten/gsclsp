@@ -6,7 +6,10 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/signal"
 	"strings"
+	"sync"
+	"syscall"
 
 	"github.com/maxvanasten/gsclsp/analysis"
 	"github.com/maxvanasten/gsclsp/lsp"
@@ -21,6 +24,26 @@ func main() {
 	scanner.Split(rpc.Split)
 
 	state := analysis.NewState()
+	var shutdownOnce sync.Once
+	shutdown := func() {
+		shutdownOnce.Do(func() {
+			if err := state.Close(); err != nil {
+				logger.Printf("cleanup error: %v", err)
+			}
+		})
+	}
+	defer shutdown()
+
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(sigCh)
+	go func() {
+		<-sigCh
+		logger.Print("Received shutdown signal")
+		shutdown()
+		os.Exit(0)
+	}()
+
 	writer := os.Stdout
 
 	for scanner.Scan() {

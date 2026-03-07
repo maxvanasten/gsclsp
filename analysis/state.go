@@ -68,6 +68,20 @@ func NewState() State {
 	}
 }
 
+func (s *State) Close() error {
+	if s.stdlibDefinitionRoot == "" {
+		return nil
+	}
+
+	root := s.stdlibDefinitionRoot
+	s.stdlibDefinitionRoot = ""
+	s.stdlibDefinitionFiles = map[string]stdlibDefinitionFile{}
+	if err := os.RemoveAll(root); err != nil {
+		return fmt.Errorf("remove stdlib definition root: %w", err)
+	}
+	return nil
+}
+
 func (s *State) OpenDocument(uri, text string) {
 	s.Documents[uri] = text
 	s.UpdateAst(uri)
