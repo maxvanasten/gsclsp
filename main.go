@@ -126,7 +126,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 
 		response := state.SemanticTokens(request.ID, request.Params.TextDocument.URI)
 		writeResponse(writer, response)
-		logger.Printf("semantic_tokens: %v", response.Result.Data)
+		logger.Printf("semantic_tokens: %d tokens", len(response.Result.Data)/5)
 	case "textDocument/inlayHint":
 		var request lsp.InlayHintRequest
 		if !decodeRequest(logger, contents, &request, "textDocument/inlayHint") {
@@ -135,7 +135,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 
 		response := state.InlayHints(request.ID, request.Params.TextDocument.URI)
 		writeResponse(writer, response)
-		logger.Printf("inlay_hints: %v", response.Result)
+		logger.Printf("inlay_hints: %d", len(response.Result))
 	case "textDocument/formatting":
 		var request lsp.DocumentFormattingRequest
 		if !decodeRequest(logger, contents, &request, "textDocument/formatting") {

@@ -59,7 +59,7 @@ func (s *State) completionItemsForContext(uri string, position lsp.Position, ctx
 	case completionModeQualifiedPath:
 		items = mergeCompletionItems(items, completionPathItems(collectIncludePathCandidates(uri, stdlib), ctx.PathPrefix, replaceRange))
 	default:
-		items = mergeCompletionItems(items, completionFunctionItems(s.Signatures[uri], ctx.Prefix))
+		items = mergeCompletionItems(items, completionFunctionItems(s.resolvedSignatures(uri), ctx.Prefix))
 		items = mergeCompletionItems(items, completionKeywordItems(ctx.Prefix))
 	}
 

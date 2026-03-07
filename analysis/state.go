@@ -27,6 +27,8 @@ type State struct {
 	Ast            map[string][]p.Node
 	Tokens         map[string][]l.Token
 	Signatures     map[string][]FunctionSignature
+	Resolved       map[string][]FunctionSignature
+	IncludeOrigins map[string]map[string]string
 	Diagnostics    map[string][]lsp.Diagnostic
 	includeCache   map[string]includeCacheEntry
 	stdlib         map[string]map[string][]FunctionSignature
@@ -56,6 +58,8 @@ type inlayCallResolution struct {
 	ShowOrigin  bool
 }
 
+const maxOriginResolutionCallNames = 200
+
 func NewState() State {
 	stdlibDefinitionPruneOnce.Do(func() {
 		_ = pruneStdlibDefinitionRoots(os.TempDir(), processPIDActive)
@@ -66,6 +70,8 @@ func NewState() State {
 		Ast:                   map[string][]p.Node{},
 		Tokens:                map[string][]l.Token{},
 		Signatures:            map[string][]FunctionSignature{},
+		Resolved:              map[string][]FunctionSignature{},
+		IncludeOrigins:        map[string]map[string]string{},
 		Diagnostics:           map[string][]lsp.Diagnostic{},
 		includeCache:          map[string]includeCacheEntry{},
 		stdlibDefinitionFiles: map[string]stdlibDefinitionFile{},
@@ -213,13 +219,12 @@ func uriToPath(uri string) string {
 func (s *State) UpdateAst(uri string) {
 	if err := s.parseAndStore(uri); err != nil {
 		s.Diagnostics[uri] = []lsp.Diagnostic{parseFailureDiagnostic(err)}
+		delete(s.Resolved, uri)
+		delete(s.IncludeOrigins, uri)
 		return
 	}
-	s.mergeBuiltins(uri)
-	stdlib := s.loadStdlib()
-	includePaths := collectIncludePaths(s.Ast[uri])
-	stdlibGroup := guessStdlibGroup(uri)
-	s.applyIncludes(uri, includePaths, stdlibGroup, stdlib)
+	delete(s.Resolved, uri)
+	delete(s.IncludeOrigins, uri)
 }
 
 func (s *State) parseAndStore(uri string) error {
@@ -234,13 +239,13 @@ func (s *State) parseAndStore(uri string) error {
 	return nil
 }
 
-func (s *State) mergeBuiltins(uri string) {
+func (s *State) mergeBuiltins(signatures []FunctionSignature) []FunctionSignature {
 	builtins, err := s.loadBuiltins()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR LOADING BUILTIN SIGNATURES: %v\n", err)
-		return
+		return signatures
 	}
-	s.Signatures[uri] = mergeSignatures(s.Signatures[uri], builtins)
+	return mergeSignatures(signatures, builtins)
 }
 
 func (s *State) loadBuiltins() ([]FunctionSignature, error) {
@@ -276,7 +281,7 @@ func (s *State) loadStdlibDeclarations() map[string]map[string][]StdlibDeclarati
 	return s.stdlibDecls
 }
 
-func (s *State) applyIncludes(uri string, includePaths []string, stdlibGroup string, stdlib map[string]map[string][]FunctionSignature) {
+func (s *State) applyIncludes(signatures []FunctionSignature, uri string, includePaths []string, stdlibGroup string, stdlib map[string]map[string][]FunctionSignature) []FunctionSignature {
 	for _, includePath := range includePaths {
 		key := normalizeIncludeKey(includePath)
 		if key == "" {
@@ -284,14 +289,41 @@ func (s *State) applyIncludes(uri string, includePaths []string, stdlibGroup str
 		}
 
 		if sigs, ok := lookupStdlibSignatures(stdlib, stdlibGroup, key); ok {
-			s.Signatures[uri] = mergeSignatures(s.Signatures[uri], sigs)
+			signatures = mergeSignatures(signatures, sigs)
 			continue
 		}
 
-		if err := s.AddDocument(uri, includePath); err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR APPLYING INCLUDE %q: %v\n", includePath, err)
+		resolvedPath, ok := resolveIncludePath(uri, includePath)
+		if !ok {
+			continue
 		}
+		entry, err := s.getParsedInclude(resolvedPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR APPLYING INCLUDE %q: %v\n", includePath, err)
+			continue
+		}
+		signatures = mergeSignatures(signatures, entry.Signatures)
 	}
+
+	return signatures
+}
+
+func (s *State) resolvedSignatures(uri string) []FunctionSignature {
+	if cached, ok := s.Resolved[uri]; ok {
+		return cached
+	}
+
+	resolved := make([]FunctionSignature, 0, len(s.Signatures[uri]))
+	resolved = append(resolved, s.Signatures[uri]...)
+	resolved = s.mergeBuiltins(resolved)
+
+	stdlib := s.loadStdlib()
+	includePaths := collectIncludePaths(s.Ast[uri])
+	stdlibGroup := guessStdlibGroup(uri)
+	resolved = s.applyIncludes(resolved, uri, includePaths, stdlibGroup, stdlib)
+
+	s.Resolved[uri] = resolved
+	return resolved
 }
 
 func lookupStdlibSignatures(stdlib map[string]map[string][]FunctionSignature, stdlibGroup, key string) ([]FunctionSignature, bool) {
@@ -344,15 +376,16 @@ func (s *State) GetTokenAtPosition(uri string, position lsp.Position) l.Token {
 
 func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverResponse {
 	output := strings.Builder{}
+	signatures := s.resolvedSignatures(uri)
 
 	token := s.GetTokenAtPosition(uri, position)
 	if token.Type == l.SYMBOL {
 		stdlib := s.loadStdlib()
 		name := token.Content
-		sig, ok := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+		sig, ok := resolveSignatureForName(name, uri, signatures, stdlib)
 		if !ok {
 			name = findFunctionCallNameAtPosition(s.Ast[uri], position)
-			sig, ok = resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+			sig, ok = resolveSignatureForName(name, uri, signatures, stdlib)
 		}
 		if ok {
 			output.WriteString(sig.Name)
@@ -413,8 +446,18 @@ func (s *State) SemanticTokens(id int, uri string) lsp.SemanticTokensResponse {
 
 func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
 	stdlib := s.loadStdlib()
+	signatures := s.resolvedSignatures(uri)
+	signatureByName := buildSignatureMap(signatures)
+	localDecls := buildLocalDeclarationSet(s.Ast[uri])
+	builtinSet := s.buildBuiltinSet()
+	originByName := map[string]string{}
+	if countFunctionCallNames(s.Ast[uri]) <= maxOriginResolutionCallNames {
+		originByName = s.buildIncludeOriginIndex(uri, stdlib)
+	}
+	resolutionCache := map[string]inlayCallResolution{}
+	missingResolution := map[string]struct{}{}
 	resolver := func(name string) (InlayHintResolution, bool) {
-		resolved, ok := s.resolveInlayCall(uri, name, stdlib)
+		resolved, ok := resolveInlayCallFast(uri, name, stdlib, signatureByName, localDecls, builtinSet, originByName, resolutionCache, missingResolution)
 		if !ok {
 			return InlayHintResolution{}, false
 		}
@@ -424,7 +467,7 @@ func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
 			ShowOrigin:  resolved.ShowOrigin,
 		}, true
 	}
-	inlayHints := GenerateInlayHints(s.Signatures[uri], s.Ast[uri], s.Tokens[uri], resolver)
+	inlayHints := GenerateInlayHints(signatures, s.Ast[uri], s.Tokens[uri], resolver)
 
 	return lsp.InlayHintResponse{
 		Response: lsp.Response{
@@ -435,40 +478,257 @@ func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
 	}
 }
 
-func (s *State) resolveInlayCall(uri, name string, stdlib map[string]map[string][]FunctionSignature) (inlayCallResolution, bool) {
+func resolveInlayCallFast(
+	uri, name string,
+	stdlib map[string]map[string][]FunctionSignature,
+	signatureByName map[string]FunctionSignature,
+	localDecls map[string]struct{},
+	builtinSet map[string]struct{},
+	originByName map[string]string,
+	resolutionCache map[string]inlayCallResolution,
+	missingResolution map[string]struct{},
+) (inlayCallResolution, bool) {
 	if name == "" {
 		return inlayCallResolution{}, false
 	}
 
-	if sig, ok := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib); !ok {
+	cacheKey := strings.ToLower(strings.TrimSpace(name))
+	if cached, ok := resolutionCache[cacheKey]; ok {
+		return cached, true
+	}
+	if _, missing := missingResolution[cacheKey]; missing {
+		return inlayCallResolution{}, false
+	}
+
+	sig, ok := resolveSignatureForNameFast(uri, name, stdlib, signatureByName)
+	if !ok {
+		missingResolution[cacheKey] = struct{}{}
+		return inlayCallResolution{}, false
+	}
+
+	if _, _, qualified := splitQualifiedName(name); qualified {
+		resolved := inlayCallResolution{Signature: sig}
+		resolutionCache[cacheKey] = resolved
+		return resolved, true
+	}
+
+	if _, ok := localDecls[strings.ToLower(name)]; ok {
+		resolved := inlayCallResolution{Signature: sig}
+		resolutionCache[cacheKey] = resolved
+		return resolved, true
+	}
+
+	if _, ok := builtinSet[strings.ToLower(name)]; ok {
+		resolved := inlayCallResolution{Signature: sig}
+		resolutionCache[cacheKey] = resolved
+		return resolved, true
+	}
+
+	if originLabel, ok := originByName[strings.ToLower(name)]; ok {
+		resolved := inlayCallResolution{Signature: sig, OriginLabel: originLabel + "::", ShowOrigin: true}
+		resolutionCache[cacheKey] = resolved
+		return resolved, true
+	}
+
+	resolved := inlayCallResolution{Signature: sig}
+	resolutionCache[cacheKey] = resolved
+	return resolved, true
+}
+
+func resolveSignatureForNameFast(uri, name string, stdlib map[string]map[string][]FunctionSignature, signatureByName map[string]FunctionSignature) (FunctionSignature, bool) {
+	if name == "" {
+		return FunctionSignature{}, false
+	}
+
+	if sig, ok := signatureByName[strings.ToLower(name)]; ok {
+		return sig, true
+	}
+
+	if _, funcName, ok := splitQualifiedName(name); ok {
+		if sig, ok := signatureByName[strings.ToLower(funcName)]; ok {
+			return sig, true
+		}
+		return resolveQualifiedSignature(stdlib, uri, name)
+	}
+
+	return FunctionSignature{}, false
+}
+
+func buildSignatureMap(signatures []FunctionSignature) map[string]FunctionSignature {
+	indexed := make(map[string]FunctionSignature, len(signatures))
+	for _, sig := range signatures {
+		key := strings.ToLower(strings.TrimSpace(sig.Name))
+		if key == "" {
+			continue
+		}
+		if _, exists := indexed[key]; !exists {
+			indexed[key] = sig
+		}
+	}
+	return indexed
+}
+
+func buildLocalDeclarationSet(nodes []p.Node) map[string]struct{} {
+	local := map[string]struct{}{}
+	collectLocalDeclarationNames(nodes, local)
+	return local
+}
+
+func collectLocalDeclarationNames(nodes []p.Node, out map[string]struct{}) {
+	for _, node := range nodes {
+		if node.Type == "function_declaration" {
+			name := strings.ToLower(strings.TrimSpace(node.Data.FunctionName))
+			if name != "" {
+				out[name] = struct{}{}
+			}
+		}
+		if len(node.Children) > 0 {
+			collectLocalDeclarationNames(node.Children, out)
+		}
+	}
+}
+
+func (s *State) buildBuiltinSet() map[string]struct{} {
+	builtinSet := map[string]struct{}{}
+	builtins, err := s.loadBuiltins()
+	if err != nil {
+		return builtinSet
+	}
+	for _, sig := range builtins {
+		name := strings.ToLower(strings.TrimSpace(sig.Name))
+		if name == "" {
+			continue
+		}
+		builtinSet[name] = struct{}{}
+	}
+	return builtinSet
+}
+
+func (s *State) buildIncludeOriginIndex(uri string, stdlib map[string]map[string][]FunctionSignature) map[string]string {
+	if cached, ok := s.IncludeOrigins[uri]; ok {
+		return cached
+	}
+
+	index := map[string]string{}
+	visitedLocal := map[string]bool{}
+	visitedStdlib := map[string]bool{}
+	s.addIncludeOriginsRecursive(uri, collectIncludePaths(s.Ast[uri]), stdlib, visitedLocal, visitedStdlib, index)
+	s.IncludeOrigins[uri] = index
+	return index
+}
+
+func (s *State) addIncludeOriginsRecursive(uri string, includePaths []string, stdlib map[string]map[string][]FunctionSignature, visitedLocal map[string]bool, visitedStdlib map[string]bool, index map[string]string) {
+	stdlibGroup := guessStdlibGroup(uri)
+
+	for _, includePath := range includePaths {
+		key := normalizeIncludeKey(includePath)
+		label := ""
+		if key != "" {
+			label = slashPathToGsc(key)
+		}
+
+		if key != "" {
+			if _, seen := visitedStdlib[key]; !seen {
+				visitedStdlib[key] = true
+				if sigs, ok := lookupStdlibSignatures(stdlib, stdlibGroup, key); ok {
+					addOriginSignatures(index, sigs, label)
+				}
+			}
+		}
+
+		resolvedPath, ok := resolveIncludePath(uri, includePath)
+		if !ok {
+			continue
+		}
+		resolvedPath = filepath.Clean(resolvedPath)
+		if visitedLocal[resolvedPath] {
+			continue
+		}
+		visitedLocal[resolvedPath] = true
+
+		entry, err := s.getParsedInclude(resolvedPath)
+		if err != nil {
+			continue
+		}
+
+		addOriginSignatures(index, entry.Signatures, label)
+
+		includeURI := pathToURI(resolvedPath)
+		nestedIncludes := collectIncludePaths(entry.Ast)
+		s.addIncludeOriginsRecursive(includeURI, nestedIncludes, stdlib, visitedLocal, visitedStdlib, index)
+	}
+}
+
+func addOriginSignatures(index map[string]string, signatures []FunctionSignature, label string) {
+	if label == "" {
+		return
+	}
+	for _, sig := range signatures {
+		name := strings.ToLower(strings.TrimSpace(sig.Name))
+		if name == "" {
+			continue
+		}
+		if _, exists := index[name]; exists {
+			continue
+		}
+		index[name] = label
+	}
+}
+
+func countFunctionCallNames(nodes []p.Node) int {
+	seen := map[string]struct{}{}
+	collectFunctionCallNames(nodes, seen)
+	return len(seen)
+}
+
+func collectFunctionCallNames(nodes []p.Node, out map[string]struct{}) {
+	for _, node := range nodes {
+		if node.Type == "function_call" {
+			name := strings.ToLower(strings.TrimSpace(functionCallName(node)))
+			if name != "" {
+				out[name] = struct{}{}
+			}
+		}
+		if len(node.Children) > 0 {
+			collectFunctionCallNames(node.Children, out)
+		}
+	}
+}
+
+func (s *State) resolveInlayCall(uri, name string, signatures []FunctionSignature, stdlib map[string]map[string][]FunctionSignature) (inlayCallResolution, bool) {
+	if name == "" {
+		return inlayCallResolution{}, false
+	}
+
+	if sig, ok := resolveSignatureForName(name, uri, signatures, stdlib); !ok {
 		return inlayCallResolution{}, false
 	} else if _, _, qualified := splitQualifiedName(name); qualified {
 		return inlayCallResolution{Signature: sig}, true
 	}
 
 	if findFunctionDeclarationNodeByName(s.Ast[uri], name) != nil {
-		sig, _ := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+		sig, _ := resolveSignatureForName(name, uri, signatures, stdlib)
 		return inlayCallResolution{Signature: sig}, true
 	}
 
 	builtins, err := s.loadBuiltins()
 	if err == nil {
 		if _, ok := findSignatureByName(builtins, name); ok {
-			sig, _ := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+			sig, _ := resolveSignatureForName(name, uri, signatures, stdlib)
 			return inlayCallResolution{Signature: sig}, true
 		}
 	}
 
 	originLabel, ok := s.resolveIncludeOriginLabel(uri, name, stdlib)
 	if !ok {
-		sig, ok := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+		sig, ok := resolveSignatureForName(name, uri, signatures, stdlib)
 		if !ok {
 			return inlayCallResolution{}, false
 		}
 		return inlayCallResolution{Signature: sig}, true
 	}
 
-	sig, ok := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+	sig, ok := resolveSignatureForName(name, uri, signatures, stdlib)
 	if !ok {
 		return inlayCallResolution{}, false
 	}

@@ -16,6 +16,8 @@ type InlayHintResolution struct {
 
 type InlayHintResolver func(name string) (InlayHintResolution, bool)
 
+const maxTokenCountForOpenCallHints = 4000
+
 func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens []l.Token, resolve InlayHintResolver) []lsp.InlayHint {
 	hints := []lsp.InlayHint{}
 	if resolve == nil {
@@ -28,7 +30,11 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 		}
 	}
 
-	tokenIndex := indexTokensByLine(tokens)
+	allowOpenCallHints := len(tokens) <= maxTokenCountForOpenCallHints
+	tokenIndex := map[int][]l.Token{}
+	if allowOpenCallHints {
+		tokenIndex = indexTokensByLine(tokens)
+	}
 
 	for _, n := range nodes {
 		if n.Type != "function_call" {
@@ -71,6 +77,32 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 				Label: resolved.OriginLabel,
 			})
 		}
+
+		if len(n.Children) > 0 {
+			for i, a := range n.Children {
+				if i >= len(labels) {
+					break
+				}
+				label := labels[i] + ": "
+				col := a.Col - 1
+				if col <= 0 {
+					col = anchorCol
+				}
+				hints = append(hints, lsp.InlayHint{
+					Position: lsp.Position{
+						Line:      anchorLine,
+						Character: col,
+					},
+					Label: label,
+				})
+			}
+			continue
+		}
+
+		if !allowOpenCallHints {
+			continue
+		}
+
 		lineTokens := tokenIndex[n.Line]
 		if !callClosedOnLine(lineTokens, callName) {
 			paramIndex, stubCol, ok := openCallParamAnchor(lineTokens, callName)
@@ -89,23 +121,6 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 				Label: label,
 			})
 			continue
-		}
-		for i, a := range n.Children {
-			if i >= len(labels) {
-				break
-			}
-			label := labels[i] + ": "
-			col := a.Col - 1
-			if col <= 0 {
-				col = anchorCol
-			}
-			hints = append(hints, lsp.InlayHint{
-				Position: lsp.Position{
-					Line:      anchorLine,
-					Character: col,
-				},
-				Label: label,
-			})
 		}
 	}
 
