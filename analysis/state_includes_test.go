@@ -147,23 +147,14 @@ func TestInlayHintsUseIncludedLocalNestedFile(t *testing.T) {
 func TestInlayHintsUseIncludedLocalOpenCall(t *testing.T) {
 	requireGscp(t)
 	state := NewState()
+	dir := t.TempDir()
+	mainPath := filepath.Join(dir, "test.gsc")
+	helperPath := filepath.Join(dir, "helpers.gsc")
 
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("getwd: %v", err)
-	}
-	mainPath := filepath.Join(wd, "test", "two.gsc")
-	if _, err := os.Stat(mainPath); err != nil {
-		parentPath := filepath.Join(filepath.Dir(wd), "test", "two.gsc")
-		if _, err := os.Stat(parentPath); err == nil {
-			mainPath = parentPath
-		}
-	}
-	data, err := os.ReadFile(mainPath)
-	if err != nil {
-		t.Fatalf("read %s: %v", mainPath, err)
-	}
-	text := string(data)
+	writeFile(t, helperPath, "helpers( name ) { }\n")
+	text := "#include helpers;\n" +
+		"main() { helpers(\n"
+	writeFile(t, mainPath, text)
 
 	uri := uriForPath(mainPath)
 	state.OpenDocument(uri, text)
