@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.0.7.1
+
+- Fixes include-origin inlay hint placement for method calls so origin labels render before the function name instead of before the method receiver object.
+- Rewrites the open-call include inlay regression test to use temporary fixtures, removing dependence on local `test/two.gsc` files and making full test runs reliable across environments.
+
 ## 0.0.7
 
 - Adds stdlib go-to-definition that opens generated read-only `.gsc` files containing full stdlib function declarations and bodies.

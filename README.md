@@ -158,7 +158,7 @@ go test ./...
 Important test notes:
 
 - Many analysis tests require `gscp` to be installed.
-- `TestInlayHintsUseIncludedLocalOpenCall` expects a fixture file at `test/two.gsc` (or `../test/two.gsc`) in your local environment.
+- Include-based inlay tests create temporary fixture files at runtime and do not require repo-local test fixture files.
 
 ## Project structure
 
@@ -170,4 +170,4 @@ Important test notes:
 
 ## Version
 
-Current server version reported in `initialize` response: `0.0.7`.
+Current server version reported in `initialize` response: `0.0.7.1`.
