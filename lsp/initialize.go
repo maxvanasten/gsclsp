@@ -83,7 +83,7 @@ func NewInitializeResponse(id int) InitializeResponse {
 			},
 			ServerInfo: ServerInfo{
 				Name:    "gsclsp",
-				Version: "0.0.6.7",
+				Version: "0.0.6.8",
 			},
 		},
 	}

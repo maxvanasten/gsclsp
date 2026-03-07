@@ -1,5 +1,12 @@
 # Release Notes
 
+## 0.0.6.8
+
+- Fixes VS Code code action discovery by improving code action kind filtering behavior for client `only` requests.
+- Fixes path completion replacement to correctly replace typed include/path prefixes instead of appending duplicate segments.
+- Expands stdlib generation with optional map roots that scan each map's `maps/mp` runtime subtree.
+- Normalizes map script signatures to runtime include keys under `maps/mp/...` and reports duplicate stdlib keys with their source maps.
+
 ## 0.0.6.7
 
 - Adds LSP code action support with `textDocument/codeAction` and `workspace/executeCommand`.

@@ -169,4 +169,4 @@ Important test notes:
 
 ## Version
 
-Current server version reported in `initialize` response: `0.0.6.7`.
+Current server version reported in `initialize` response: `0.0.6.8`.
