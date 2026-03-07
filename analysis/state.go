@@ -57,6 +57,10 @@ type inlayCallResolution struct {
 }
 
 func NewState() State {
+	stdlibDefinitionPruneOnce.Do(func() {
+		_ = pruneStdlibDefinitionRoots(os.TempDir(), processPIDActive)
+	})
+
 	return State{
 		Documents:             map[string]string{},
 		Ast:                   map[string][]p.Node{},
