@@ -44,6 +44,12 @@ type includeCacheEntry struct {
 	Signatures      []FunctionSignature
 }
 
+type inlayCallResolution struct {
+	Signature   FunctionSignature
+	OriginLabel string
+	ShowOrigin  bool
+}
+
 func NewState() State {
 	return State{
 		Documents:    map[string]string{},
@@ -370,8 +376,16 @@ func (s *State) SemanticTokens(id int, uri string) lsp.SemanticTokensResponse {
 
 func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
 	stdlib := s.loadStdlib()
-	resolver := func(name string) (FunctionSignature, bool) {
-		return resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+	resolver := func(name string) (InlayHintResolution, bool) {
+		resolved, ok := s.resolveInlayCall(uri, name, stdlib)
+		if !ok {
+			return InlayHintResolution{}, false
+		}
+		return InlayHintResolution{
+			Signature:   resolved.Signature,
+			OriginLabel: resolved.OriginLabel,
+			ShowOrigin:  resolved.ShowOrigin,
+		}, true
 	}
 	inlayHints := GenerateInlayHints(s.Signatures[uri], s.Ast[uri], s.Tokens[uri], resolver)
 
@@ -382,4 +396,103 @@ func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
 		},
 		Result: inlayHints,
 	}
+}
+
+func (s *State) resolveInlayCall(uri, name string, stdlib map[string]map[string][]FunctionSignature) (inlayCallResolution, bool) {
+	if name == "" {
+		return inlayCallResolution{}, false
+	}
+
+	if sig, ok := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib); !ok {
+		return inlayCallResolution{}, false
+	} else if _, _, qualified := splitQualifiedName(name); qualified {
+		return inlayCallResolution{Signature: sig}, true
+	}
+
+	if findFunctionDeclarationNodeByName(s.Ast[uri], name) != nil {
+		sig, _ := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+		return inlayCallResolution{Signature: sig}, true
+	}
+
+	builtins, err := s.loadBuiltins()
+	if err == nil {
+		if _, ok := findSignatureByName(builtins, name); ok {
+			sig, _ := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+			return inlayCallResolution{Signature: sig}, true
+		}
+	}
+
+	originLabel, ok := s.resolveIncludeOriginLabel(uri, name, stdlib)
+	if !ok {
+		sig, ok := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+		if !ok {
+			return inlayCallResolution{}, false
+		}
+		return inlayCallResolution{Signature: sig}, true
+	}
+
+	sig, ok := resolveSignatureForName(name, uri, s.Signatures[uri], stdlib)
+	if !ok {
+		return inlayCallResolution{}, false
+	}
+
+	return inlayCallResolution{
+		Signature:   sig,
+		OriginLabel: originLabel + "::",
+		ShowOrigin:  true,
+	}, true
+}
+
+func (s *State) resolveIncludeOriginLabel(uri, functionName string, stdlib map[string]map[string][]FunctionSignature) (string, bool) {
+	visitedLocal := map[string]bool{}
+	visitedStdlib := map[string]bool{}
+	includePaths := collectIncludePaths(s.Ast[uri])
+	return s.resolveIncludeOriginLabelRecursive(uri, includePaths, functionName, stdlib, visitedLocal, visitedStdlib)
+}
+
+func (s *State) resolveIncludeOriginLabelRecursive(uri string, includePaths []string, functionName string, stdlib map[string]map[string][]FunctionSignature, visitedLocal map[string]bool, visitedStdlib map[string]bool) (string, bool) {
+	stdlibGroup := guessStdlibGroup(uri)
+
+	for _, includePath := range includePaths {
+		key := normalizeIncludeKey(includePath)
+		if key != "" {
+			if _, seen := visitedStdlib[key]; !seen {
+				visitedStdlib[key] = true
+				if sigs, ok := lookupStdlibSignatures(stdlib, stdlibGroup, key); ok {
+					if _, found := findSignatureByName(sigs, functionName); found {
+						return slashPathToGsc(key), true
+					}
+				}
+			}
+		}
+
+		resolvedPath, ok := resolveIncludePath(uri, includePath)
+		if !ok {
+			continue
+		}
+		resolvedPath = filepath.Clean(resolvedPath)
+		if visitedLocal[resolvedPath] {
+			continue
+		}
+		visitedLocal[resolvedPath] = true
+
+		entry, err := s.getParsedInclude(resolvedPath)
+		if err != nil {
+			continue
+		}
+
+		if findFunctionDeclarationNodeByName(entry.Ast, functionName) != nil {
+			if key != "" {
+				return slashPathToGsc(key), true
+			}
+		}
+
+		includeURI := pathToURI(resolvedPath)
+		nestedIncludes := collectIncludePaths(entry.Ast)
+		if label, ok := s.resolveIncludeOriginLabelRecursive(includeURI, nestedIncludes, functionName, stdlib, visitedLocal, visitedStdlib); ok {
+			return label, true
+		}
+	}
+
+	return "", false
 }

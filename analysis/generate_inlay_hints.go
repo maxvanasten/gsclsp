@@ -8,11 +8,23 @@ import (
 	p "github.com/maxvanasten/gscp/parser"
 )
 
-func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens []l.Token, resolve SignatureResolver) []lsp.InlayHint {
+type InlayHintResolution struct {
+	Signature   FunctionSignature
+	OriginLabel string
+	ShowOrigin  bool
+}
+
+type InlayHintResolver func(name string) (InlayHintResolution, bool)
+
+func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens []l.Token, resolve InlayHintResolver) []lsp.InlayHint {
 	hints := []lsp.InlayHint{}
 	if resolve == nil {
-		resolve = func(name string) (FunctionSignature, bool) {
-			return findSignatureByName(signatures, name)
+		resolve = func(name string) (InlayHintResolution, bool) {
+			sig, ok := findSignatureByName(signatures, name)
+			if !ok {
+				return InlayHintResolution{}, false
+			}
+			return InlayHintResolution{Signature: sig}, true
 		}
 	}
 
@@ -27,17 +39,21 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 		}
 
 		callName := functionCallName(n)
-		sig, ok := resolve(callName)
-		if !ok || len(sig.Arguments) == 0 {
+		resolved, ok := resolve(callName)
+		if !ok || len(resolved.Signature.Arguments) == 0 {
 			continue
 		}
 		if n.Line <= 0 || n.Col <= 0 {
 			continue
 		}
-		labels := sig.Arguments
+		labels := resolved.Signature.Arguments
 		anchorLine := n.Line - 1
 		if anchorLine < 0 {
 			anchorLine = 0
+		}
+		callCol := n.Col - 1
+		if callCol < 0 {
+			callCol = 0
 		}
 		anchorCol := n.Col - 1
 		if n.Data.FunctionName != "" {
@@ -45,6 +61,15 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 		}
 		if anchorCol < 0 {
 			anchorCol = 0
+		}
+		if resolved.ShowOrigin && resolved.OriginLabel != "" {
+			hints = append(hints, lsp.InlayHint{
+				Position: lsp.Position{
+					Line:      anchorLine,
+					Character: callCol,
+				},
+				Label: resolved.OriginLabel,
+			})
 		}
 		lineTokens := tokenIndex[n.Line]
 		if !callClosedOnLine(lineTokens, callName) {

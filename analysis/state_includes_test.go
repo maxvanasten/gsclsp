@@ -96,6 +96,9 @@ func TestInlayHintsUseIncludedStdlibMP(t *testing.T) {
 	if !hasInlayLabel(response.Result, "array: ") {
 		t.Fatalf("missing inlay hint for array_copy: %v", response.Result)
 	}
+	if !hasInlayLabel(response.Result, "common_scripts\\utility::") {
+		t.Fatalf("missing include origin inlay hint for stdlib include: %v", response.Result)
+	}
 }
 
 func TestInlayHintsUseIncludedLocalFile(t *testing.T) {
@@ -115,6 +118,9 @@ func TestInlayHintsUseIncludedLocalFile(t *testing.T) {
 	response := state.InlayHints(1, uri)
 	if !hasInlayLabel(response.Result, "foo: ") {
 		t.Fatalf("missing inlay hint for local helpers: %v", response.Result)
+	}
+	if !hasInlayLabel(response.Result, "helpers::") {
+		t.Fatalf("missing include origin inlay hint for local helpers: %v", response.Result)
 	}
 }
 
@@ -194,6 +200,9 @@ func TestInlayHintsUseIncludedStdlibZM(t *testing.T) {
 	if !hasInlayLabel(response.Result, "seconds: ") {
 		t.Fatalf("missing inlay hint for convertsecondstomilliseconds: %v", response.Result)
 	}
+	if !hasInlayLabel(response.Result, "maps\\mp\\zombies\\_zm_utility::") {
+		t.Fatalf("missing include origin inlay hint for stdlib utility: %v", response.Result)
+	}
 }
 
 func TestInlayHintsUseIncludedStdlibZMCaseInsensitive(t *testing.T) {
@@ -220,6 +229,9 @@ func TestInlayHintsUseBuiltinWithoutIncludes(t *testing.T) {
 	response := state.InlayHints(1, uri)
 	if !hasInlayLabel(response.Result, "event: ") {
 		t.Fatalf("missing builtin waittill inlay hint: %v", response.Result)
+	}
+	if hasAnyOriginHint(response.Result) {
+		t.Fatalf("unexpected include origin inlay hint for builtin call: %v", response.Result)
 	}
 }
 
@@ -248,6 +260,9 @@ func TestBuiltinDoesNotOverrideLocalDeclaration(t *testing.T) {
 	if !hasInlayLabel(response.Result, "duration: ") {
 		t.Fatalf("missing local wait inlay hint: %v", response.Result)
 	}
+	if hasAnyOriginHint(response.Result) {
+		t.Fatalf("unexpected include origin inlay hint for local declaration: %v", response.Result)
+	}
 }
 
 func TestHoverUsesQualifiedStdlibMP(t *testing.T) {
@@ -274,6 +289,9 @@ func TestInlayHintsUseQualifiedStdlibMP(t *testing.T) {
 	response := state.InlayHints(1, uri)
 	if !hasInlayLabel(response.Result, "array: ") {
 		t.Fatalf("missing inlay hint for array_copy: %v", response.Result)
+	}
+	if hasInlayLabel(response.Result, "common_scripts\\utility::") {
+		t.Fatalf("unexpected include origin inlay hint for qualified call: %v", response.Result)
 	}
 }
 
@@ -382,6 +400,15 @@ func hasFunction(signatures []FunctionSignature, name string) bool {
 func hasInlayLabel(hints []lsp.InlayHint, label string) bool {
 	for _, hint := range hints {
 		if hint.Label == label {
+			return true
+		}
+	}
+	return false
+}
+
+func hasAnyOriginHint(hints []lsp.InlayHint) bool {
+	for _, hint := range hints {
+		if strings.HasSuffix(hint.Label, "::") {
 			return true
 		}
 	}
