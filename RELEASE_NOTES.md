@@ -1,5 +1,11 @@
 # Release Notes
 
+## 0.0.6.9
+
+- Adds include-origin inlay hints for unqualified included function calls, shown as `include\\path::` at the call site.
+- Keeps origin hints hidden for local declarations, builtins, and already-qualified calls to avoid redundant noise.
+- Restricts code actions to `quickfix` only so VS Code surfaces them as regular code actions instead of source actions.
+
 ## 0.0.6.8
 
 - Fixes VS Code code action discovery by improving code action kind filtering behavior for client `only` requests.
