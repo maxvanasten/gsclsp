@@ -239,6 +239,35 @@ func TestInlayHintOriginForMethodCallAnchorsBeforeFunctionName(t *testing.T) {
 	}
 }
 
+func TestInlayHintOriginForThreadCallAnchorsBeforeFunctionName(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "#include common_scripts\\utility;\n" +
+		"main() { level thread array_copy(foo); }\n"
+
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+	originLabel := "common_scripts\\utility::"
+	hint, ok := findInlayHintByLabel(response.Result, originLabel)
+	if !ok {
+		t.Fatalf("missing include origin inlay hint for thread call: %v", response.Result)
+	}
+
+	line := strings.Split(text, "\n")[1]
+	functionCol := strings.Index(line, "array_copy")
+	if functionCol < 0 {
+		t.Fatalf("test setup missing function call in line: %q", line)
+	}
+
+	if hint.Position.Line != 1 {
+		t.Fatalf("origin hint line = %d, want 1", hint.Position.Line)
+	}
+	if hint.Position.Character != functionCol {
+		t.Fatalf("origin hint column = %d, want %d", hint.Position.Character, functionCol)
+	}
+}
+
 func TestInlayHintsUseBuiltinWithoutIncludes(t *testing.T) {
 	requireGscp(t)
 	state := NewState()

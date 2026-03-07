@@ -31,95 +31,96 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 	}
 
 	allowOpenCallHints := len(tokens) <= maxTokenCountForOpenCallHints
-	tokenIndex := map[int][]l.Token{}
-	if allowOpenCallHints {
-		tokenIndex = indexTokensByLine(tokens)
-	}
+	tokenIndex := indexTokensByLine(tokens)
 
-	for _, n := range nodes {
-		if n.Type != "function_call" {
-			if len(n.Children) > 0 {
-				hints = append(hints, GenerateInlayHints(signatures, n.Children, tokens, resolve)...)
-			}
-			continue
-		}
-
-		callName := functionCallName(n)
-		resolved, ok := resolve(callName)
-		if !ok || len(resolved.Signature.Arguments) == 0 {
-			continue
-		}
-		if n.Line <= 0 || n.Col <= 0 {
-			continue
-		}
-		labels := resolved.Signature.Arguments
-		anchorLine := n.Line - 1
-		if anchorLine < 0 {
-			anchorLine = 0
-		}
-		callCol := functionCallLabelCol(n)
-		anchorCol := callCol
-		if n.Data.FunctionName != "" {
-			anchorCol = callCol + len(n.Data.FunctionName) + 1
-		}
-		if anchorCol < 0 {
-			anchorCol = 0
-		}
-		if resolved.ShowOrigin && resolved.OriginLabel != "" {
-			hints = append(hints, lsp.InlayHint{
-				Position: lsp.Position{
-					Line:      anchorLine,
-					Character: callCol,
-				},
-				Label: resolved.OriginLabel,
-			})
-		}
-
-		if len(n.Children) > 0 {
-			for i, a := range n.Children {
-				if i >= len(labels) {
-					break
+	var walk func([]p.Node)
+	walk = func(nodes []p.Node) {
+		for _, n := range nodes {
+			if n.Type != "function_call" {
+				if len(n.Children) > 0 {
+					walk(n.Children)
 				}
-				label := labels[i] + ": "
-				col := a.Col - 1
-				if col <= 0 {
-					col = anchorCol
+				continue
+			}
+
+			callName := functionCallName(n)
+			resolved, ok := resolve(callName)
+			if !ok || len(resolved.Signature.Arguments) == 0 {
+				continue
+			}
+			if n.Line <= 0 || n.Col <= 0 {
+				continue
+			}
+			labels := resolved.Signature.Arguments
+			anchorLine := n.Line - 1
+			if anchorLine < 0 {
+				anchorLine = 0
+			}
+			lineTokens := tokenIndex[n.Line]
+			callCol := functionCallLabelCol(n, lineTokens)
+			anchorCol := callCol
+			if n.Data.FunctionName != "" {
+				anchorCol = callCol + len(n.Data.FunctionName) + 1
+			}
+			if anchorCol < 0 {
+				anchorCol = 0
+			}
+			if resolved.ShowOrigin && resolved.OriginLabel != "" {
+				hints = append(hints, lsp.InlayHint{
+					Position: lsp.Position{
+						Line:      anchorLine,
+						Character: callCol,
+					},
+					Label: resolved.OriginLabel,
+				})
+			}
+
+			if len(n.Children) > 0 {
+				for i, a := range n.Children {
+					if i >= len(labels) {
+						break
+					}
+					label := labels[i] + ": "
+					col := a.Col - 1
+					if col <= 0 {
+						col = anchorCol
+					}
+					hints = append(hints, lsp.InlayHint{
+						Position: lsp.Position{
+							Line:      anchorLine,
+							Character: col,
+						},
+						Label: label,
+					})
+				}
+				continue
+			}
+
+			if !allowOpenCallHints {
+				continue
+			}
+
+			if !callClosedOnLine(lineTokens, callName) {
+				paramIndex, stubCol, ok := openCallParamAnchor(lineTokens, callName)
+				if !ok || paramIndex >= len(labels) {
+					continue
+				}
+				label := labels[paramIndex] + ": "
+				if stubCol < 0 {
+					stubCol = anchorCol
 				}
 				hints = append(hints, lsp.InlayHint{
 					Position: lsp.Position{
 						Line:      anchorLine,
-						Character: col,
+						Character: stubCol,
 					},
 					Label: label,
 				})
 			}
-			continue
-		}
-
-		if !allowOpenCallHints {
-			continue
-		}
-
-		lineTokens := tokenIndex[n.Line]
-		if !callClosedOnLine(lineTokens, callName) {
-			paramIndex, stubCol, ok := openCallParamAnchor(lineTokens, callName)
-			if !ok || paramIndex >= len(labels) {
-				continue
-			}
-			label := labels[paramIndex] + ": "
-			if stubCol < 0 {
-				stubCol = anchorCol
-			}
-			hints = append(hints, lsp.InlayHint{
-				Position: lsp.Position{
-					Line:      anchorLine,
-					Character: stubCol,
-				},
-				Label: label,
-			})
-			continue
 		}
 	}
+
+	walk(nodes)
 
 	return hints
 }
@@ -238,19 +239,109 @@ func functionCallName(n p.Node) string {
 	return n.Data.FunctionName
 }
 
-func functionCallLabelCol(n p.Node) int {
+func functionCallLabelCol(n p.Node, lineTokens []l.Token) int {
+	if col, ok := functionCallLabelColFromTokens(n, lineTokens); ok {
+		return col
+	}
+
 	col := n.Col - 1
 	if col < 0 {
 		col = 0
 	}
 	if n.Data.Method == "" {
+		if n.Data.Thread {
+			col += len("thread ")
+		}
 		return col
 	}
 	col += len(n.Data.Method) + 1
+	if n.Data.Thread {
+		col += len("thread ")
+	}
 	if col < 0 {
 		return 0
 	}
 	return col
+}
+
+func functionCallLabelColFromTokens(n p.Node, lineTokens []l.Token) (int, bool) {
+	if len(lineTokens) == 0 {
+		return 0, false
+	}
+
+	callName := functionCallName(n)
+	if callName == "" {
+		return 0, false
+	}
+
+	startCol := n.Col - 1
+	if startCol < 0 {
+		startCol = 0
+	}
+
+	closestBeforeCol := -1
+	closestBeforeDistance := 0
+	for i, tok := range lineTokens {
+		if tok.Type != l.SYMBOL || !tokenMatchesFunction(tok.Content, callName) {
+			continue
+		}
+		if !symbolStartsFunctionCall(lineTokens, i) {
+			continue
+		}
+
+		candidateCol := tokenFunctionNameCol(tok.Content, n.Data.FunctionName, tok.Col-1)
+		if candidateCol >= startCol {
+			return candidateCol, true
+		}
+
+		distance := startCol - candidateCol
+		if closestBeforeCol < 0 || distance < closestBeforeDistance {
+			closestBeforeCol = candidateCol
+			closestBeforeDistance = distance
+		}
+	}
+
+	if closestBeforeCol >= 0 {
+		return closestBeforeCol, true
+	}
+
+	return 0, false
+}
+
+func symbolStartsFunctionCall(lineTokens []l.Token, index int) bool {
+	for i := index + 1; i < len(lineTokens); i++ {
+		switch lineTokens[i].Type {
+		case l.OPEN_PAREN:
+			return true
+		case l.LINE_COMMENT, l.BLOCK_COMMENT:
+			continue
+		case l.NEWLINE, l.TERMINATOR:
+			return false
+		default:
+			return false
+		}
+	}
+
+	return false
+}
+
+func tokenFunctionNameCol(tokenContent, functionName string, tokenCol int) int {
+	if tokenCol < 0 {
+		tokenCol = 0
+	}
+	if functionName == "" {
+		return tokenCol
+	}
+	if tokenContent == functionName {
+		return tokenCol
+	}
+	if strings.HasSuffix(tokenContent, "::"+functionName) {
+		return tokenCol + len(tokenContent) - len(functionName)
+	}
+	if _, tokenFunctionName, ok := splitQualifiedName(tokenContent); ok && tokenFunctionName == functionName {
+		return tokenCol + len(tokenContent) - len(functionName)
+	}
+	return tokenCol
 }
 
 func indexTokensByLine(tokens []l.Token) map[int][]l.Token {
