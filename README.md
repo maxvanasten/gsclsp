@@ -133,12 +133,17 @@ To regenerate stdlib signatures from local script roots:
 go run ./cmd/stdlibgen \
   --mp-root "/path/to/t6-source/mp/core" \
   --zm-root "/path/to/t6-source/zm/core" \
+  --mp-maps-root "/path/to/t6-source/mp/maps" \
+  --zm-maps-root "/path/to/t6-source/zm/maps" \
   --out "analysis/stdlib_signatures.json"
 ```
 
 Notes:
 
 - Both `--mp-root` and `--zm-root` are required.
+- `--mp-maps-root` and `--zm-maps-root` are optional and include map-specific scripts.
+- Map roots scan each map directory's `maps/mp` subtree only.
+- Map-specific scripts are normalized to runtime include keys under `maps/mp/...`.
 - The generator walks `.gsc` files, parses with `gscp`, and writes a JSON bundle keyed by normalized include paths.
 
 ## Development
