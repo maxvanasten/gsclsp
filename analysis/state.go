@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/maxvanasten/gsclsp/lsp"
@@ -484,8 +485,8 @@ func generateSelfContextInlayHints(nodes []p.Node, tokens []l.Token) []lsp.Inlay
 		return []lsp.InlayHint{}
 	}
 
-	receiverByFunction := collectFunctionReceivers(nodes)
-	if len(receiverByFunction) == 0 {
+	receiversByFunction := collectFunctionReceivers(nodes)
+	if len(receiversByFunction) == 0 {
 		return []lsp.InlayHint{}
 	}
 
@@ -499,9 +500,31 @@ func generateSelfContextInlayHints(nodes []p.Node, tokens []l.Token) []lsp.Inlay
 			continue
 		}
 
-		receiver, ok := receiverByFunction[name]
-		if !ok || receiver == "" || strings.EqualFold(receiver, "self") {
+		receivers, ok := receiversByFunction[name]
+		if !ok || len(receivers) == 0 {
 			continue
+		}
+
+		resolvedReceivers := make([]string, 0, len(receivers))
+		for _, receiver := range receivers {
+			if receiver == "" || strings.EqualFold(receiver, "self") {
+				continue
+			}
+			resolvedReceivers = append(resolvedReceivers, receiver)
+		}
+		if len(resolvedReceivers) == 0 {
+			continue
+		}
+
+		labelReceivers := resolvedReceivers
+		overflow := false
+		if len(labelReceivers) > 3 {
+			labelReceivers = labelReceivers[:3]
+			overflow = true
+		}
+		label := " -> " + strings.Join(labelReceivers, ", ")
+		if overflow {
+			label += ", ..."
 		}
 
 		startLine := declaration.Line
@@ -517,7 +540,7 @@ func generateSelfContextInlayHints(nodes []p.Node, tokens []l.Token) []lsp.Inlay
 				}
 				hints = append(hints, lsp.InlayHint{
 					Position: lsp.Position{Line: line - 1, Character: token.EndCol},
-					Label:    " -> " + receiver,
+					Label:    label,
 				})
 			}
 		}
@@ -526,7 +549,7 @@ func generateSelfContextInlayHints(nodes []p.Node, tokens []l.Token) []lsp.Inlay
 	return hints
 }
 
-func collectFunctionReceivers(nodes []p.Node) map[string]string {
+func collectFunctionReceivers(nodes []p.Node) map[string][]string {
 	receiverSets := map[string]map[string]struct{}{}
 	type selfReceiverEdge struct {
 		caller string
@@ -590,17 +613,21 @@ func collectFunctionReceivers(nodes []p.Node) map[string]string {
 		}
 	}
 
-	receiverByFunction := map[string]string{}
+	receiversByFunction := map[string][]string{}
 	for functionName, receivers := range receiverSets {
-		if len(receivers) != 1 {
+		if len(receivers) == 0 {
 			continue
 		}
+
+		sortedReceivers := make([]string, 0, len(receivers))
 		for receiver := range receivers {
-			receiverByFunction[functionName] = receiver
+			sortedReceivers = append(sortedReceivers, receiver)
 		}
+		sort.Strings(sortedReceivers)
+		receiversByFunction[functionName] = sortedReceivers
 	}
 
-	return receiverByFunction
+	return receiversByFunction
 }
 
 func collectFunctionDeclarations(nodes []p.Node) []p.Node {

@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.0.7.3
+
+- Updates `self` context inlay hints to show combined receiver candidates for ambiguous call paths instead of hiding the hint.
+- Caps combined receiver output at three entries and appends `...` when more candidates exist (for example ` -> a, b, c, ...`).
+
 ## 0.0.7.2
 
 - Preserves a single intentional blank line between top-level statements during formatting while still collapsing larger blank-line runs to one.

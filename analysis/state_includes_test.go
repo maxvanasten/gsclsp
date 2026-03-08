@@ -340,7 +340,7 @@ func TestInlayHintsShowSelfContextForUniqueThreadReceiver(t *testing.T) {
 	}
 }
 
-func TestInlayHintsDoNotShowSelfContextForAmbiguousThreadReceivers(t *testing.T) {
+func TestInlayHintsShowCombinedSelfContextForAmbiguousThreadReceivers(t *testing.T) {
 	requireGscp(t)
 	state := NewState()
 	uri := "file:///tmp/mp/maps/mp/test.gsc"
@@ -350,8 +350,23 @@ func TestInlayHintsDoNotShowSelfContextForAmbiguousThreadReceivers(t *testing.T)
 	state.OpenDocument(uri, text)
 	response := state.InlayHints(1, uri)
 
-	if hasInlayLabel(response.Result, " -> player") || hasInlayLabel(response.Result, " -> level") {
-		t.Fatalf("expected no self-context inlay hint for ambiguous receivers, got: %v", response.Result)
+	if !hasInlayLabel(response.Result, " -> level, player") {
+		t.Fatalf("expected combined self-context inlay hint for ambiguous receivers, got: %v", response.Result)
+	}
+}
+
+func TestInlayHintsSelfContextShowsAtMostThreeReceiversThenEllipsis(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "somefunc() { self iprintln(); }\n" +
+		"main() { a thread somefunc(); b thread somefunc(); c thread somefunc(); d thread somefunc(); }\n"
+
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+
+	if !hasInlayLabel(response.Result, " -> a, b, c, ...") {
+		t.Fatalf("expected truncated self-context inlay hint for many receivers, got: %v", response.Result)
 	}
 }
 
