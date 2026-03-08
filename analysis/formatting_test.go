@@ -91,6 +91,43 @@ func TestFormattingPreservesComments(t *testing.T) {
 	}
 }
 
+func TestFormattingPreservesSingleBlankLineBetweenTopLevelNodes(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "foo(){wait 0.05;}\n\nbar(){wait 0.05;}"
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(8, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if !strings.Contains(formatted, "}\n\nbar()") {
+		t.Fatalf("expected a single blank line between top-level nodes, got: %q", formatted)
+	}
+}
+
+func TestFormattingCollapsesMultipleBlankLinesBetweenTopLevelNodes(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "foo(){wait 0.05;}\n\n\n\nbar(){wait 0.05;}"
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(9, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if strings.Contains(formatted, "\n\n\n") {
+		t.Fatalf("expected multiple blank lines to be collapsed, got: %q", formatted)
+	}
+	if !strings.Contains(formatted, "}\n\nbar()") {
+		t.Fatalf("expected one blank line to remain between top-level nodes, got: %q", formatted)
+	}
+}
+
 func TestFormattingReturnsNoEditsOnParseFailure(t *testing.T) {
 	t.Setenv("PATH", "")
 	state := NewState()

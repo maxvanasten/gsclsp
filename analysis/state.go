@@ -468,6 +468,7 @@ func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
 		}, true
 	}
 	inlayHints := GenerateInlayHints(signatures, s.Ast[uri], s.Tokens[uri], resolver)
+	inlayHints = append(inlayHints, generateSelfContextInlayHints(s.Ast[uri], s.Tokens[uri])...)
 
 	return lsp.InlayHintResponse{
 		Response: lsp.Response{
@@ -476,6 +477,111 @@ func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
 		},
 		Result: inlayHints,
 	}
+}
+
+func generateSelfContextInlayHints(nodes []p.Node, tokens []l.Token) []lsp.InlayHint {
+	if len(nodes) == 0 || len(tokens) == 0 {
+		return []lsp.InlayHint{}
+	}
+
+	receiverByFunction := collectThreadCallReceivers(nodes)
+	if len(receiverByFunction) == 0 {
+		return []lsp.InlayHint{}
+	}
+
+	tokenIndex := indexTokensByLine(tokens)
+	declarations := collectFunctionDeclarations(nodes)
+	hints := make([]lsp.InlayHint, 0)
+
+	for _, declaration := range declarations {
+		name := strings.ToLower(strings.TrimSpace(declaration.Data.FunctionName))
+		if name == "" {
+			continue
+		}
+
+		receiver, ok := receiverByFunction[name]
+		if !ok || receiver == "" || strings.EqualFold(receiver, "self") {
+			continue
+		}
+
+		startLine := declaration.Line
+		endLine := nodeEndLine(declaration)
+		if startLine <= 0 || endLine < startLine {
+			continue
+		}
+
+		for line := startLine; line <= endLine; line++ {
+			for _, token := range tokenIndex[line] {
+				if token.Type != l.SYMBOL || !strings.EqualFold(token.Content, "self") {
+					continue
+				}
+				col := token.Col - 1
+				if col < 0 {
+					col = 0
+				}
+				hints = append(hints, lsp.InlayHint{
+					Position: lsp.Position{Line: line - 1, Character: token.EndCol},
+					Label:    " -> " + receiver,
+				})
+			}
+		}
+	}
+
+	return hints
+}
+
+func collectThreadCallReceivers(nodes []p.Node) map[string]string {
+	receiverSets := map[string]map[string]struct{}{}
+	var walk func([]p.Node)
+	walk = func(items []p.Node) {
+		for _, node := range items {
+			if node.Type == "function_call" && node.Data.Thread {
+				name := strings.ToLower(strings.TrimSpace(node.Data.FunctionName))
+				receiver := strings.TrimSpace(node.Data.Method)
+				if name != "" && receiver != "" {
+					if _, ok := receiverSets[name]; !ok {
+						receiverSets[name] = map[string]struct{}{}
+					}
+					receiverSets[name][receiver] = struct{}{}
+				}
+			}
+			if len(node.Children) > 0 {
+				walk(node.Children)
+			}
+		}
+	}
+
+	walk(nodes)
+
+	receiverByFunction := map[string]string{}
+	for functionName, receivers := range receiverSets {
+		if len(receivers) != 1 {
+			continue
+		}
+		for receiver := range receivers {
+			receiverByFunction[functionName] = receiver
+		}
+	}
+
+	return receiverByFunction
+}
+
+func collectFunctionDeclarations(nodes []p.Node) []p.Node {
+	declarations := []p.Node{}
+	var walk func([]p.Node)
+	walk = func(items []p.Node) {
+		for _, node := range items {
+			if node.Type == "function_declaration" {
+				declarations = append(declarations, node)
+			}
+			if len(node.Children) > 0 {
+				walk(node.Children)
+			}
+		}
+	}
+
+	walk(nodes)
+	return declarations
 }
 
 func resolveInlayCallFast(

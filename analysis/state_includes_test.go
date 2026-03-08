@@ -314,6 +314,47 @@ func TestBuiltinDoesNotOverrideLocalDeclaration(t *testing.T) {
 	}
 }
 
+func TestInlayHintsShowSelfContextForUniqueThreadReceiver(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "somefunc() { self iprintln(); }\n" +
+		"main() { player thread somefunc(); }\n"
+
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+
+	if countInlayLabels(response.Result, " -> player") != 1 {
+		t.Fatalf("expected one self-context inlay hint for player receiver, got: %v", response.Result)
+	}
+
+	hint, ok := findInlayHintByLabel(response.Result, " -> player")
+	if !ok {
+		t.Fatalf("missing self-context inlay hint for player receiver: %v", response.Result)
+	}
+
+	selfPos := positionForLine(text, 0, "self")
+	selfEndPos := lsp.Position{Line: selfPos.Line, Character: selfPos.Character + len("self")}
+	if hint.Position.Line != selfEndPos.Line || hint.Position.Character != selfEndPos.Character {
+		t.Fatalf("self-context hint position = (%d,%d), want (%d,%d)", hint.Position.Line, hint.Position.Character, selfEndPos.Line, selfEndPos.Character)
+	}
+}
+
+func TestInlayHintsDoNotShowSelfContextForAmbiguousThreadReceivers(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "somefunc() { self iprintln(); }\n" +
+		"main() { player thread somefunc(); level thread somefunc(); }\n"
+
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+
+	if hasInlayLabel(response.Result, " -> player") || hasInlayLabel(response.Result, " -> level") {
+		t.Fatalf("expected no self-context inlay hint for ambiguous receivers, got: %v", response.Result)
+	}
+}
+
 func TestHoverUsesQualifiedStdlibMP(t *testing.T) {
 	requireGscp(t)
 	state := NewState()
@@ -471,6 +512,16 @@ func hasAnyOriginHint(hints []lsp.InlayHint) bool {
 		}
 	}
 	return false
+}
+
+func countInlayLabels(hints []lsp.InlayHint, label string) int {
+	count := 0
+	for _, hint := range hints {
+		if hint.Label == label {
+			count++
+		}
+	}
+	return count
 }
 
 func positionForLine(text string, line int, needle string) lsp.Position {

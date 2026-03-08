@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.0.7.2
+
+- Preserves a single intentional blank line between top-level statements during formatting while still collapsing larger blank-line runs to one.
+- Adds `self` context inline hints inferred from unambiguous threaded call receivers, rendered after `self` as ` -> receiver`.
+
 ## 0.0.7.1
 
 - Fixes include-origin inlay hint placement for method calls so origin labels render before the function name instead of before the method receiver object.

@@ -6,6 +6,7 @@ import (
 	"github.com/maxvanasten/gsclsp/lsp"
 	"github.com/maxvanasten/gscp/diagnostics"
 	"github.com/maxvanasten/gscp/generator"
+	p "github.com/maxvanasten/gscp/parser"
 )
 
 const formattingFallbackTabSize = 4
@@ -34,7 +35,7 @@ func (s *State) Formatting(id int, uri string, options lsp.FormattingOptions) ls
 	for _, node := range parseResult.Ast {
 		formattedLines = append(formattedLines, generator.Generate(node))
 	}
-	formatted := strings.Join(formattedLines, "\n")
+	formatted := joinFormattedNodesWithOriginalSpacing(parseResult.Ast, formattedLines)
 
 	if formatted == original {
 		return formattingResponse(id, nil)
@@ -92,4 +93,46 @@ func fullDocumentRange(text string) lsp.Range {
 		Start: lsp.Position{Line: 0, Character: 0},
 		End:   lsp.Position{Line: lastLine, Character: lastChar},
 	}
+}
+
+func joinFormattedNodesWithOriginalSpacing(nodes []p.Node, formatted []string) string {
+	if len(formatted) == 0 {
+		return ""
+	}
+	if len(formatted) == 1 || len(nodes) != len(formatted) {
+		return strings.Join(formatted, "\n")
+	}
+
+	var b strings.Builder
+	for i, current := range formatted {
+		if i > 0 {
+			separator := "\n"
+			if hasBlankLineBetweenNodes(nodes[i-1], nodes[i]) {
+				separator = "\n\n"
+			}
+			b.WriteString(separator)
+		}
+		b.WriteString(current)
+	}
+	return b.String()
+}
+
+func hasBlankLineBetweenNodes(previous, next p.Node) bool {
+	previousEnd := nodeEndLine(previous)
+	nextStart := next.Line
+	if previousEnd <= 0 || nextStart <= 0 {
+		return false
+	}
+	return nextStart-previousEnd > 1
+}
+
+func nodeEndLine(node p.Node) int {
+	end := node.Line
+	for _, child := range node.Children {
+		childEnd := nodeEndLine(child)
+		if childEnd > end {
+			end = childEnd
+		}
+	}
+	return end
 }
