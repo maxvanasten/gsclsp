@@ -4,6 +4,7 @@
 
 - Preserves a single intentional blank line between top-level statements during formatting while still collapsing larger blank-line runs to one.
 - Adds `self` context inline hints inferred from unambiguous threaded call receivers, rendered after `self` as ` -> receiver`.
+- Fixes `self` receiver propagation across nested `self` calls so downstream inlay hints keep the concrete receiver context (for example `player`) instead of falling back to `self`.
 
 ## 0.0.7.1
 

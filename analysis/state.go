@@ -484,7 +484,7 @@ func generateSelfContextInlayHints(nodes []p.Node, tokens []l.Token) []lsp.Inlay
 		return []lsp.InlayHint{}
 	}
 
-	receiverByFunction := collectThreadCallReceivers(nodes)
+	receiverByFunction := collectFunctionReceivers(nodes)
 	if len(receiverByFunction) == 0 {
 		return []lsp.InlayHint{}
 	}
@@ -515,10 +515,6 @@ func generateSelfContextInlayHints(nodes []p.Node, tokens []l.Token) []lsp.Inlay
 				if token.Type != l.SYMBOL || !strings.EqualFold(token.Content, "self") {
 					continue
 				}
-				col := token.Col - 1
-				if col < 0 {
-					col = 0
-				}
 				hints = append(hints, lsp.InlayHint{
 					Position: lsp.Position{Line: line - 1, Character: token.EndCol},
 					Label:    " -> " + receiver,
@@ -530,28 +526,69 @@ func generateSelfContextInlayHints(nodes []p.Node, tokens []l.Token) []lsp.Inlay
 	return hints
 }
 
-func collectThreadCallReceivers(nodes []p.Node) map[string]string {
+func collectFunctionReceivers(nodes []p.Node) map[string]string {
 	receiverSets := map[string]map[string]struct{}{}
-	var walk func([]p.Node)
-	walk = func(items []p.Node) {
+	type selfReceiverEdge struct {
+		caller string
+		callee string
+	}
+	selfEdges := []selfReceiverEdge{}
+
+	var walk func(items []p.Node, currentFunction string)
+	walk = func(items []p.Node, currentFunction string) {
 		for _, node := range items {
-			if node.Type == "function_call" && node.Data.Thread {
+			if node.Type == "function_declaration" {
+				nextFunction := strings.ToLower(strings.TrimSpace(node.Data.FunctionName))
+				walk(node.Children, nextFunction)
+				continue
+			}
+
+			if node.Type == "function_call" {
 				name := strings.ToLower(strings.TrimSpace(node.Data.FunctionName))
 				receiver := strings.TrimSpace(node.Data.Method)
 				if name != "" && receiver != "" {
-					if _, ok := receiverSets[name]; !ok {
-						receiverSets[name] = map[string]struct{}{}
+					if strings.EqualFold(receiver, "self") {
+						if currentFunction != "" {
+							selfEdges = append(selfEdges, selfReceiverEdge{caller: currentFunction, callee: name})
+						}
+					} else {
+						if _, ok := receiverSets[name]; !ok {
+							receiverSets[name] = map[string]struct{}{}
+						}
+						receiverSets[name][receiver] = struct{}{}
 					}
-					receiverSets[name][receiver] = struct{}{}
 				}
 			}
 			if len(node.Children) > 0 {
-				walk(node.Children)
+				walk(node.Children, currentFunction)
 			}
 		}
 	}
 
-	walk(nodes)
+	walk(nodes, "")
+
+	changed := true
+	for changed {
+		changed = false
+		for _, edge := range selfEdges {
+			callerReceivers, ok := receiverSets[edge.caller]
+			if !ok || len(callerReceivers) == 0 {
+				continue
+			}
+			calleeReceivers, ok := receiverSets[edge.callee]
+			if !ok {
+				calleeReceivers = map[string]struct{}{}
+				receiverSets[edge.callee] = calleeReceivers
+			}
+			for receiver := range callerReceivers {
+				if _, exists := calleeReceivers[receiver]; exists {
+					continue
+				}
+				calleeReceivers[receiver] = struct{}{}
+				changed = true
+			}
+		}
+	}
 
 	receiverByFunction := map[string]string{}
 	for functionName, receivers := range receiverSets {

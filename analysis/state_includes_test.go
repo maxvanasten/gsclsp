@@ -355,6 +355,38 @@ func TestInlayHintsDoNotShowSelfContextForAmbiguousThreadReceivers(t *testing.T)
 	}
 }
 
+func TestInlayHintsPropagateThreadReceiverThroughSelfThreadCall(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "outer() { self thread inner(); }\n" +
+		"inner() { self iprintln(); }\n" +
+		"main() { player thread outer(); }\n"
+
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+
+	if !hasInlayLabel(response.Result, " -> player") {
+		t.Fatalf("expected propagated self-context hint for inner() receiver, got: %v", response.Result)
+	}
+}
+
+func TestInlayHintsPropagateReceiverThroughSelfCall(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "outer() { self inner(); }\n" +
+		"inner() { self iprintln(); }\n" +
+		"main() { player thread outer(); }\n"
+
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+
+	if !hasInlayLabel(response.Result, " -> player") {
+		t.Fatalf("expected propagated self-context hint for non-thread self call, got: %v", response.Result)
+	}
+}
+
 func TestHoverUsesQualifiedStdlibMP(t *testing.T) {
 	requireGscp(t)
 	state := NewState()
