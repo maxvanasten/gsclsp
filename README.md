@@ -101,6 +101,16 @@ Optional install:
 sudo mv ./gsclsp /usr/local/bin/gsclsp
 ```
 
+Helper scripts:
+
+```bash
+./scripts/dev-check.sh
+./scripts/build-local.sh
+./scripts/build-releases.sh
+```
+
+Script environment variables are documented in `scripts/README.md`.
+
 ## Neovim setup
 
 Example Neovim LSP configuration:
@@ -159,6 +169,26 @@ Important test notes:
 
 - Many analysis tests require `gscp` to be installed.
 - Include-based inlay tests create temporary fixture files at runtime and do not require repo-local test fixture files.
+
+## Release checklist
+
+Before building a new release:
+
+1. Update the version in `lsp/initialize.go` and `README.md`.
+2. Add release notes to `RELEASE_NOTES.md`.
+3. Run quality checks:
+
+   ```bash
+   ./scripts/dev-check.sh
+   ```
+
+4. Build release artifacts:
+
+   ```bash
+   ./scripts/build-releases.sh
+   ```
+
+5. Create a draft GitHub release and attach files from `dist/`.
 
 ## Project structure
 

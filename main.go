@@ -71,7 +71,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		logger.Printf("Connected to: %s %s", request.Params.ClientInfo.Name, request.Params.ClientInfo.Version)
 
 		msg := lsp.NewInitializeResponse(request.ID)
-		writeResponse(writer, msg)
+		writeResponse(logger, writer, msg)
 
 		logger.Print("Sent the reply")
 	case "textDocument/didOpen":
@@ -81,7 +81,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		logger.Printf("Opened: %s", request.Params.TextDocument.URI)
 
 		state.OpenDocument(request.Params.TextDocument.URI, request.Params.TextDocument.Text)
-		publishDiagnostics(writer, request.Params.TextDocument.URI, state.Diagnostics[request.Params.TextDocument.URI])
+		publishDiagnostics(logger, writer, request.Params.TextDocument.URI, state.Diagnostics[request.Params.TextDocument.URI])
 	case "textDocument/didChange":
 		var request lsp.TextDocumentDidChangeNotification
 		if !decodeRequest(logger, contents, &request, "textDocument/didChange") {
@@ -92,7 +92,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		for _, change := range request.Params.ContentChanges {
 			state.UpdateDocument(request.Params.TextDocument.URI, change.Text)
 		}
-		publishDiagnostics(writer, request.Params.TextDocument.URI, state.Diagnostics[request.Params.TextDocument.URI])
+		publishDiagnostics(logger, writer, request.Params.TextDocument.URI, state.Diagnostics[request.Params.TextDocument.URI])
 	case "textDocument/hover":
 		var request lsp.HoverRequest
 		if !decodeRequest(logger, contents, &request, "textDocument/hover") {
@@ -100,7 +100,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		}
 
 		response := state.Hover(request.ID, request.Params.TextDocument.URI, request.Params.Position)
-		writeResponse(writer, response)
+		writeResponse(logger, writer, response)
 
 	case "textDocument/definition", "textdocument/definition":
 		var request lsp.DefinitionRequest
@@ -109,7 +109,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		}
 
 		response := state.Definition(request.ID, request.Params.TextDocument.URI, request.Params.Position)
-		writeResponse(writer, response)
+		writeResponse(logger, writer, response)
 	case "textDocument/completion":
 		var request lsp.CompletionRequest
 		if !decodeRequest(logger, contents, &request, "textDocument/completion") {
@@ -117,7 +117,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		}
 
 		response := state.Completion(request.ID, request.Params.TextDocument.URI, request.Params.Position)
-		writeResponse(writer, response)
+		writeResponse(logger, writer, response)
 	case "textDocument/semanticTokens/full":
 		var request lsp.SemanticTokensRequest
 		if !decodeRequest(logger, contents, &request, "textDocument/semanticTokens/full") {
@@ -125,7 +125,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		}
 
 		response := state.SemanticTokens(request.ID, request.Params.TextDocument.URI)
-		writeResponse(writer, response)
+		writeResponse(logger, writer, response)
 		logger.Printf("semantic_tokens: %d tokens", len(response.Result.Data)/5)
 	case "textDocument/inlayHint":
 		var request lsp.InlayHintRequest
@@ -134,7 +134,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		}
 
 		response := state.InlayHints(request.ID, request.Params.TextDocument.URI)
-		writeResponse(writer, response)
+		writeResponse(logger, writer, response)
 		logger.Printf("inlay_hints: %d", len(response.Result))
 	case "textDocument/formatting":
 		var request lsp.DocumentFormattingRequest
@@ -143,7 +143,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		}
 
 		response := state.Formatting(request.ID, request.Params.TextDocument.URI, request.Params.Options)
-		writeResponse(writer, response)
+		writeResponse(logger, writer, response)
 	case "textDocument/codeAction":
 		var request lsp.CodeActionRequest
 		if !decodeRequest(logger, contents, &request, "textDocument/codeAction") {
@@ -156,7 +156,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 				Response: lsp.Response{RPC: "2.0", ID: &request.ID},
 				Result:   []lsp.CodeAction{},
 			}
-			writeResponse(writer, response)
+			writeResponse(logger, writer, response)
 			return
 		}
 
@@ -174,7 +174,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 				},
 			},
 		}
-		writeResponse(writer, response)
+		writeResponse(logger, writer, response)
 	case "workspace/executeCommand":
 		var request lsp.ExecuteCommandRequest
 		if !decodeRequest(logger, contents, &request, "workspace/executeCommand") {
@@ -201,7 +201,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 			Response: lsp.Response{RPC: "2.0", ID: &request.ID},
 			Result:   result,
 		}
-		writeResponse(writer, response)
+		writeResponse(logger, writer, response)
 	}
 }
 
@@ -240,12 +240,18 @@ func decodeRequest(logger *log.Logger, contents []byte, target any, errPrefix st
 	return true
 }
 
-func writeResponse(writer io.Writer, msg any) {
-	reply := rpc.EncodeMessage(msg)
-	writer.Write([]byte(reply))
+func writeResponse(logger *log.Logger, writer io.Writer, msg any) {
+	reply, err := rpc.EncodeMessage(msg)
+	if err != nil {
+		logger.Printf("encode response error: %v", err)
+		return
+	}
+	if _, err := writer.Write([]byte(reply)); err != nil {
+		logger.Printf("write response error: %v", err)
+	}
 }
 
-func publishDiagnostics(writer io.Writer, uri string, diagnostics []lsp.Diagnostic) {
+func publishDiagnostics(logger *log.Logger, writer io.Writer, uri string, diagnostics []lsp.Diagnostic) {
 	if diagnostics == nil {
 		diagnostics = []lsp.Diagnostic{}
 	}
@@ -259,7 +265,7 @@ func publishDiagnostics(writer io.Writer, uri string, diagnostics []lsp.Diagnost
 			Diagnostics: diagnostics,
 		},
 	}
-	writeResponse(writer, msg)
+	writeResponse(logger, writer, msg)
 }
 
 func getLogger() *log.Logger {

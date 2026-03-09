@@ -1,0 +1,30 @@
+name: Release Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run checks
+        run: ./scripts/dev-check.sh
+
+      - name: Build release artifacts
+        env:
+          SKIP_STDLIB_GEN: "true"
+        run: ./scripts/build-releases.sh
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: gsclsp-release-binaries
+          path: dist/*
