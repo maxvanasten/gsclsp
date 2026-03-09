@@ -402,6 +402,47 @@ func TestInlayHintsPropagateReceiverThroughSelfCall(t *testing.T) {
 	}
 }
 
+func TestInlayHintsShowSelfContextForSelfPropertyAccess(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "somefunc() { self.weapon setValue(1); }\n" +
+		"main() { player thread somefunc(); }\n"
+
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+
+	hint, ok := findInlayHintByLabel(response.Result, " -> player.weapon")
+	if !ok {
+		t.Fatalf("missing self-context inlay hint for self property access: %v", response.Result)
+	}
+
+	line := strings.Split(text, "\n")[0]
+	selfPropertyCol := strings.Index(line, "self.weapon")
+	if selfPropertyCol < 0 {
+		t.Fatalf("test setup missing self property in line: %q", line)
+	}
+	want := selfPropertyCol + len("self.weapon")
+	if hint.Position.Line != 0 || hint.Position.Character != want {
+		t.Fatalf("self-property hint position = (%d,%d), want (0,%d)", hint.Position.Line, hint.Position.Character, want)
+	}
+}
+
+func TestInlayHintsShowCombinedSelfContextForSelfPropertyAccess(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "somefunc() { self.weapon setValue(1); }\n" +
+		"main() { player thread somefunc(); level thread somefunc(); }\n"
+
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+
+	if !hasInlayLabel(response.Result, " -> level.weapon, player.weapon") {
+		t.Fatalf("expected combined self-context inlay hint for self property access, got: %v", response.Result)
+	}
+}
+
 func TestHoverUsesQualifiedStdlibMP(t *testing.T) {
 	requireGscp(t)
 	state := NewState()

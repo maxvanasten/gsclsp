@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.0.7.4
+
+- Extends `self` context inlay hints to cover `self.property` access patterns so receiver context also appears on property method calls.
+- Refines property hint labels to append directly to each inferred receiver (for example ` -> level.weapon, player.weapon`) to avoid ambiguous interpretation.
+
 ## 0.0.7.3
 
 - Updates `self` context inlay hints to show combined receiver candidates for ambiguous call paths instead of hiding the hint.

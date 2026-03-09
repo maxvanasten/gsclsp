@@ -522,10 +522,6 @@ func generateSelfContextInlayHints(nodes []p.Node, tokens []l.Token) []lsp.Inlay
 			labelReceivers = labelReceivers[:3]
 			overflow = true
 		}
-		label := " -> " + strings.Join(labelReceivers, ", ")
-		if overflow {
-			label += ", ..."
-		}
 
 		startLine := declaration.Line
 		endLine := nodeEndLine(declaration)
@@ -535,18 +531,65 @@ func generateSelfContextInlayHints(nodes []p.Node, tokens []l.Token) []lsp.Inlay
 
 		for line := startLine; line <= endLine; line++ {
 			for _, token := range tokenIndex[line] {
-				if token.Type != l.SYMBOL || !strings.EqualFold(token.Content, "self") {
+				if token.Type != l.SYMBOL || !isSelfContextSymbol(token.Content) {
 					continue
 				}
+				tokenLabel := formatSelfContextLabel(labelReceivers, overflow, selfContextPropertySuffix(token.Content))
 				hints = append(hints, lsp.InlayHint{
-					Position: lsp.Position{Line: line - 1, Character: token.EndCol},
-					Label:    label,
+					Position: lsp.Position{Line: line - 1, Character: selfContextHintAnchor(token)},
+					Label:    tokenLabel,
 				})
 			}
 		}
 	}
 
 	return hints
+}
+
+func isSelfContextSymbol(content string) bool {
+	trimmed := strings.TrimSpace(content)
+	if trimmed == "" {
+		return false
+	}
+	return strings.EqualFold(trimmed, "self") || strings.HasPrefix(strings.ToLower(trimmed), "self.")
+}
+
+func selfContextPropertySuffix(content string) string {
+	trimmed := strings.TrimSpace(content)
+	if len(trimmed) <= len("self") {
+		return ""
+	}
+	if !strings.EqualFold(trimmed[:len("self")], "self") {
+		return ""
+	}
+	if trimmed[len("self")] != '.' {
+		return ""
+	}
+	return trimmed[len("self"):]
+}
+
+func formatSelfContextLabel(receivers []string, overflow bool, propertySuffix string) string {
+	if len(receivers) == 0 {
+		return " ->"
+	}
+	parts := make([]string, 0, len(receivers)+1)
+	for _, receiver := range receivers {
+		parts = append(parts, receiver+propertySuffix)
+	}
+	if overflow {
+		parts = append(parts, "...")
+	}
+	return " -> " + strings.Join(parts, ", ")
+}
+
+func selfContextHintAnchor(token l.Token) int {
+	if token.EndCol > 0 {
+		return token.EndCol
+	}
+	if token.Col > 0 {
+		return token.Col - 1
+	}
+	return 0
 }
 
 func collectFunctionReceivers(nodes []p.Node) map[string][]string {
