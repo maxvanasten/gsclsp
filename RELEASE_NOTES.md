@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.0.7.6
+
+- Preserves intentional single blank lines inside formatted function bodies while still collapsing larger blank-line runs.
+- Extends original-spacing formatting logic to switch/case scopes so blank lines are retained consistently within case bodies.
+
 ## 0.0.7.5
 
 - Reduces receiver `self` context inlay hint clutter by emitting one function-level hint instead of repeating hints after each `self` use.

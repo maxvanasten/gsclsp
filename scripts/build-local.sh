@@ -16,7 +16,7 @@ if [ ! -d "${ZM_MAPS_ROOT}" ]; then
   ZM_MAPS_ROOT="/home/max/Code/t6-source/zm/Maps"
 fi
 
-INSTALL_PATH="${INSTALL_PATH:-/usr/local/bin/gsclsp}"
+INSTALL_PATH="${INSTALL_PATH:-/usr/bin/gsclsp}"
 
 if [ "${SKIP_STDLIB_GEN:-}" = "1" ] || [ "${SKIP_STDLIB_GEN:-}" = "true" ]; then
   echo "[build] skipping stdlib generation"

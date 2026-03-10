@@ -22,7 +22,7 @@ Environment variables:
 - `ZM_ROOT` (default `/home/max/Code/t6-source/zm/core`)
 - `MP_MAPS_ROOT` (default `/home/max/Code/t6-source/mp/maps`, falls back to `/home/max/Code/t6-source/mp/Maps`)
 - `ZM_MAPS_ROOT` (default `/home/max/Code/t6-source/zm/maps`, falls back to `/home/max/Code/t6-source/zm/Maps`)
-- `INSTALL_PATH` (default `/usr/local/bin/gsclsp`)
+- `INSTALL_PATH` (default `/usr/bin/gsclsp`)
 - `SKIP_STDLIB_GEN` (`1` or `true` to skip stdlib generation)
 
 ## build-releases
