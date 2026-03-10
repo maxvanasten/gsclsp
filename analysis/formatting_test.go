@@ -1,6 +1,7 @@
 package analysis
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 
@@ -125,6 +126,109 @@ func TestFormattingCollapsesMultipleBlankLinesBetweenTopLevelNodes(t *testing.T)
 	}
 	if !strings.Contains(formatted, "}\n\nbar()") {
 		t.Fatalf("expected one blank line to remain between top-level nodes, got: %q", formatted)
+	}
+}
+
+func TestFormattingPreservesSingleBlankLineWithinFunctionBody(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "main(){\nwait 0.05;\n\nwait 0.05;\n}"
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(10, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if !strings.Contains(formatted, "wait 0.05;\n\n    wait 0.05;") {
+		t.Fatalf("expected one blank line between statements in scope, got: %q", formatted)
+	}
+}
+
+func TestFormattingCollapsesMultipleBlankLinesWithinFunctionBody(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "main(){\nwait 0.05;\n\n\n\nwait 0.05;\n}"
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(11, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if strings.Contains(formatted, "\n\n\n") {
+		t.Fatalf("expected multiple blank lines in scope to be collapsed, got: %q", formatted)
+	}
+	if !strings.Contains(formatted, "wait 0.05;\n\n    wait 0.05;") {
+		t.Fatalf("expected one blank line to remain between statements in scope, got: %q", formatted)
+	}
+}
+
+func TestFormattingCollapsesMultipleBlankLinesAroundNestedBlockInFunctionBody(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "main(){\nwait 0.05;\n\n\nif(1){\nwait 0.05;\n}\n\n\n\nwait 0.05;\n}"
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(13, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if strings.Contains(formatted, "\n\n\n") {
+		t.Fatalf("expected multiple blank lines in nested scope context to be collapsed, got: %q", formatted)
+	}
+	if !strings.Contains(formatted, "wait 0.05;\n\n    if (1)") {
+		t.Fatalf("expected one blank line before nested block, got: %q", formatted)
+	}
+	if !strings.Contains(formatted, "}\n\n    wait 0.05;") {
+		t.Fatalf("expected one blank line after nested block, got: %q", formatted)
+	}
+}
+
+func TestFormattingPreservesSingleBlankLineWithinSwitchCaseBody(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "main(){\nswitch(a){\ncase 1:\nwait 0.05;\n\n\n\nwait 0.05;\nbreak;\n}\n}"
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(14, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	multipleBlankLinesPattern := regexp.MustCompile(`\n[ \t]*\n[ \t]*\n`)
+	if multipleBlankLinesPattern.MatchString(formatted) {
+		t.Fatalf("expected multiple blank lines in switch case body to be collapsed, got: %q", formatted)
+	}
+	singleBlankLineBetweenWaitsPattern := regexp.MustCompile(`wait 0\.05;\n[ \t]*\n[ \t]*wait 0\.05;`)
+	if !singleBlankLineBetweenWaitsPattern.MatchString(formatted) {
+		t.Fatalf("expected one blank line to remain inside switch case body, got: %q", formatted)
+	}
+}
+
+func TestFormattingPreservesMethodQualifierOnFunctionCalls(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "main(){\nself.somefunc();\n}"
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(12, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if strings.Contains(formatted, "\n    somefunc();") {
+		t.Fatalf("expected method qualifier to be preserved, got: %q", formatted)
+	}
+	methodCallPattern := regexp.MustCompile(`self[ .]+somefunc\(\);`)
+	if !methodCallPattern.MatchString(formatted) {
+		t.Fatalf("expected formatted output to preserve qualified method call, got: %q", formatted)
 	}
 }
 

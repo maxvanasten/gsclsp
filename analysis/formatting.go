@@ -33,7 +33,7 @@ func (s *State) Formatting(id int, uri string, options lsp.FormattingOptions) ls
 
 	formattedLines := make([]string, 0, len(parseResult.Ast))
 	for _, node := range parseResult.Ast {
-		formattedLines = append(formattedLines, generator.Generate(node))
+		formattedLines = append(formattedLines, generateNodeWithOriginalSpacing(node))
 	}
 	formatted := joinFormattedNodesWithOriginalSpacing(parseResult.Ast, formattedLines)
 
@@ -135,4 +135,211 @@ func nodeEndLine(node p.Node) int {
 		}
 	}
 	return end
+}
+
+func generateNodeWithOriginalSpacing(node p.Node) string {
+	switch node.Type {
+	case "function_declaration":
+		header := strings.Builder{}
+		header.WriteString(node.Data.FunctionName)
+		header.WriteString("(")
+		if len(node.Children) > 0 {
+			header.WriteString(joinInlineChildrenWithOriginalSpacing(node.Children[0].Children, ", "))
+		}
+		header.WriteString(")")
+		if len(node.Children) > 1 {
+			return formatBlockWithOriginalSpacing(header.String(), node.Children[1])
+		}
+		return header.String() + "\n{\n}"
+	case "scope":
+		lines := make([]string, 0, len(node.Children))
+		for _, child := range node.Children {
+			line := generateNodeWithOriginalSpacing(child)
+			if child.Type == "function_call" && !strings.HasSuffix(line, ";") {
+				line += ";"
+			}
+			lines = append(lines, indentMultilineForFormatting(line, generator.Indent))
+		}
+		return joinFormattedNodesWithOriginalSpacing(node.Children, lines)
+	case "if_statement":
+		condition := ""
+		if len(node.Children) > 0 {
+			condition = generateNodeWithOriginalSpacing(node.Children[0])
+		}
+		header := "if (" + condition + ")"
+		if len(node.Children) > 1 {
+			return formatBlockWithOriginalSpacing(header, node.Children[1])
+		}
+		return header + "\n{\n}"
+	case "else_clause":
+		if len(node.Children) > 0 {
+			return formatBlockWithOriginalSpacing("else", node.Children[0])
+		}
+		return "else\n{\n}"
+	case "while_loop":
+		condition := ""
+		if len(node.Children) > 0 {
+			condition = generateNodeWithOriginalSpacing(node.Children[0])
+		}
+		header := "while (" + condition + ")"
+		if len(node.Children) > 1 {
+			return formatBlockWithOriginalSpacing(header, node.Children[1])
+		}
+		return header + "\n{\n}"
+	case "for_loop":
+		init := ""
+		condition := ""
+		post := ""
+		if len(node.Children) > 0 {
+			init = generateNodeWithOriginalSpacing(node.Children[0])
+		}
+		if len(node.Children) > 1 {
+			condition = generateNodeWithOriginalSpacing(node.Children[1])
+		}
+		if len(node.Children) > 2 {
+			post = generateNodeWithOriginalSpacing(node.Children[2])
+		}
+
+		header := strings.Builder{}
+		if init == "" && condition == "" && post == "" {
+			header.WriteString("for ( ;; )")
+		} else {
+			header.WriteString("for (")
+			if init == "" {
+				header.WriteString(" ")
+			} else {
+				header.WriteString(init)
+			}
+			header.WriteString("; ")
+			if condition != "" {
+				header.WriteString(condition)
+			}
+			header.WriteString("; ")
+			if post != "" {
+				header.WriteString(post)
+			}
+			header.WriteString(")")
+		}
+		if len(node.Children) > 3 {
+			return formatBlockWithOriginalSpacing(header.String(), node.Children[3])
+		}
+		return header.String() + "\n{\n}"
+	case "foreach_loop":
+		vars := ""
+		iter := ""
+		if len(node.Children) > 0 {
+			vars = generateNodeWithOriginalSpacing(node.Children[0])
+		}
+		if len(node.Children) > 1 {
+			iter = generateNodeWithOriginalSpacing(node.Children[1])
+		}
+		header := "foreach (" + vars + " in " + iter + ")"
+		if len(node.Children) > 2 {
+			return formatBlockWithOriginalSpacing(header, node.Children[2])
+		}
+		return header + "\n{\n}"
+	case "switch_expr":
+		if len(node.Children) > 0 {
+			return strings.TrimSuffix(generateNodeWithOriginalSpacing(node.Children[0]), ";")
+		}
+		return ""
+	case "case_clause":
+		label := ""
+		if len(node.Children) > 0 {
+			label = strings.TrimSuffix(generateNodeWithOriginalSpacing(node.Children[0]), ";")
+		}
+		return "case " + label + ":"
+	case "default_clause":
+		return "default:"
+	case "switch_statement":
+		switchExpr := ""
+		if len(node.Children) > 0 {
+			switchExpr = strings.TrimSuffix(generateNodeWithOriginalSpacing(node.Children[0]), ";")
+		}
+
+		var b strings.Builder
+		b.WriteString("switch(")
+		b.WriteString(switchExpr)
+		b.WriteString(") {")
+
+		if len(node.Children) > 1 {
+			if scopeBody := formatSwitchScopeWithOriginalSpacing(node.Children[1]); scopeBody != "" {
+				b.WriteString("\n")
+				b.WriteString(scopeBody)
+			}
+		}
+
+		b.WriteString("\n}")
+		return b.String()
+	default:
+		return generator.Generate(node)
+	}
+}
+
+func formatSwitchScopeWithOriginalSpacing(scope p.Node) string {
+	lines := make([]string, 0, len(scope.Children))
+	inCase := false
+
+	for _, child := range scope.Children {
+		line := generateNodeWithOriginalSpacing(child)
+		if child.Type == "function_call" && !strings.HasSuffix(line, ";") {
+			line += ";"
+		}
+
+		if child.Type == "case_clause" || child.Type == "default_clause" {
+			inCase = true
+			lines = append(lines, indentMultilineForFormatting(line, generator.Indent))
+			continue
+		}
+
+		if inCase {
+			lines = append(lines, indentMultilineForFormatting(line, generator.Indent+generator.Indent))
+			continue
+		}
+
+		lines = append(lines, indentMultilineForFormatting(line, generator.Indent))
+	}
+
+	return joinFormattedNodesWithOriginalSpacing(scope.Children, lines)
+}
+
+func formatBlockWithOriginalSpacing(header string, scope p.Node) string {
+	var b strings.Builder
+	b.WriteString(header)
+	b.WriteString("\n{")
+	if scopeBody := generateNodeWithOriginalSpacing(scope); scopeBody != "" {
+		b.WriteString("\n")
+		b.WriteString(scopeBody)
+	}
+	b.WriteString("\n}")
+	return b.String()
+}
+
+func joinInlineChildrenWithOriginalSpacing(children []p.Node, separator string) string {
+	parts := make([]string, 0, len(children))
+	for i := 0; i < len(children); i++ {
+		child := children[i]
+		if child.Type == "variable_reference" && child.Data.VarName == "#" && i+1 < len(children) {
+			next := children[i+1]
+			if next.Type == "string" {
+				parts = append(parts, "#\""+next.Data.Content+"\"")
+				i++
+				continue
+			}
+		}
+		parts = append(parts, strings.TrimSuffix(generateNodeWithOriginalSpacing(child), ";"))
+	}
+	return strings.Join(parts, separator)
+}
+
+func indentMultilineForFormatting(value, prefix string) string {
+	lines := strings.Split(value, "\n")
+	for i, line := range lines {
+		if line == "" {
+			lines[i] = prefix
+			continue
+		}
+		lines[i] = prefix + line
+	}
+	return strings.Join(lines, "\n")
 }
