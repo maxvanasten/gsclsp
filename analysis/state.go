@@ -524,23 +524,19 @@ func generateSelfContextInlayHints(nodes []p.Node, tokens []l.Token) []lsp.Inlay
 		}
 
 		startLine := declaration.Line
-		endLine := nodeEndLine(declaration)
-		if startLine <= 0 || endLine < startLine {
+		if startLine <= 0 {
+			continue
+		}
+		if !declarationUsesSelfContext(declaration) {
 			continue
 		}
 
-		for line := startLine; line <= endLine; line++ {
-			for _, token := range tokenIndex[line] {
-				if token.Type != l.SYMBOL || !isSelfContextSymbol(token.Content) {
-					continue
-				}
-				tokenLabel := formatSelfContextLabel(labelReceivers, overflow, selfContextPropertySuffix(token.Content))
-				hints = append(hints, lsp.InlayHint{
-					Position: lsp.Position{Line: line - 1, Character: selfContextHintAnchor(token)},
-					Label:    tokenLabel,
-				})
-			}
-		}
+		hintLine := startLine - 1
+		hintCol := functionDeclarationHintAnchor(declaration, tokenIndex[startLine])
+		hints = append(hints, lsp.InlayHint{
+			Position: lsp.Position{Line: hintLine, Character: hintCol},
+			Label:    formatSelfContextLabel(labelReceivers, overflow),
+		})
 	}
 
 	return hints
@@ -554,27 +550,13 @@ func isSelfContextSymbol(content string) bool {
 	return strings.EqualFold(trimmed, "self") || strings.HasPrefix(strings.ToLower(trimmed), "self.")
 }
 
-func selfContextPropertySuffix(content string) string {
-	trimmed := strings.TrimSpace(content)
-	if len(trimmed) <= len("self") {
-		return ""
-	}
-	if !strings.EqualFold(trimmed[:len("self")], "self") {
-		return ""
-	}
-	if trimmed[len("self")] != '.' {
-		return ""
-	}
-	return trimmed[len("self"):]
-}
-
-func formatSelfContextLabel(receivers []string, overflow bool, propertySuffix string) string {
+func formatSelfContextLabel(receivers []string, overflow bool) string {
 	if len(receivers) == 0 {
 		return " ->"
 	}
 	parts := make([]string, 0, len(receivers)+1)
 	for _, receiver := range receivers {
-		parts = append(parts, receiver+propertySuffix)
+		parts = append(parts, receiver)
 	}
 	if overflow {
 		parts = append(parts, "...")
@@ -590,6 +572,101 @@ func selfContextHintAnchor(token l.Token) int {
 		return token.Col - 1
 	}
 	return 0
+}
+
+func declarationUsesSelfContext(declaration p.Node) bool {
+	if len(declaration.Children) == 0 {
+		return false
+	}
+
+	var walk func([]p.Node) bool
+	walk = func(nodes []p.Node) bool {
+		for _, node := range nodes {
+			if node.Type == "function_declaration" {
+				continue
+			}
+			if node.Type == "function_call" && isSelfContextSymbol(node.Data.Method) {
+				return true
+			}
+			if len(node.Children) > 0 && walk(node.Children) {
+				return true
+			}
+		}
+		return false
+	}
+
+	return walk(declaration.Children)
+}
+
+func functionDeclarationHintAnchor(declaration p.Node, lineTokens []l.Token) int {
+	name := strings.TrimSpace(declaration.Data.FunctionName)
+	if name == "" {
+		if declaration.Col > 0 {
+			return declaration.Col - 1
+		}
+		return 0
+	}
+
+	startCol := declaration.Col - 1
+	if startCol < 0 {
+		startCol = 0
+	}
+
+	closestBeforeCol := -1
+	closestBeforeDistance := 0
+	for i, tok := range lineTokens {
+		if tok.Type != l.SYMBOL || !strings.EqualFold(strings.TrimSpace(tok.Content), name) {
+			continue
+		}
+
+		candidateCol := functionDeclarationParamsEndAnchor(lineTokens, i)
+		candidateStart := tok.Col - 1
+		if candidateStart >= startCol {
+			return candidateCol
+		}
+
+		distance := startCol - candidateStart
+		if closestBeforeCol < 0 || distance < closestBeforeDistance {
+			closestBeforeCol = candidateCol
+			closestBeforeDistance = distance
+		}
+	}
+
+	if closestBeforeCol >= 0 {
+		return closestBeforeCol
+	}
+
+	if declaration.Col > 0 {
+		return declaration.Col - 1 + len(name)
+	}
+	return len(name)
+}
+
+func functionDeclarationParamsEndAnchor(lineTokens []l.Token, symbolIndex int) int {
+	depth := 0
+	seenOpen := false
+
+	for i := symbolIndex + 1; i < len(lineTokens); i++ {
+		tok := lineTokens[i]
+		switch tok.Type {
+		case l.OPEN_PAREN:
+			seenOpen = true
+			depth++
+		case l.CLOSE_PAREN:
+			if seenOpen {
+				depth--
+				if depth == 0 {
+					return selfContextHintAnchor(tok)
+				}
+			}
+		case l.NEWLINE, l.TERMINATOR:
+			if seenOpen {
+				return selfContextHintAnchor(tok)
+			}
+		}
+	}
+
+	return selfContextHintAnchor(lineTokens[symbolIndex])
 }
 
 func collectFunctionReceivers(nodes []p.Node) map[string][]string {

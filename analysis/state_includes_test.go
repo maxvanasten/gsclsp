@@ -333,10 +333,10 @@ func TestInlayHintsShowSelfContextForUniqueThreadReceiver(t *testing.T) {
 		t.Fatalf("missing self-context inlay hint for player receiver: %v", response.Result)
 	}
 
-	selfPos := positionForLine(text, 0, "self")
-	selfEndPos := lsp.Position{Line: selfPos.Line, Character: selfPos.Character + len("self")}
-	if hint.Position.Line != selfEndPos.Line || hint.Position.Character != selfEndPos.Character {
-		t.Fatalf("self-context hint position = (%d,%d), want (%d,%d)", hint.Position.Line, hint.Position.Character, selfEndPos.Line, selfEndPos.Character)
+	functionPos := positionForLine(text, 0, "somefunc")
+	functionEndPos := lsp.Position{Line: functionPos.Line, Character: functionPos.Character + len("somefunc()")}
+	if hint.Position.Line != functionEndPos.Line || hint.Position.Character != functionEndPos.Character {
+		t.Fatalf("self-context hint position = (%d,%d), want (%d,%d)", hint.Position.Line, hint.Position.Character, functionEndPos.Line, functionEndPos.Character)
 	}
 }
 
@@ -413,18 +413,23 @@ func TestInlayHintsShowSelfContextForSelfPropertyAccess(t *testing.T) {
 	response := state.InlayHints(1, uri)
 
 	hint, ok := findInlayHintByLabel(response.Result, " -> player.weapon")
+	if ok {
+		t.Fatalf("unexpected property-specific self-context inlay hint: %v", response.Result)
+	}
+
+	hint, ok = findInlayHintByLabel(response.Result, " -> player")
 	if !ok {
 		t.Fatalf("missing self-context inlay hint for self property access: %v", response.Result)
 	}
 
 	line := strings.Split(text, "\n")[0]
-	selfPropertyCol := strings.Index(line, "self.weapon")
-	if selfPropertyCol < 0 {
-		t.Fatalf("test setup missing self property in line: %q", line)
+	functionCol := strings.Index(line, "somefunc")
+	if functionCol < 0 {
+		t.Fatalf("test setup missing function declaration in line: %q", line)
 	}
-	want := selfPropertyCol + len("self.weapon")
+	want := functionCol + len("somefunc()")
 	if hint.Position.Line != 0 || hint.Position.Character != want {
-		t.Fatalf("self-property hint position = (%d,%d), want (0,%d)", hint.Position.Line, hint.Position.Character, want)
+		t.Fatalf("self-context hint position = (%d,%d), want (0,%d)", hint.Position.Line, hint.Position.Character, want)
 	}
 }
 
@@ -438,8 +443,23 @@ func TestInlayHintsShowCombinedSelfContextForSelfPropertyAccess(t *testing.T) {
 	state.OpenDocument(uri, text)
 	response := state.InlayHints(1, uri)
 
-	if !hasInlayLabel(response.Result, " -> level.weapon, player.weapon") {
+	if !hasInlayLabel(response.Result, " -> level, player") {
 		t.Fatalf("expected combined self-context inlay hint for self property access, got: %v", response.Result)
+	}
+}
+
+func TestInlayHintsShowSingleSelfContextHintPerFunction(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	uri := "file:///tmp/mp/maps/mp/test.gsc"
+	text := "somefunc() { self iprintln(); self notify(\"ready\"); self endon(\"death\"); }\n" +
+		"main() { player thread somefunc(); }\n"
+
+	state.OpenDocument(uri, text)
+	response := state.InlayHints(1, uri)
+
+	if countInlayLabels(response.Result, " -> player") != 1 {
+		t.Fatalf("expected one self-context inlay hint per function, got: %v", response.Result)
 	}
 }
 

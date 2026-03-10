@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.0.7.5
+
+- Reduces receiver `self` context inlay hint clutter by emitting one function-level hint instead of repeating hints after each `self` use.
+- Repositions the receiver context hint to render after function declaration parentheses for clearer signature-level context.
+
 ## 0.0.7.4
 
 - Extends `self` context inlay hints to cover `self.property` access patterns so receiver context also appears on property method calls.
