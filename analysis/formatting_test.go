@@ -232,6 +232,28 @@ func TestFormattingPreservesMethodQualifierOnFunctionCalls(t *testing.T) {
 	}
 }
 
+func TestFormattingDoesNotDoubleTerminateFunctionCalls(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "main(){\narray(\"specialty_quickrevive\", \"specialty_deadshot\", \"specialty_fastreload\", \"specialty_armorvest\", \"specialty_longersprint\", \"specialty_rof\", \"specialty_grenadepulldeath\");\n}"
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(15, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	doubleTerminatorPattern := regexp.MustCompile(`array\([^\n]*\);;`)
+	if doubleTerminatorPattern.MatchString(formatted) {
+		t.Fatalf("expected no double terminator on function call, got: %q", formatted)
+	}
+	singleTerminatorPattern := regexp.MustCompile(`array\([^\n]*\);`)
+	if !singleTerminatorPattern.MatchString(formatted) {
+		t.Fatalf("expected function call to end with one terminator, got: %q", formatted)
+	}
+}
+
 func TestFormattingReturnsNoEditsOnParseFailure(t *testing.T) {
 	t.Setenv("PATH", "")
 	state := NewState()

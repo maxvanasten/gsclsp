@@ -155,8 +155,8 @@ func generateNodeWithOriginalSpacing(node p.Node) string {
 		lines := make([]string, 0, len(node.Children))
 		for _, child := range node.Children {
 			line := generateNodeWithOriginalSpacing(child)
-			if child.Type == "function_call" && !strings.HasSuffix(line, ";") {
-				line += ";"
+			if child.Type == "function_call" {
+				line = ensureStatementTerminator(line)
 			}
 			lines = append(lines, indentMultilineForFormatting(line, generator.Indent))
 		}
@@ -282,8 +282,8 @@ func formatSwitchScopeWithOriginalSpacing(scope p.Node) string {
 
 	for _, child := range scope.Children {
 		line := generateNodeWithOriginalSpacing(child)
-		if child.Type == "function_call" && !strings.HasSuffix(line, ";") {
-			line += ";"
+		if child.Type == "function_call" {
+			line = ensureStatementTerminator(line)
 		}
 
 		if child.Type == "case_clause" || child.Type == "default_clause" {
@@ -342,4 +342,11 @@ func indentMultilineForFormatting(value, prefix string) string {
 		lines[i] = prefix + line
 	}
 	return strings.Join(lines, "\n")
+}
+
+func ensureStatementTerminator(line string) string {
+	if strings.HasSuffix(strings.TrimRight(line, " \t\r\n"), ";") {
+		return line
+	}
+	return line + ";"
 }

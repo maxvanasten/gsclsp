@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.7.7
+
+- Fixes formatting output that could append a duplicate statement terminator on already-terminated function calls (for example `array(...);;`).
+- Switches active release versioning from `0.0.7.x` to `0.7.x`.
+
 ## 0.0.7.6
 
 - Preserves intentional single blank lines inside formatted function bodies while still collapsing larger blank-line runs.

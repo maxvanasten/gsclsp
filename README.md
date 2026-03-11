@@ -200,4 +200,4 @@ Before building a new release:
 
 ## Version
 
-Current server version reported in `initialize` response: `0.0.7.6`.
+Current server version reported in `initialize` response: `0.7.7`.
