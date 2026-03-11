@@ -254,6 +254,46 @@ func TestFormattingDoesNotDoubleTerminateFunctionCalls(t *testing.T) {
 	}
 }
 
+func TestFormattingInlinesElseAfterIfBlock(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "main(){if(x){wait 0.05;}else{wait 0.05;}}"
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(16, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if strings.Contains(formatted, "}\n\n    else") {
+		t.Fatalf("expected no blank line before else, got: %q", formatted)
+	}
+	if !strings.Contains(formatted, "} else\n    {") {
+		t.Fatalf("expected if/else chain with inline else, got: %q", formatted)
+	}
+}
+
+func TestFormattingInlinesElseIfOnSingleLine(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "main(){if(x){wait 0.05;}else if(y){wait 0.1;}else{wait 0.2;}}"
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(17, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if !strings.Contains(formatted, "} else if (y)") {
+		t.Fatalf("expected else if to be on one line, got: %q", formatted)
+	}
+	if strings.Contains(formatted, "} else\n    if (y)") {
+		t.Fatalf("expected else and if to stay inline, got: %q", formatted)
+	}
+}
+
 func TestFormattingReturnsNoEditsOnParseFailure(t *testing.T) {
 	t.Setenv("PATH", "")
 	state := NewState()

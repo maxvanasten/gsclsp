@@ -105,16 +105,37 @@ func joinFormattedNodesWithOriginalSpacing(nodes []p.Node, formatted []string) s
 
 	var b strings.Builder
 	for i, current := range formatted {
+		currentOutput := current
 		if i > 0 {
-			separator := "\n"
-			if hasBlankLineBetweenNodes(nodes[i-1], nodes[i]) {
-				separator = "\n\n"
+			separator := nodeSeparator(nodes[i-1], nodes[i])
+			if separator == " " {
+				currentOutput = strings.TrimLeft(currentOutput, " \t")
 			}
 			b.WriteString(separator)
 		}
-		b.WriteString(current)
+		b.WriteString(currentOutput)
 	}
 	return b.String()
+}
+
+func nodeSeparator(previous, next p.Node) string {
+	if shouldInlineIfElse(previous, next) {
+		return " "
+	}
+	if hasBlankLineBetweenNodes(previous, next) {
+		return "\n\n"
+	}
+	return "\n"
+}
+
+func shouldInlineIfElse(previous, next p.Node) bool {
+	if previous.Type == "if_statement" && (next.Type == "else_clause" || next.Type == "else_header") {
+		return true
+	}
+	if previous.Type == "else_header" && next.Type == "if_statement" {
+		return true
+	}
+	return false
 }
 
 func hasBlankLineBetweenNodes(previous, next p.Node) bool {
@@ -176,6 +197,8 @@ func generateNodeWithOriginalSpacing(node p.Node) string {
 			return formatBlockWithOriginalSpacing("else", node.Children[0])
 		}
 		return "else\n{\n}"
+	case "else_header":
+		return "else"
 	case "while_loop":
 		condition := ""
 		if len(node.Children) > 0 {
