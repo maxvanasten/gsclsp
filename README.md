@@ -90,15 +90,15 @@ The extension manages compatible `gsclsp` and `gscp` releases for you.
 ```bash
 git clone https://github.com/maxvanasten/gsclsp
 cd gsclsp
-go build
+go build -o dist/gsclsp ./
 ```
 
-This produces a `gsclsp` binary in the repository root.
+This produces a `gsclsp` binary at `dist/gsclsp`.
 
 Optional install:
 
 ```bash
-sudo mv ./gsclsp /usr/local/bin/gsclsp
+sudo mv ./dist/gsclsp /usr/local/bin/gsclsp
 ```
 
 Helper scripts:

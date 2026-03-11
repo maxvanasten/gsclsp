@@ -16,6 +16,8 @@ Builds and installs `gsclsp` locally:
 ./scripts/build-local.sh
 ```
 
+The local build artifact is written to `dist/gsclsp-local` before installation.
+
 Environment variables:
 
 - `MP_ROOT` (default `/home/max/Code/t6-source/mp/core`)
