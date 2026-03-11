@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.7.8
+
+- Keeps formatter `if/else` chains inline by emitting `} else` and `} else if (...)` on one line instead of splitting `else` onto a separate block.
+- Updates local build workflow to write artifacts under `dist/` so routine builds no longer leave an untracked `gsclsp` binary in the repository root.
+
 ## 0.7.7
 
 - Fixes formatting output that could append a duplicate statement terminator on already-terminated function calls (for example `array(...);;`).
