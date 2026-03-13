@@ -35,7 +35,7 @@ func TestFormattingUsesRequestedSpaceIndentWidth(t *testing.T) {
 	if len(response.Result) != 1 {
 		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
 	}
-	if !strings.Contains(response.Result[0].NewText, "\n        if (1)\n") {
+	if !strings.Contains(response.Result[0].NewText, "\n        if (1) {\n") {
 		t.Fatalf("expected 8-space indentation, got: %q", response.Result[0].NewText)
 	}
 }
@@ -51,7 +51,7 @@ func TestFormattingUsesFallbackSpaceIndentWidth(t *testing.T) {
 	if len(response.Result) != 1 {
 		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
 	}
-	if !strings.Contains(response.Result[0].NewText, "\n    if (1)\n") {
+	if !strings.Contains(response.Result[0].NewText, "\n    if (1) {\n") {
 		t.Fatalf("expected fallback 4-space indentation, got: %q", response.Result[0].NewText)
 	}
 }
@@ -67,7 +67,7 @@ func TestFormattingUsesTabsWhenInsertSpacesDisabled(t *testing.T) {
 	if len(response.Result) != 1 {
 		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
 	}
-	if !strings.Contains(response.Result[0].NewText, "\n\tif (1)\n") {
+	if !strings.Contains(response.Result[0].NewText, "\n\tif (1) {\n") {
 		t.Fatalf("expected tab indentation, got: %q", response.Result[0].NewText)
 	}
 }
@@ -254,6 +254,26 @@ func TestFormattingDoesNotDoubleTerminateFunctionCalls(t *testing.T) {
 	}
 }
 
+func TestFormattingDoesNotDoubleTerminateReturnCallInSwitchCase(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "main(){\nswitch(level.mapname){\ncase \"zm_nuked\":\nreturn array(\"m1911_zm\", \"m1911_upgraded_zm\");;\n}\n}"
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(18, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if strings.Contains(formatted, ";;") {
+		t.Fatalf("expected no double terminator in switch-case return call, got: %q", formatted)
+	}
+	if !strings.Contains(formatted, "return array(\"m1911_zm\", \"m1911_upgraded_zm\");") {
+		t.Fatalf("expected switch-case return call to keep single terminator, got: %q", formatted)
+	}
+}
+
 func TestFormattingInlinesElseAfterIfBlock(t *testing.T) {
 	state := NewState()
 	uri := "file:///tmp/test.gsc"
@@ -266,11 +286,14 @@ func TestFormattingInlinesElseAfterIfBlock(t *testing.T) {
 		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
 	}
 	formatted := response.Result[0].NewText
+	if !strings.Contains(formatted, "if (x) {") {
+		t.Fatalf("expected if opening brace to be inline, got: %q", formatted)
+	}
 	if strings.Contains(formatted, "}\n\n    else") {
 		t.Fatalf("expected no blank line before else, got: %q", formatted)
 	}
-	if !strings.Contains(formatted, "} else\n    {") {
-		t.Fatalf("expected if/else chain with inline else, got: %q", formatted)
+	if !strings.Contains(formatted, "} else {") {
+		t.Fatalf("expected if/else chain with inline braces, got: %q", formatted)
 	}
 }
 
@@ -288,6 +311,12 @@ func TestFormattingInlinesElseIfOnSingleLine(t *testing.T) {
 	formatted := response.Result[0].NewText
 	if !strings.Contains(formatted, "} else if (y)") {
 		t.Fatalf("expected else if to be on one line, got: %q", formatted)
+	}
+	if !strings.Contains(formatted, "} else if (y) {") {
+		t.Fatalf("expected else-if opening brace to be inline, got: %q", formatted)
+	}
+	if !strings.Contains(formatted, "} else {") {
+		t.Fatalf("expected final else opening brace to be inline, got: %q", formatted)
 	}
 	if strings.Contains(formatted, "} else\n    if (y)") {
 		t.Fatalf("expected else and if to stay inline, got: %q", formatted)

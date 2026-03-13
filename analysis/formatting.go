@@ -179,6 +179,7 @@ func generateNodeWithOriginalSpacing(node p.Node) string {
 			if child.Type == "function_call" {
 				line = ensureStatementTerminator(line)
 			}
+			line = collapseDuplicateStatementTerminators(line)
 			lines = append(lines, indentMultilineForFormatting(line, generator.Indent))
 		}
 		return joinFormattedNodesWithOriginalSpacing(node.Children, lines)
@@ -189,14 +190,14 @@ func generateNodeWithOriginalSpacing(node p.Node) string {
 		}
 		header := "if (" + condition + ")"
 		if len(node.Children) > 1 {
-			return formatBlockWithOriginalSpacing(header, node.Children[1])
+			return formatBlockWithInlineOpeningBrace(header, node.Children[1])
 		}
-		return header + "\n{\n}"
+		return header + " {\n}"
 	case "else_clause":
 		if len(node.Children) > 0 {
-			return formatBlockWithOriginalSpacing("else", node.Children[0])
+			return formatBlockWithInlineOpeningBrace("else", node.Children[0])
 		}
-		return "else\n{\n}"
+		return "else {\n}"
 	case "else_header":
 		return "else"
 	case "while_loop":
@@ -294,6 +295,15 @@ func generateNodeWithOriginalSpacing(node p.Node) string {
 
 		b.WriteString("\n}")
 		return b.String()
+	case "return_statement":
+		if len(node.Children) == 0 {
+			return "return;"
+		}
+		value := strings.TrimSuffix(generateNodeWithOriginalSpacing(node.Children[0]), ";")
+		if value == "" {
+			return "return;"
+		}
+		return "return " + value + ";"
 	default:
 		return generator.Generate(node)
 	}
@@ -308,6 +318,7 @@ func formatSwitchScopeWithOriginalSpacing(scope p.Node) string {
 		if child.Type == "function_call" {
 			line = ensureStatementTerminator(line)
 		}
+		line = collapseDuplicateStatementTerminators(line)
 
 		if child.Type == "case_clause" || child.Type == "default_clause" {
 			inCase = true
@@ -330,6 +341,18 @@ func formatBlockWithOriginalSpacing(header string, scope p.Node) string {
 	var b strings.Builder
 	b.WriteString(header)
 	b.WriteString("\n{")
+	if scopeBody := generateNodeWithOriginalSpacing(scope); scopeBody != "" {
+		b.WriteString("\n")
+		b.WriteString(scopeBody)
+	}
+	b.WriteString("\n}")
+	return b.String()
+}
+
+func formatBlockWithInlineOpeningBrace(header string, scope p.Node) string {
+	var b strings.Builder
+	b.WriteString(header)
+	b.WriteString(" {")
 	if scopeBody := generateNodeWithOriginalSpacing(scope); scopeBody != "" {
 		b.WriteString("\n")
 		b.WriteString(scopeBody)
@@ -372,4 +395,15 @@ func ensureStatementTerminator(line string) string {
 		return line
 	}
 	return line + ";"
+}
+
+func collapseDuplicateStatementTerminators(line string) string {
+	trimmed := strings.TrimRight(line, " \t\r\n")
+	if !strings.HasSuffix(trimmed, ";;") {
+		return line
+	}
+	for strings.HasSuffix(trimmed, ";;") {
+		trimmed = strings.TrimSuffix(trimmed, ";")
+	}
+	return trimmed + ";"
 }
