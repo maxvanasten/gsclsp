@@ -1,5 +1,15 @@
 # Release Notes
 
+## 0.8.1
+
+- **Performance**: Implement incremental document sync (LSP textDocumentSync mode 2) to receive text changes instead of full document content
+- **Performance**: Add lazy parsing - AST is now parsed on-demand when LSP features are requested instead of on every keystroke
+- **Performance**: Debounced diagnostics publishing (150ms delay) to reduce CPU usage during active typing
+
+## 0.8.0
+
+- Added 39 new engine builtin functions
+
 ## 0.7.9
 
 - Updates formatter conditional block layout to keep opening braces inline for `if`, `else if`, and `else` chains (for example `} else {`).

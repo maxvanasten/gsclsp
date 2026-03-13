@@ -274,6 +274,26 @@ func TestFormattingDoesNotDoubleTerminateReturnCallInSwitchCase(t *testing.T) {
 	}
 }
 
+func TestFormattingPreservesUnaryMinusExpressionInsideFunctionCallArgs(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	state.Documents[uri] = "main(){\nself.hud_perks[i]=ml_create_text(1.25,-200,-130-i*10,\"\");\n}"
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(19, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if strings.Contains(formatted, "-130, , i * 10") {
+		t.Fatalf("expected unary-minus binary expression to stay intact in function args, got: %q", formatted)
+	}
+	if !strings.Contains(formatted, "ml_create_text(1.25, -200, -130 - i * 10, \"\");") {
+		t.Fatalf("expected formatted function args to include '-130 - i * 10' expression, got: %q", formatted)
+	}
+}
+
 func TestFormattingInlinesElseAfterIfBlock(t *testing.T) {
 	state := NewState()
 	uri := "file:///tmp/test.gsc"
