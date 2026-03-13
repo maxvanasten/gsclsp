@@ -31,6 +31,7 @@ type State struct {
 	Resolved       map[string][]FunctionSignature
 	IncludeOrigins map[string]map[string]string
 	Diagnostics    map[string][]lsp.Diagnostic
+	AstDirty       map[string]bool
 	includeCache   map[string]includeCacheEntry
 	stdlib         map[string]map[string][]FunctionSignature
 	stdlibDecls    map[string]map[string][]StdlibDeclaration
@@ -74,6 +75,7 @@ func NewState() State {
 		Resolved:              map[string][]FunctionSignature{},
 		IncludeOrigins:        map[string]map[string]string{},
 		Diagnostics:           map[string][]lsp.Diagnostic{},
+		AstDirty:              map[string]bool{},
 		includeCache:          map[string]includeCacheEntry{},
 		stdlibDefinitionFiles: map[string]stdlibDefinitionFile{},
 	}
@@ -120,7 +122,21 @@ func (s *State) ApplyIncrementalChange(uri string, change lsp.TextDocumentConten
 	}
 
 	s.Documents[uri] = updated
-	s.UpdateAst(uri)
+	s.AstDirty[uri] = true
+	s.Diagnostics[uri] = nil
+	s.ClearCaches(uri)
+}
+
+func (s *State) EnsureParsed(uri string) {
+	if s.AstDirty[uri] {
+		s.UpdateAst(uri)
+		s.AstDirty[uri] = false
+	}
+}
+
+func (s *State) ClearCaches(uri string) {
+	delete(s.Resolved, uri)
+	delete(s.IncludeOrigins, uri)
 }
 
 func applyRangeChange(doc string, range_ *lsp.Range, newText string) (string, bool) {
@@ -432,6 +448,7 @@ func (s *State) GetTokenAtPosition(uri string, position lsp.Position) l.Token {
 }
 
 func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverResponse {
+	s.EnsureParsed(uri)
 	output := strings.Builder{}
 	signatures := s.resolvedSignatures(uri)
 
@@ -469,6 +486,7 @@ func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverRespon
 }
 
 func (s *State) Definition(id int, uri string, position lsp.Position) lsp.DefinitionResponse {
+	s.EnsureParsed(uri)
 	var location *lsp.Location
 	name := s.GetTokenAtPosition(uri, position).Content
 	if callName := findFunctionCallNameAtPosition(s.Ast[uri], position); callName != "" {
@@ -488,6 +506,7 @@ func (s *State) Definition(id int, uri string, position lsp.Position) lsp.Defini
 }
 
 func (s *State) SemanticTokens(id int, uri string) lsp.SemanticTokensResponse {
+	s.EnsureParsed(uri)
 	tokens := GenerateSemanticTokens(s.Tokens[uri])
 
 	return lsp.SemanticTokensResponse{
@@ -502,6 +521,7 @@ func (s *State) SemanticTokens(id int, uri string) lsp.SemanticTokensResponse {
 }
 
 func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
+	s.EnsureParsed(uri)
 	stdlib := s.loadStdlib()
 	signatures := s.resolvedSignatures(uri)
 	signatureByName := buildSignatureMap(signatures)

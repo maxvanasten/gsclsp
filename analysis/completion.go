@@ -31,6 +31,7 @@ type completionContext struct {
 }
 
 func (s *State) Completion(id int, uri string, position lsp.Position) lsp.CompletionResponse {
+	s.EnsureParsed(uri)
 	ctx := detectCompletionContext(s.Documents[uri], position)
 	stdlib := s.loadStdlib()
 	items := s.completionItemsForContext(uri, position, ctx, stdlib, maxCompletionItems)

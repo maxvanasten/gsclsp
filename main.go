@@ -10,11 +10,34 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/maxvanasten/gsclsp/analysis"
 	"github.com/maxvanasten/gsclsp/lsp"
 	"github.com/maxvanasten/gsclsp/rpc"
 )
+
+var diagDebouncer *diagnosticDebouncer
+
+type diagnosticDebouncer struct {
+	mu     sync.Mutex
+	timers map[string]*time.Timer
+}
+
+func newDiagnosticDebouncer() *diagnosticDebouncer {
+	return &diagnosticDebouncer{
+		timers: make(map[string]*time.Timer),
+	}
+}
+
+func (d *diagnosticDebouncer) debounce(uri string, delay time.Duration, fn func()) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if t, ok := d.timers[uri]; ok {
+		t.Stop()
+	}
+	d.timers[uri] = time.AfterFunc(delay, fn)
+}
 
 func main() {
 	logger := getLogger()
@@ -24,6 +47,7 @@ func main() {
 	scanner.Split(rpc.Split)
 
 	state := analysis.NewState()
+	diagDebouncer = newDiagnosticDebouncer()
 	var shutdownOnce sync.Once
 	shutdown := func() {
 		shutdownOnce.Do(func() {
@@ -92,7 +116,11 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		for _, change := range request.Params.ContentChanges {
 			state.ApplyIncrementalChange(request.Params.TextDocument.URI, change)
 		}
-		publishDiagnostics(logger, writer, request.Params.TextDocument.URI, state.Diagnostics[request.Params.TextDocument.URI])
+		uri := request.Params.TextDocument.URI
+		diagDebouncer.debounce(uri, 150*time.Millisecond, func() {
+			state.EnsureParsed(uri)
+			publishDiagnostics(logger, writer, uri, state.Diagnostics[uri])
+		})
 	case "textDocument/hover":
 		var request lsp.HoverRequest
 		if !decodeRequest(logger, contents, &request, "textDocument/hover") {
