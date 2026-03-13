@@ -106,6 +106,62 @@ func (s *State) UpdateDocument(uri, text string) {
 	s.UpdateAst(uri)
 }
 
+func (s *State) ApplyIncrementalChange(uri string, change lsp.TextDocumentContentChangeEvent) {
+	if change.Range == nil {
+		s.UpdateDocument(uri, change.Text)
+		return
+	}
+
+	existing := s.Documents[uri]
+	updated, ok := applyRangeChange(existing, change.Range, change.Text)
+	if !ok {
+		s.UpdateDocument(uri, change.Text)
+		return
+	}
+
+	s.Documents[uri] = updated
+	s.UpdateAst(uri)
+}
+
+func applyRangeChange(doc string, range_ *lsp.Range, newText string) (string, bool) {
+	if range_ == nil {
+		return newText, true
+	}
+
+	startLine := range_.Start.Line
+	startChar := range_.Start.Character
+	endLine := range_.End.Line
+	endChar := range_.End.Character
+
+	lines := strings.Split(doc, "\n")
+
+	if startLine >= len(lines) || endLine >= len(lines) {
+		return "", false
+	}
+
+	lineLen := len(lines[startLine])
+	if startChar > lineLen {
+		return "", false
+	}
+	if endChar > len(lines[endLine]) {
+		return "", false
+	}
+
+	start := lines[startLine][:startChar]
+	end := lines[endLine][endChar:]
+
+	if startLine == endLine {
+		lines[startLine] = start + newText + end
+	} else {
+		lines[startLine] = start + newText
+		lines = append(lines[:startLine+1], lines[endLine+1:]...)
+		if endLine > startLine {
+			lines[startLine] += end
+		}
+	}
+	return strings.Join(lines, "\n"), true
+}
+
 func Parse(input string) (ParseResult, error) {
 	cmd := exec.Command("gscp")
 	stdin, err := cmd.StdinPipe()

@@ -90,7 +90,7 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 
 		logger.Printf("Changed: %s", request.Params.TextDocument.URI)
 		for _, change := range request.Params.ContentChanges {
-			state.UpdateDocument(request.Params.TextDocument.URI, change.Text)
+			state.ApplyIncrementalChange(request.Params.TextDocument.URI, change)
 		}
 		publishDiagnostics(logger, writer, request.Params.TextDocument.URI, state.Diagnostics[request.Params.TextDocument.URI])
 	case "textDocument/hover":

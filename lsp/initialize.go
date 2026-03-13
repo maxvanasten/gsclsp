@@ -49,7 +49,7 @@ func NewInitializeResponse(id int) InitializeResponse {
 		},
 		Result: InitializeResult{
 			Capabilities: ServerCapabilities{
-				TextDocumentSync:           1,
+				TextDocumentSync:           2,
 				HoverProvider:              true,
 				DefinitionProvider:         true,
 				DocumentFormattingProvider: true,
@@ -83,7 +83,7 @@ func NewInitializeResponse(id int) InitializeResponse {
 			},
 			ServerInfo: ServerInfo{
 				Name:    "gsclsp",
-				Version: "0.7.9",
+				Version: "0.8.0",
 			},
 		},
 	}
