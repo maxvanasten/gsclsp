@@ -4,6 +4,8 @@ github.com/maxvanasten/gscp v0.0.3 h1:nESqO8vmKoVs9UN/uvR6eq0l+25MyVjrVjLP9Qk6Qy
 github.com/maxvanasten/gscp v0.0.3/go.mod h1:yPCbfDbWcwQXk97O/8Wj7wLoxYiOu73umTz2Axjx4F0=
 github.com/maxvanasten/gscp v0.0.6-0.20260305222113-e65c3954289c h1:oxmRR6fFaRjE3cxQxtWaHG45oYbqqAIGT+CFBkqwjfk=
 github.com/maxvanasten/gscp v0.0.6-0.20260305222113-e65c3954289c/go.mod h1:yPCbfDbWcwQXk97O/8Wj7wLoxYiOu73umTz2Axjx4F0=
+github.com/maxvanasten/gscp v0.0.6-0.20260313161054-b1989c9ba703 h1:1VIwoLDXomeXMlcDge5hF2niJxL+T/KerqRVjLFb2IU=
+github.com/maxvanasten/gscp v0.0.6-0.20260313161054-b1989c9ba703/go.mod h1:yPCbfDbWcwQXk97O/8Wj7wLoxYiOu73umTz2Axjx4F0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=

@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.7.9
+
+- Updates formatter conditional block layout to keep opening braces inline for `if`, `else if`, and `else` chains (for example `} else {`).
+- Fixes formatting output that could preserve duplicate terminators in return expressions (for example `return array(...);;` inside switch/case blocks).
+
 ## 0.7.8
 
 - Keeps formatter `if/else` chains inline by emitting `} else` and `} else if (...)` on one line instead of splitting `else` onto a separate block.
