@@ -12,7 +12,9 @@ import (
 const formattingFallbackTabSize = 4
 
 func (s *State) Formatting(id int, uri string, options lsp.FormattingOptions) lsp.DocumentFormattingResponse {
+	s.mu.RLock()
 	original, ok := s.Documents[uri]
+	s.mu.RUnlock()
 	if !ok {
 		return formattingResponse(id, nil)
 	}

@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/maxvanasten/gsclsp/lsp"
 	"github.com/maxvanasten/gscp/diagnostics"
@@ -24,6 +25,8 @@ type ParseResult struct {
 }
 
 type State struct {
+	mu             sync.RWMutex
+	cacheMu        sync.Mutex
 	Documents      map[string]string
 	Ast            map[string][]p.Node
 	Tokens         map[string][]l.Token
@@ -96,42 +99,54 @@ func (s *State) Close() error {
 }
 
 func (s *State) OpenDocument(uri, text string) {
+	s.mu.Lock()
 	s.Documents[uri] = text
-	s.UpdateAst(uri)
+	s.updateAstLocked(uri)
+	s.mu.Unlock()
 }
 
 func (s *State) UpdateDocument(uri, text string) {
+	s.mu.Lock()
 	if existing, ok := s.Documents[uri]; ok && existing == text {
+		s.mu.Unlock()
 		return
 	}
 	s.Documents[uri] = text
-	s.UpdateAst(uri)
+	s.updateAstLocked(uri)
+	s.mu.Unlock()
 }
 
 func (s *State) ApplyIncrementalChange(uri string, change lsp.TextDocumentContentChangeEvent) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if change.Range == nil {
-		s.UpdateDocument(uri, change.Text)
+		s.Documents[uri] = change.Text
+		s.updateAstLocked(uri)
 		return
 	}
 
 	existing := s.Documents[uri]
 	updated, ok := applyRangeChange(existing, change.Range, change.Text)
 	if !ok {
-		s.UpdateDocument(uri, change.Text)
+		s.Documents[uri] = change.Text
+		s.updateAstLocked(uri)
 		return
 	}
 
 	s.Documents[uri] = updated
 	s.AstDirty[uri] = true
 	s.Diagnostics[uri] = nil
-	s.ClearCaches(uri)
+	delete(s.Resolved, uri)
+	delete(s.IncludeOrigins, uri)
 }
 
 func (s *State) EnsureParsed(uri string) {
+	s.mu.Lock()
 	if s.AstDirty[uri] {
-		s.UpdateAst(uri)
+		s.updateAstLocked(uri)
 		s.AstDirty[uri] = false
 	}
+	s.mu.Unlock()
 }
 
 func (s *State) ClearCaches(uri string) {
@@ -214,7 +229,9 @@ func (s *State) AddDocument(uri, filePath string) error {
 	if err != nil {
 		return fmt.Errorf("parse include file %q: %w", resolvedPath, err)
 	}
+	s.mu.Lock()
 	s.Signatures[uri] = mergeSignatures(s.Signatures[uri], entry.Signatures)
+	s.mu.Unlock()
 	return nil
 }
 
@@ -290,7 +307,13 @@ func uriToPath(uri string) string {
 }
 
 func (s *State) UpdateAst(uri string) {
-	if err := s.parseAndStore(uri); err != nil {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.updateAstLocked(uri)
+}
+
+func (s *State) updateAstLocked(uri string) {
+	if err := s.parseAndStoreLocked(uri); err != nil {
 		s.Diagnostics[uri] = []lsp.Diagnostic{parseFailureDiagnostic(err)}
 		delete(s.Resolved, uri)
 		delete(s.IncludeOrigins, uri)
@@ -300,7 +323,7 @@ func (s *State) UpdateAst(uri string) {
 	delete(s.IncludeOrigins, uri)
 }
 
-func (s *State) parseAndStore(uri string) error {
+func (s *State) parseAndStoreLocked(uri string) error {
 	parseResult, err := Parse(s.Documents[uri])
 	if err != nil {
 		return err
@@ -382,6 +405,8 @@ func (s *State) applyIncludes(signatures []FunctionSignature, uri string, includ
 }
 
 func (s *State) resolvedSignatures(uri string) []FunctionSignature {
+	s.cacheMu.Lock()
+	defer s.cacheMu.Unlock()
 	if cached, ok := s.Resolved[uri]; ok {
 		return cached
 	}
@@ -432,6 +457,8 @@ func collectIncludePaths(nodes []p.Node) []string {
 }
 
 func (s *State) GetTokenAtPosition(uri string, position lsp.Position) l.Token {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	for _, t := range s.Tokens[uri] {
 		if position.Line != t.Line-1 {
 			continue
@@ -449,6 +476,8 @@ func (s *State) GetTokenAtPosition(uri string, position lsp.Position) l.Token {
 
 func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverResponse {
 	s.EnsureParsed(uri)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	output := strings.Builder{}
 	signatures := s.resolvedSignatures(uri)
 
@@ -487,6 +516,8 @@ func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverRespon
 
 func (s *State) Definition(id int, uri string, position lsp.Position) lsp.DefinitionResponse {
 	s.EnsureParsed(uri)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	var location *lsp.Location
 	name := s.GetTokenAtPosition(uri, position).Content
 	if callName := findFunctionCallNameAtPosition(s.Ast[uri], position); callName != "" {
@@ -507,6 +538,8 @@ func (s *State) Definition(id int, uri string, position lsp.Position) lsp.Defini
 
 func (s *State) SemanticTokens(id int, uri string) lsp.SemanticTokensResponse {
 	s.EnsureParsed(uri)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	tokens := GenerateSemanticTokens(s.Tokens[uri])
 
 	return lsp.SemanticTokensResponse{
@@ -522,6 +555,8 @@ func (s *State) SemanticTokens(id int, uri string) lsp.SemanticTokensResponse {
 
 func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
 	s.EnsureParsed(uri)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	stdlib := s.loadStdlib()
 	signatures := s.resolvedSignatures(uri)
 	signatureByName := buildSignatureMap(signatures)
@@ -971,6 +1006,8 @@ func (s *State) buildBuiltinSet() map[string]struct{} {
 }
 
 func (s *State) buildIncludeOriginIndex(uri string, stdlib map[string]map[string][]FunctionSignature) map[string]string {
+	s.cacheMu.Lock()
+	defer s.cacheMu.Unlock()
 	if cached, ok := s.IncludeOrigins[uri]; ok {
 		return cached
 	}
