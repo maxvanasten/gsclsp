@@ -48,6 +48,7 @@ type State struct {
 
 	stdlibDefinitionRoot  string
 	stdlibDefinitionFiles map[string]stdlibDefinitionFile
+	workspaceFolders      []string
 }
 
 type includeCacheEntry struct {
@@ -84,6 +85,38 @@ func NewState() State {
 	}
 }
 
+func (s *State) SetWorkspaceFolders(folders []string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.workspaceFolders = folders
+}
+
+func (s *State) WorkspaceFolders() []string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.workspaceFolders
+}
+
+func DetectWorkspaceRootFromDocument(uri string) string {
+	docPath := uriToPath(uri)
+	if docPath == "" {
+		return ""
+	}
+	dir := filepath.Dir(docPath)
+	for {
+		scriptsPath := filepath.Join(dir, "scripts")
+		if _, err := os.Stat(scriptsPath); err == nil {
+			return dir
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+	return ""
+}
+
 func (s *State) Close() error {
 	if s.stdlibDefinitionRoot == "" {
 		return nil
@@ -96,6 +129,12 @@ func (s *State) Close() error {
 		return fmt.Errorf("remove stdlib definition root: %w", err)
 	}
 	return nil
+}
+
+func (s *State) DocumentText(uri string) string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.Documents[uri]
 }
 
 func (s *State) OpenDocument(uri, text string) {
@@ -220,7 +259,10 @@ func Parse(input string) (ParseResult, error) {
 
 // AddDocument Parses a file and adds all relevant nodes (function signatures) to the states document
 func (s *State) AddDocument(uri, filePath string) error {
-	resolvedPath, ok := resolveIncludePath(uri, filePath)
+	s.mu.RLock()
+	workspaceFolders := s.workspaceFolders
+	s.mu.RUnlock()
+	resolvedPath, ok := resolveIncludePath(uri, filePath, workspaceFolders)
 	if !ok {
 		return fmt.Errorf("resolve include path: %s", filePath)
 	}
@@ -267,7 +309,7 @@ func (s *State) getParsedInclude(path string) (includeCacheEntry, error) {
 	return entry, nil
 }
 
-func resolveIncludePath(uri, includePath string) (string, bool) {
+func resolveIncludePath(uri, includePath string, workspaceFolders []string) (string, bool) {
 	includePath = normalizeIncludePathBase(includePath)
 	includePath = strings.TrimPrefix(includePath, "./")
 	if includePath == "" {
@@ -284,6 +326,17 @@ func resolveIncludePath(uri, includePath string) (string, bool) {
 
 	if docPath := uriToPath(uri); docPath != "" {
 		candidate := filepath.Join(filepath.Dir(docPath), relativePath)
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate, true
+		}
+	}
+
+	for _, workspaceRoot := range workspaceFolders {
+		workspacePath := uriToPath(workspaceRoot)
+		if workspacePath == "" {
+			continue
+		}
+		candidate := filepath.Join(workspacePath, relativePath)
 		if _, err := os.Stat(candidate); err == nil {
 			return candidate, true
 		}
@@ -378,6 +431,10 @@ func (s *State) loadStdlibDeclarations() map[string]map[string][]StdlibDeclarati
 }
 
 func (s *State) applyIncludes(signatures []FunctionSignature, uri string, includePaths []string, stdlibGroup string, stdlib map[string]map[string][]FunctionSignature) []FunctionSignature {
+	s.mu.RLock()
+	workspaceFolders := s.workspaceFolders
+	s.mu.RUnlock()
+
 	for _, includePath := range includePaths {
 		key := normalizeIncludeKey(includePath)
 		if key == "" {
@@ -389,7 +446,7 @@ func (s *State) applyIncludes(signatures []FunctionSignature, uri string, includ
 			continue
 		}
 
-		resolvedPath, ok := resolveIncludePath(uri, includePath)
+		resolvedPath, ok := resolveIncludePath(uri, includePath, workspaceFolders)
 		if !ok {
 			continue
 		}
@@ -579,7 +636,8 @@ func (s *State) InlayHints(id int, uri string) lsp.InlayHintResponse {
 			ShowOrigin:  resolved.ShowOrigin,
 		}, true
 	}
-	inlayHints := GenerateInlayHints(signatures, s.Ast[uri], s.Tokens[uri], resolver)
+	lines := strings.Split(s.Documents[uri], "\n")
+	inlayHints := GenerateInlayHints(signatures, s.Ast[uri], s.Tokens[uri], resolver, lines)
 	inlayHints = append(inlayHints, generateSelfContextInlayHints(s.Ast[uri], s.Tokens[uri])...)
 
 	return lsp.InlayHintResponse{
@@ -1022,6 +1080,9 @@ func (s *State) buildIncludeOriginIndex(uri string, stdlib map[string]map[string
 
 func (s *State) addIncludeOriginsRecursive(uri string, includePaths []string, stdlib map[string]map[string][]FunctionSignature, visitedLocal map[string]bool, visitedStdlib map[string]bool, index map[string]string) {
 	stdlibGroup := guessStdlibGroup(uri)
+	s.mu.RLock()
+	workspaceFolders := s.workspaceFolders
+	s.mu.RUnlock()
 
 	for _, includePath := range includePaths {
 		key := normalizeIncludeKey(includePath)
@@ -1039,7 +1100,7 @@ func (s *State) addIncludeOriginsRecursive(uri string, includePaths []string, st
 			}
 		}
 
-		resolvedPath, ok := resolveIncludePath(uri, includePath)
+		resolvedPath, ok := resolveIncludePath(uri, includePath, workspaceFolders)
 		if !ok {
 			continue
 		}
@@ -1152,6 +1213,9 @@ func (s *State) resolveIncludeOriginLabel(uri, functionName string, stdlib map[s
 
 func (s *State) resolveIncludeOriginLabelRecursive(uri string, includePaths []string, functionName string, stdlib map[string]map[string][]FunctionSignature, visitedLocal map[string]bool, visitedStdlib map[string]bool) (string, bool) {
 	stdlibGroup := guessStdlibGroup(uri)
+	s.mu.RLock()
+	workspaceFolders := s.workspaceFolders
+	s.mu.RUnlock()
 
 	for _, includePath := range includePaths {
 		key := normalizeIncludeKey(includePath)
@@ -1166,7 +1230,7 @@ func (s *State) resolveIncludeOriginLabelRecursive(uri string, includePaths []st
 			}
 		}
 
-		resolvedPath, ok := resolveIncludePath(uri, includePath)
+		resolvedPath, ok := resolveIncludePath(uri, includePath, workspaceFolders)
 		if !ok {
 			continue
 		}

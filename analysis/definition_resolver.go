@@ -13,8 +13,10 @@ func (s *State) resolveDefinitionLocation(uri, name string) (lsp.Location, bool)
 		return lsp.Location{}, false
 	}
 
+	workspaceFolders := s.WorkspaceFolders()
+
 	if qualifier, funcName, ok := splitQualifiedName(name); ok {
-		resolvedPath, ok := resolveIncludePath(uri, qualifier)
+		resolvedPath, ok := resolveIncludePath(uri, qualifier, workspaceFolders)
 		if !ok {
 			return s.resolveStdlibDefinitionLocation(uri, name)
 		}
@@ -125,8 +127,10 @@ func lookupStdlibDeclarationsForGroup(declarations map[string]map[string][]Stdli
 }
 
 func (s *State) resolveDefinitionFromIncludes(uri string, includePaths []string, functionName string, visited map[string]bool) (lsp.Location, bool) {
+	workspaceFolders := s.WorkspaceFolders()
+
 	for _, includePath := range includePaths {
-		resolvedPath, ok := resolveIncludePath(uri, includePath)
+		resolvedPath, ok := resolveIncludePath(uri, includePath, workspaceFolders)
 		if !ok {
 			continue
 		}

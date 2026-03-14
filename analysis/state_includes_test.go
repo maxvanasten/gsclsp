@@ -565,7 +565,7 @@ func TestIncludeCacheReusesUnchangedFile(t *testing.T) {
 		t.Fatal("expected include signature to contain foo")
 	}
 
-	resolvedPath, ok := resolveIncludePath(uri, "helpers")
+	resolvedPath, ok := resolveIncludePath(uri, "helpers", nil)
 	if !ok {
 		t.Fatal("expected include path to resolve")
 	}
@@ -668,7 +668,7 @@ func TestResolveIncludePathRelativePrefixes(t *testing.T) {
 
 	uri := uriForPath(mainPath)
 	for _, includePath := range []string{"./helpers", ".\\helpers"} {
-		resolved, ok := resolveIncludePath(uri, includePath)
+		resolved, ok := resolveIncludePath(uri, includePath, nil)
 		if !ok {
 			t.Fatalf("resolveIncludePath(%q) failed", includePath)
 		}

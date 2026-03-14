@@ -184,7 +184,8 @@ func resolveQualifiedCompletionSignatures(s *State, uri, qualifier string, stdli
 		return sigs
 	}
 
-	resolvedPath, ok := resolveIncludePath(uri, qualifier)
+	workspaceFolders := s.WorkspaceFolders()
+	resolvedPath, ok := resolveIncludePath(uri, qualifier, workspaceFolders)
 	if !ok {
 		return nil
 	}
