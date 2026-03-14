@@ -1,5 +1,14 @@
 # Release Notes
 
+## 0.8.3
+
+- **Bug Fix**: Improve open-call inlay hints to advance with commas, ignore commas inside strings, and anchor active hints after the current comma
+- **Enhancement**: Resolve includes and definitions using workspace folders with auto-detection during initialization
+
+## 0.8.2
+
+- **Bug Fix**: Fix race condition with concurrent map access - add RWMutex and cache mutex to protect concurrent map access, fixing 'concurrent map read and map write' panic
+
 ## 0.8.1
 
 - **Performance**: Implement incremental document sync (LSP textDocumentSync mode 2) to receive text changes instead of full document content
