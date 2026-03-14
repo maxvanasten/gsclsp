@@ -74,6 +74,25 @@ func TestFunctionCallLabelColFromTokensThreadCall(t *testing.T) {
 	}
 }
 
+func TestFunctionCallLabelColFromTokensNonMethodCall(t *testing.T) {
+	input := "add_quest(\"t\""
+	lexer := l.NewLexer([]byte(input))
+	tokens := lexer.GetTokens()
+	node := p.Node{
+		Type: "function_call",
+		Data: p.NodeData{FunctionName: "add_quest"},
+		Line: 1,
+		Col:  1,
+	}
+	lineTokens := indexTokensByLine(tokens)[node.Line]
+
+	col := functionCallLabelCol(node, lineTokens)
+	want := strings.Index(input, "add_quest")
+	if col != want {
+		t.Fatalf("functionCallLabelCol(non-method) = %d, want %d", col, want)
+	}
+}
+
 func TestFunctionCallLabelColFromTokensQualifiedCall(t *testing.T) {
 	input := "common_scripts\\utility::array_copy(foo)"
 	lexer := l.NewLexer([]byte(input))
