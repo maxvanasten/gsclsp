@@ -98,11 +98,40 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		writeResponse(logger, writer, msg)
 
 		logger.Print("Sent the reply")
+	case "initialized":
+		var request lsp.InitializedNotification
+		if !decodeRequest(logger, contents, &request, "initialized") {
+			return
+		}
+		workspaceRoot := detectWorkspaceRootFromFirstDocument(state)
+		if workspaceRoot != "" {
+			state.SetWorkspaceFolders([]string{workspaceRoot})
+			logger.Printf("Auto-detected workspace root: %s", workspaceRoot)
+		}
+	case "workspace/workspaceFolders":
+		var request lsp.WorkspaceFoldersNotification
+		if !decodeRequest(logger, contents, &request, "workspace/workspaceFolders") {
+			return
+		}
+		folders := make([]string, len(request.Params.WorkspaceFolders))
+		for i, wf := range request.Params.WorkspaceFolders {
+			folders[i] = wf.URI
+		}
+		state.SetWorkspaceFolders(folders)
+		logger.Printf("Set workspace folders: %v", folders)
 	case "textDocument/didOpen":
 		var request lsp.DidOpenTextDocumentNotification
 		decodeRequest(logger, contents, &request, "Json unmarsheling err")
 
 		logger.Printf("Opened: %s", request.Params.TextDocument.URI)
+
+		if len(state.WorkspaceFolders()) == 0 {
+			workspaceRoot := analysis.DetectWorkspaceRootFromDocument(request.Params.TextDocument.URI)
+			if workspaceRoot != "" {
+				state.SetWorkspaceFolders([]string{workspaceRoot})
+				logger.Printf("Auto-detected workspace root from didOpen: %s", workspaceRoot)
+			}
+		}
 
 		state.OpenDocument(request.Params.TextDocument.URI, request.Params.TextDocument.Text)
 		publishDiagnostics(logger, writer, request.Params.TextDocument.URI, state.Diagnostics[request.Params.TextDocument.URI])
@@ -164,6 +193,25 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		response := state.InlayHints(request.ID, request.Params.TextDocument.URI)
 		writeResponse(logger, writer, response)
 		logger.Printf("inlay_hints: %d", len(response.Result))
+		if os.Getenv("GSCLSP_DEBUG_INLAY") != "" {
+			uri := request.Params.TextDocument.URI
+			text := state.DocumentText(uri)
+			lines := strings.Split(text, "\n")
+			for _, hint := range response.Result {
+				line := hint.Position.Line
+				lineText := ""
+				if line >= 0 && line < len(lines) {
+					lineText = lines[line]
+				}
+				if lineText == "" {
+					continue
+				}
+				if !strings.Contains(lineText, "add_quest(") {
+					continue
+				}
+				logger.Printf("inlay_hint_debug label=%q line=%d col=%d line_text=%q", hint.Label, line, hint.Position.Character, lineText)
+			}
+		}
 	case "textDocument/formatting":
 		var request lsp.DocumentFormattingRequest
 		if !decodeRequest(logger, contents, &request, "textDocument/formatting") {
@@ -298,4 +346,13 @@ func publishDiagnostics(logger *log.Logger, writer io.Writer, uri string, diagno
 
 func getLogger() *log.Logger {
 	return log.New(os.Stderr, "[gsclsp] ", log.Ldate|log.Ltime|log.Lshortfile)
+}
+
+func detectWorkspaceRootFromFirstDocument(state *analysis.State) string {
+	for uri := range state.Documents {
+		if root := analysis.DetectWorkspaceRootFromDocument(uri); root != "" {
+			return root
+		}
+	}
+	return ""
 }
