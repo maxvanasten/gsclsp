@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.8.4
+
+- **Bug Fix**: Add `paddingRight` to active parameter inlay hints for open calls, improving visual spacing between hints and subsequent code
+- **Testing**: Add comprehensive test coverage for open call inlay hints (7 new tests covering positioning, comma advancement, string handling, and padding behavior)
+
 ## 0.8.3
 
 - **Bug Fix**: Improve open-call inlay hints to advance with commas, ignore commas inside strings, and anchor active hints after the current comma
