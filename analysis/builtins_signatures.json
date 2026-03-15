@@ -1,64 +1,11261 @@
 [
-  {"Name":"iPrintLn","Arguments":["text"]},
-  {"Name":"iprintlnbold","Arguments":["text"]},
-  {"Name":"print","Arguments":["text"]},
-  {"Name":"println","Arguments":["text"]},
-
-  {"Name":"getentarray","Arguments":["targetname","fieldname"]},
-  {"Name":"getEntArray","Arguments":["targetname","fieldname"]},
-  {"Name":"spawn","Arguments":["classname","origin","angle","radius","height"]},
-
-  {"Name":"getdvar","Arguments":["name"]},
-  {"Name":"setdvar","Arguments":["name","value"]},
-  {"Name":"tolower","Arguments":["text"]},
-  {"Name":"toupper","Arguments":["text"]},
-  {"Name":"isdefined","Arguments":["value"]},
-
-  {"Name":"wait","Arguments":["seconds"]},
-  {"Name":"waittill","Arguments":["event","obj1","arg2"]},
-  {"Name":"endon","Arguments":["message"]},
-
-  {"Name":"usebuttonpressed","Arguments":[]},
-  {"Name":"adsbuttonpressed","Arguments":[]},
-  {"Name":"setValue","Arguments":["value"]},
-  {"Name":"setCursorHint","Arguments":["hint"]},
-  {"Name":"setHintString","Arguments":["text"]},
-
-  {"Name":"getgametypesetting","Arguments":["string"]},
-  {"Name":"getentitynumber","Arguments":[]},
-  {"Name":"getbaseweaponitemindex","Arguments":["weapon_name"]},
-  {"Name":"getreffromitemindex","Arguments":["weapon_name"]},
-  {"Name":"giveweapon","Arguments":["weapon_name"]},
-  {"Name":"switchtoweapon","Arguments":["weapon_name"]},
-  {"Name":"getplayerviewheight","Arguments":[]},
-  {"Name":"getcurrentweapon","Arguments":[]},
-  {"Name":"gettime","Arguments":[]},
-  {"Name":"getweaponammostock","Arguments":[]},
-  {"Name":"setweaponammoclip","Arguments":["weapon_name","weapon_clip_to_give"]},
-  {"Name":"setweaponammostock","Arguments":["weapon_name","weapon_stock_to_give"]},
-  {"Name":"isthrowinggrenade","Arguments":[]},
-  {"Name":"isreloading","Arguments":[]},
-  {"Name":"isswitchingweapons","Arguments":[]},
-  {"Name":"ismantling","Arguments":[]},
-  {"Name":"isonladder","Arguments":[]},
-  {"Name":"isalive","Arguments":["entity"]},
-  {"Name":"isplayer","Arguments":["entity"]},
-  {"Name":"isai","Arguments":["entity"]},
-  {"Name":"loadfx","Arguments":["effect"]},
-  {"Name":"randomfloatrange","Arguments":["float1","float2"]},
-  {"Name":"playerads","Arguments":[]},
-  {"Name":"pixendevent","Arguments":[]},
-  {"Name":"predictspawnpoint","Arguments":["origin","angles"]},
-  {"Name":"setclientnamemode","Arguments":["string"]},
-
-  {"Name":"allowattack","Arguments":["boolean"]},
-  {"Name":"addgoal","Arguments":["goal","goal_radius","goal_priority","goal_name"]},
-  {"Name":"atgoal","Arguments":["goal"]},
-  {"Name":"cancelgoal","Arguments":["goal"]},
-  {"Name":"pressads","Arguments":["boolean"]},
-  {"Name":"pressattackbutton","Arguments":["duration"]},
-  {"Name":"pressusebutton","Arguments":["duration"]},
-  {"Name":"pressmelee","Arguments":[]},
-  {"Name":"gethreats","Arguments":["fov"]},
-  {"Name":"botsighttracepassed","Arguments":["entity"]}
+  {
+    "Name": "addaieventlistener",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addargus",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addbonuscardstat",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "adddebugcommand",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "adddemobookmark",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "adddstat",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addfriendlyscrambler",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addgametypestat",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addgoal",
+    "Arguments": [
+      "goal",
+      "goal_radius",
+      "goal_priority",
+      "goal_name"
+    ]
+  },
+  {
+    "Name": "addip",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "additive",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addmenu",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addnodetocurve",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addon_map_ents",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addplayerstat",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addplayerstatwithgametype",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addr",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addrankxp",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addrankxpvalue",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addreactionevent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addsessstat",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addspawnpoints",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addsphereinfluencer",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addtocompass",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addtomenuroot",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addvehicletocompass",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addweaponstat",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "addzombieboxweapon",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "adsbuttonpressed",
+    "Arguments": []
+  },
+  {
+    "Name": "ai_nosight",
+    "Arguments": []
+  },
+  {
+    "Name": "ai_trim_path_zigzags",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_accel_turnrate_debug",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_accel_turnrate_enabled",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_accel_turnrate_lerp",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_alternate_lockon_deflection",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_alternate_lockon_pitch_strength",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_alternate_lockon_region_height",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_alternate_lockon_region_width",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_alternate_lockon_strength",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_assist_min_target_distance",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_assist_script_disable",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_autoaim_debug",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_autoaim_enabled",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_autoaim_lerp",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_autoaim_region_width",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_autobayonet_range",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_automelee_debug",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_automelee_enabled",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_automelee_lerp",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_automelee_move_limit",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_automelee_move_limit_angle",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_automelee_move_limit_range",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_automelee_range",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_automelee_region_height",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_automelee_region_width",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_input_graph_debug",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_input_graph_enabled",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_input_graph_index",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_linkto_autorecenter_delay",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_linkto_autorecenter_rate",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_lockon_debug",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_lockon_deflection",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_lockon_enabled",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_lockon_pitch_strength",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_lockon_region_height",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_lockon_region_width",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_lockon_strength",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_scale_view_axis",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_slowdown_debug",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_slowdown_enabled",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_slowdown_pitch_scale",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_slowdown_pitch_scale_ads",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_slowdown_region_extended_height",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_slowdown_region_height",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_slowdown_region_width",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_slowdown_yaw_scale",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_slowdown_yaw_scale_ads",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_target_aim_tag_fast_update_interval",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_target_aim_tag_slow_update_interval",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_target_closest_first",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_target_fixed_actor_size",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_target_frustum_expand_fast_updates",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_target_frustum_min_distance",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_target_ignore_team_checking",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_target_player_enabled",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_target_sentient_half_height",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_target_sentient_radius",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_turnrate_pitch_ads",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_turnrate_yaw",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_turnrate_yaw_ads",
+    "Arguments": []
+  },
+  {
+    "Name": "aim_view_sensitivity_override",
+    "Arguments": []
+  },
+  {
+    "Name": "aimatentityik",
+    "Arguments": []
+  },
+  {
+    "Name": "aimatpos",
+    "Arguments": []
+  },
+  {
+    "Name": "aimatposik",
+    "Arguments": []
+  },
+  {
+    "Name": "aimingatfriendly",
+    "Arguments": []
+  },
+  {
+    "Name": "airlock",
+    "Arguments": []
+  },
+  {
+    "Name": "airsupport",
+    "Arguments": []
+  },
+  {
+    "Name": "aiteam",
+    "Arguments": []
+  },
+  {
+    "Name": "aitype",
+    "Arguments": []
+  },
+  {
+    "Name": "aivsai",
+    "Arguments": []
+  },
+  {
+    "Name": "aivsplayer",
+    "Arguments": []
+  },
+  {
+    "Name": "aiweapon",
+    "Arguments": []
+  },
+  {
+    "Name": "allow",
+    "Arguments": []
+  },
+  {
+    "Name": "allow_round_animation",
+    "Arguments": []
+  },
+  {
+    "Name": "allowads",
+    "Arguments": []
+  },
+  {
+    "Name": "allowattack",
+    "Arguments": [
+      "boolean"
+    ]
+  },
+  {
+    "Name": "allowbottargetting",
+    "Arguments": []
+  },
+  {
+    "Name": "allowcamerarotation",
+    "Arguments": []
+  },
+  {
+    "Name": "allowcrouch",
+    "Arguments": []
+  },
+  {
+    "Name": "allowedstances",
+    "Arguments": []
+  },
+  {
+    "Name": "allowjump",
+    "Arguments": []
+  },
+  {
+    "Name": "allowlean",
+    "Arguments": []
+  },
+  {
+    "Name": "allowmelee",
+    "Arguments": []
+  },
+  {
+    "Name": "allowpain",
+    "Arguments": []
+  },
+  {
+    "Name": "allowpickupweapons",
+    "Arguments": []
+  },
+  {
+    "Name": "allowpitchangle",
+    "Arguments": []
+  },
+  {
+    "Name": "allowprone",
+    "Arguments": []
+  },
+  {
+    "Name": "allowreact",
+    "Arguments": []
+  },
+  {
+    "Name": "allowroundanimation",
+    "Arguments": []
+  },
+  {
+    "Name": "allowspectateteam",
+    "Arguments": []
+  },
+  {
+    "Name": "allowsprint",
+    "Arguments": []
+  },
+  {
+    "Name": "allowstand",
+    "Arguments": []
+  },
+  {
+    "Name": "allowtacticalinsertion",
+    "Arguments": []
+  },
+  {
+    "Name": "array",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "arraycombine",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "arraycopy",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "arrayinsert",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "arrayremoveindex",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "arrayremovevalue",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "arraysort",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "atgoal",
+    "Arguments": [
+      "goal"
+    ]
+  },
+  {
+    "Name": "bot_difficulty",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "bot_enemies",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "bot_friends",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "botclassaddattachment",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "botclassadditem",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "both",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "botsetdefaultclass",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "botsetfailsafenode",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "botsighttracepassed",
+    "Arguments": [
+      "entity"
+    ]
+  },
+  {
+    "Name": "bottom",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "bottomarc",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "can_place",
+    "Arguments": []
+  },
+  {
+    "Name": "canadian",
+    "Arguments": []
+  },
+  {
+    "Name": "canattackenemynode",
+    "Arguments": []
+  },
+  {
+    "Name": "cancel_location",
+    "Arguments": []
+  },
+  {
+    "Name": "cancelaimove",
+    "Arguments": []
+  },
+  {
+    "Name": "cancelgoal",
+    "Arguments": [
+      "goal"
+    ]
+  },
+  {
+    "Name": "cancelled",
+    "Arguments": []
+  },
+  {
+    "Name": "canclaimnode",
+    "Arguments": []
+  },
+  {
+    "Name": "canflank",
+    "Arguments": []
+  },
+  {
+    "Name": "canned_animations",
+    "Arguments": []
+  },
+  {
+    "Name": "canplaceriotshield",
+    "Arguments": []
+  },
+  {
+    "Name": "canplayerplaceturret",
+    "Arguments": []
+  },
+  {
+    "Name": "canplayerplacevehicle",
+    "Arguments": []
+  },
+  {
+    "Name": "cansee",
+    "Arguments": []
+  },
+  {
+    "Name": "canseepathgoal",
+    "Arguments": []
+  },
+  {
+    "Name": "canshoot",
+    "Arguments": []
+  },
+  {
+    "Name": "canshootenemy",
+    "Arguments": []
+  },
+  {
+    "Name": "canspawnturret",
+    "Arguments": []
+  },
+  {
+    "Name": "clear",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clear_alpha",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clear_alpha_stencil",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearallcorpses",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearalltextafterhudelem",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearalternateaimparams",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearance",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearanim",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearanimlimited",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearcenterpopups",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearclientflag",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "cleardamageindicator",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "cleardefaultpitch",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearendgame",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearenemy",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearentityowner",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearentitytarget",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearfixednodesafevolume",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "cleargoalvolume",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "cleargoalyaw",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "cleargunnertarget",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearlocalizedstrings",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearlookat",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearlookatent",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearmaterialoverride",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearmovehistory",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearnearestenemyscrambler",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearperks",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearphysicsgravity",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearpitchorient",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearplayergravity",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearpopups",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearpotentialthreat",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearruntopos",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearscriptenemy",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearscriptgoal",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearspawnpoints",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearspawnpointsbaseweight",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearsteptriggersound",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearstowedweapon",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "cleartargetentity",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "cleartargetyaw",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearvehgoalpos",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "clearviewlockent",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "damage",
+    "Arguments": []
+  },
+  {
+    "Name": "damage_afterdeath",
+    "Arguments": []
+  },
+  {
+    "Name": "damageconetrace",
+    "Arguments": []
+  },
+  {
+    "Name": "damagedir",
+    "Arguments": []
+  },
+  {
+    "Name": "damagelocation",
+    "Arguments": []
+  },
+  {
+    "Name": "damagemod",
+    "Arguments": []
+  },
+  {
+    "Name": "damagetaken",
+    "Arguments": []
+  },
+  {
+    "Name": "damageweapon",
+    "Arguments": []
+  },
+  {
+    "Name": "damageyaw",
+    "Arguments": []
+  },
+  {
+    "Name": "disable",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disable_rope",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disable_vcs",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disable_vcs_viewmodel",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableafterlife",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableaimassist",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableallbutprimaryclients",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableallclients",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableclientlinkto",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disablecolor",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disabled",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disabledeathstreak",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disabledepthbuoyancyadjustments",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disabledestructiblepieces",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disablegrenadesuicide",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disablegrenadetouchdamage",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disablegunnerfiring",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableimpactmarks",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableinvulnerability",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableoffhandweapons",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableturretdismount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableusability",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableweaponcycling",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableweaponfire",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableweaponreload",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableweapons",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disableyellowdot",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "disablezombies",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enable",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enable_global_wind",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enable_grass_wind",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enable_moving_paths",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enable_new_prone_check",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enable_popups",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableafterlife",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableaimassist",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enablealldestructiblepieces",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableclientlinkto",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enabledarkness",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enabledeathshield",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enabledeathstreak",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableflamesystem",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enablegrenadesuicide",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enablegrenadetouchdamage",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enablehealthshield",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableimpactmarks",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableinfluencer",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableinvulnerability",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enablelinkto",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableoccluder",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableoffhandweapons",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enablereactionsystem",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enablesledgehammer",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableturretdismount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableusability",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enablewatersheetfx",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableweaponcycling",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableweaponfire",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableweaponreload",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enableweapons",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "enablezombies",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "endon",
+    "Arguments": [
+      "message"
+    ]
+  },
+  {
+    "Name": "entity",
+    "Arguments": []
+  },
+  {
+    "Name": "entity_container_clamped",
+    "Arguments": []
+  },
+  {
+    "Name": "entity_container_unclamped",
+    "Arguments": []
+  },
+  {
+    "Name": "entitylist",
+    "Arguments": []
+  },
+  {
+    "Name": "entityshutdown",
+    "Arguments": []
+  },
+  {
+    "Name": "entityshutdown_callback",
+    "Arguments": []
+  },
+  {
+    "Name": "entityspawned",
+    "Arguments": []
+  },
+  {
+    "Name": "entitytrace",
+    "Arguments": []
+  },
+  {
+    "Name": "getabsmaxs",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getactivecontractprogress",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getactivecontracttimepassed",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getactivelocalclients",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getaiarray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getaicount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getailimit",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getaispeciesarray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getaitriggerflags",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getaivelocity",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getallnodes",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getallvehiclenodes",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getammocount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getangledelta",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getangles",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanglestolikelyenemypath",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getangularvelocity",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimassettype",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimcurrframecount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimdumpmodel",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimdumptotaltime",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimdumptree",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimforstate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimframecount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimfromasd",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimhasnotetrackfromasd",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimlength",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimlengthfromasd",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimstate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimstatecategory",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimstatefromasd",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimsubstatecountfromasd",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimsubstatefromasd",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimtime",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanimvalue",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getanynodearray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getarraykeys",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getassignedteam",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getatrloaded",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getattachignorecollision",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getattachmentindex",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getattachmodelname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getattachpos",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getattachsize",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getattachtagname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getbaseweaponitemindex",
+    "Arguments": [
+      "weapon_name"
+    ]
+  },
+  {
+    "Name": "getbinklength",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getbottomarc",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getbrake",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getbrushmodelcenter",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcamangles",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcamanglesbylocalclientnum",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcampos",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcamposbylocalclientnum",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcentroid",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getchallenge",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcharacterindex",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcinematictimeremaining",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getclassindexfromname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getclientfieldversion",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getclientflag",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getclosestanimdumpframefortime",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getclosestenemysqdist",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcommandfromkey",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcontractname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcontractrequiredcount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcontractrequirements",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcontractresetconditions",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcontractrewardcp",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcontractrewardxp",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcontractstatname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcontractstattype",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcontrollertype",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcorpseanim",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcountertotal",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcovernode",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcovernodearray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcurrentoffhand",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcurrentweapon",
+    "Arguments": []
+  },
+  {
+    "Name": "getcurrentweaponaltweapon",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcurrentweaponclipammo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcurrentweaponincludingmelee",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcurrentweaponspinlerp",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcurve",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcurvecurpos",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcurveserverpos",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcustomclassloadoutitem",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcustomclassmodifier",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getcycleoriginoffset",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdamageableentarray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdebugdvar",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdebugdvarint",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdebugeye",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdefaultclassslot",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdeltaturnyaw",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdemofileid",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdepthoffield_farblur",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdepthoffield_farend",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdepthoffield_farstart",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdepthoffield_nearblur",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdepthoffield_nearend",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdepthoffield_nearstart",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdestructibledefs",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdestructiblename",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdifficulty",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdronemodel",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdroppedweapons",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdroptofloorposition",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdstat",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdstatarraycount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdumpcmdsfortimedelta",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdvar",
+    "Arguments": [
+      "name"
+    ]
+  },
+  {
+    "Name": "getdvarcoloralpha",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdvarcolorblue",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdvarcolorgreen",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdvarcolorred",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdvarfloat",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdvarint",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdvarvector",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdynent",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdynentarray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getdynmodels",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getenemies",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getenemyinfo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getenemyscrambleramount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getenemysqdist",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getent",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "getentarray",
+    "Arguments": [
+      "targetname",
+      "fieldname"
+    ]
+  },
+  {
+    "Name": "getEntArray",
+    "Arguments": [
+      "targetname",
+      "fieldname"
+    ]
+  },
+  {
+    "Name": "getentbynum",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getenterbutton",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getentityanimrate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getentitynumber",
+    "Arguments": []
+  },
+  {
+    "Name": "getentitytype",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getentnum",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getenv",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getextracamstatic",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "geteyeapprox",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getfirstarraykey",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getfixednodesafevolume",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getflashbangedstrength",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getfogsettings",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getfootstepstrings",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getfractionmaxammo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getfractionstartammo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getfreeactorcount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getfriendlies",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getfriendlyscrambleramount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getfxvisibility",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgametypeenumfromname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgametypesetting",
+    "Arguments": [
+      "string"
+    ]
+  },
+  {
+    "Name": "getgcweights",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgoal",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgoalspeedmph",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgoalvolume",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgridfrompos",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgroundent",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgroundenttype",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getguid",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgunangles",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgunneranimpitch",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgunneranimyaw",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgunnertargetent",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgunnertargetvec",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getgvrule",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gethandbrake",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gethelidamagestate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getheliheightlock",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getheliheightlockheight",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gethitenttype",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gethityaw",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gethreats",
+    "Arguments": [
+      "fov"
+    ]
+  },
+  {
+    "Name": "getindexforactivecontract",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getinfo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getinkillcam",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getinventoryweapon",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getitemarray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getitemattachment",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getitemattachmentallocationcost",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getitemgroupfromitemindex",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getitemstatus",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getkeybinding",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getknownlength",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlastarraykey",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getleagueteamid",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getleftarc",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlevelalias",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlightcolor",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlightexponent",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlightfovinner",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlightfovouter",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlightintensity",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlightradius",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlinkedent",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getloadoutallocation",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getloadoutitem",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getloadoutitemindex",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getloadoutitemref",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getloadoutperks",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getloadoutweapon",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocal",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalclientangles",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalclientdriver",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalclienteyepos",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalclienthealth",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalclientmaxhealth",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalclientpos",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalgunnerangles",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalplayer",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalplayers",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalplayerteam",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalprofilearrayint",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalprofilefloat",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalprofileint",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlocalprofilestring",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlockonradius",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlookaheaddir",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getlookaheaddist",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmapcenter",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmapsundirection",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmapsunlight",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmaxactivecontracts",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmaxlocalclients",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmaxreversespeed",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmaxs",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmaxspeed",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmaxvehicles",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmetatable",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getminbitcountfornum",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmins",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmiscmodels",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmissileowner",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmotionangle",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmovedelta",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmovehistoryaverage",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmovementtype",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmoverent",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getmovespeedscale",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getn",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnearestnode",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnegotiationendnode",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnegotiationstartnode",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnextarraykey",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnode",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnodearray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnodearraysorted",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnodeowner",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnodesinradius",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnodesinradiussorted",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnonpredictedlocalplayer",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnormalhealth",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnormalizedcameramovement",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnormalizedmovement",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnorthyaw",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnotetracksindelta",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnotetracktimes",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnumchallengescomplete",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnumconnectedplayers",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnumexpectedplayers",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnumgvrules",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnumparts",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnumrestarts",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnumvehicles",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getnumzbarrierpieces",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getoccupantseat",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getoffhandsecondaryclass",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getorientmode",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getorigin",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getowner",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getparententity",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getpartname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getpathfixedoffset",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getpathlength",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getpathvariableoffset",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getperfectinfo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getperks",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getpersistentprofilevar",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getphysacceleration",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getplaybacktime",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getplayerangles",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getplayercamerapos",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getplayerconnectionstate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getplayers",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getplayerspawnid",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getplayerviewheight",
+    "Arguments": []
+  },
+  {
+    "Name": "getpointinbounds",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getpregameclass",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getpregameteam",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getprevarraykey",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getreacquirenode",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getreactionevent",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getrealtime",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getreffromitemindex",
+    "Arguments": [
+      "weapon_name"
+    ]
+  },
+  {
+    "Name": "getreflectionlocs",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getreflectionorigin",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getregistry",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getretrievableweapons",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getrightarc",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getrope",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getscoremultiplier",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getscreenheight",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getscreenwidth",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getscriptbrake",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getscriptmoverarray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getseatfiringangles",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getseatoccupant",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getservbyname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getserverhighestclientfieldversion",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getservertime",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getservervolumetricfogdensity",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getsessstat",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getsessstatarraycount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getshootatpos",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getsnapshotackindex",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getsnapshotindexarray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getsortedspawnpoints",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getsoundcount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getsoundname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getspawnerarray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getspawnerteamarray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getspeed",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getspeedmph",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getstance",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getstartangles",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getstartorigin",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getstarttime",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getstatus",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getstowedweapon",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getsubstr",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getsurfacestrings",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getsystemtime",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gettagorigin",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gettargetentity",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gettargetorigin",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getteam",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getteamplayersalive",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getteamsatellite",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getteamscore",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getteamspyplane",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gettextwidth",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getthreat",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getthreatbias",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getthreatbiasgroup",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getthreats",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getthrottle",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gettime",
+    "Arguments": []
+  },
+  {
+    "Name": "gettimefromvehiclenodetonode",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gettimescale",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gettotalammo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "gettouchingvolume",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getturret",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getturretarclimits",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getturretheatvalue",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getturretowner",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getturrettarget",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getupgradedpiecenumlives",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getupvalue",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getutc",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvalidcoverpeekouts",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvehiclearray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvehicleavoidancenodes",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvehiclehealth",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvehiclenode",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvehiclenodearray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvehicleoccupied",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvehicleowner",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvehiclespawnerarray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvehicletreadfxarray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvehicletriggerflags",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvehoccupants",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvelocity",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvisiblenode",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvisiblenodes",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getvisionsetnaked",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getwagergametypelist",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getwatcherweapons",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getwaterheight",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponaccuracy",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponammoclip",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponammofuel",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponammostock",
+    "Arguments": []
+  },
+  {
+    "Name": "getweaponattachments",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponclipmodel",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweapondisplayname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponexplosionradius",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponfiresound",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponfiresoundplayer",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponforwarddir",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponfusetime",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponindexfromname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponmaxdamagerange",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponmindamage",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponmodel",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponmuzzlepoint",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponoptic",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponpickupsound",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponpickupsoundplayer",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponposfrac",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponprojexplosionsound",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponslist",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponstowedmodel",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getweaponsupportedattachments",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getwheelsurface",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getwiiuremotepointerposition",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getworldfogscriptid",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getxp",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getxuid",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getzbarrierarray",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getzbarrierattackslothorzoffset",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getzbarriernumattackslots",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getzbarrierpieceanimlengthforstate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getzbarrierpieceanimstate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getzbarrierpieceanimsubstate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getzbarrierpieceindicesinstate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getzbarrierpiecestate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getzbarrierreachthroughattackanimstate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "getzbarriertauntanimstate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "giveachievement",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "givegamerpicture",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "givemaxammo",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "givenextbaseweapon",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "givestartammo",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "giveweapon",
+    "Arguments": [
+      "weapon_name"
+    ]
+  },
+  {
+    "Name": "giveweaponnextattachment",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "hasactivecontractexpired",
+    "Arguments": []
+  },
+  {
+    "Name": "hasagrenadepulledback",
+    "Arguments": []
+  },
+  {
+    "Name": "hasallintel",
+    "Arguments": []
+  },
+  {
+    "Name": "hasanimstatefromasd",
+    "Arguments": []
+  },
+  {
+    "Name": "hasanimtree",
+    "Arguments": []
+  },
+  {
+    "Name": "hascollectible",
+    "Arguments": []
+  },
+  {
+    "Name": "hascompletedallgamechallenges",
+    "Arguments": []
+  },
+  {
+    "Name": "hasdlcavailable",
+    "Arguments": []
+  },
+  {
+    "Name": "hasdobj",
+    "Arguments": []
+  },
+  {
+    "Name": "hasdstats",
+    "Arguments": []
+  },
+  {
+    "Name": "hasgoal",
+    "Arguments": []
+  },
+  {
+    "Name": "hash",
+    "Arguments": []
+  },
+  {
+    "Name": "hasmeat",
+    "Arguments": []
+  },
+  {
+    "Name": "haspath",
+    "Arguments": []
+  },
+  {
+    "Name": "hasperk",
+    "Arguments": []
+  },
+  {
+    "Name": "hassatellite",
+    "Arguments": []
+  },
+  {
+    "Name": "hasscriptgoal",
+    "Arguments": []
+  },
+  {
+    "Name": "hasseasonpass",
+    "Arguments": []
+  },
+  {
+    "Name": "hasspyplane",
+    "Arguments": []
+  },
+  {
+    "Name": "hastacticalmaskoverlay",
+    "Arguments": []
+  },
+  {
+    "Name": "hasusedweapon",
+    "Arguments": []
+  },
+  {
+    "Name": "hasweapon",
+    "Arguments": []
+  },
+  {
+    "Name": "iPrintLn",
+    "Arguments": [
+      "text"
+    ]
+  },
+  {
+    "Name": "iprintlnbold",
+    "Arguments": [
+      "text"
+    ]
+  },
+  {
+    "Name": "is_pc",
+    "Arguments": []
+  },
+  {
+    "Name": "is_radial",
+    "Arguments": []
+  },
+  {
+    "Name": "is_visible",
+    "Arguments": []
+  },
+  {
+    "Name": "is_wiiu",
+    "Arguments": []
+  },
+  {
+    "Name": "is_xenon",
+    "Arguments": []
+  },
+  {
+    "Name": "isactivecontractcomplete",
+    "Arguments": []
+  },
+  {
+    "Name": "isads",
+    "Arguments": []
+  },
+  {
+    "Name": "isai",
+    "Arguments": [
+      "entity"
+    ]
+  },
+  {
+    "Name": "isalive",
+    "Arguments": [
+      "entity"
+    ]
+  },
+  {
+    "Name": "isanimleaf",
+    "Arguments": []
+  },
+  {
+    "Name": "isanimloaded",
+    "Arguments": []
+  },
+  {
+    "Name": "isanimlooping",
+    "Arguments": []
+  },
+  {
+    "Name": "isarray",
+    "Arguments": []
+  },
+  {
+    "Name": "isassetloaded",
+    "Arguments": []
+  },
+  {
+    "Name": "isbadguy",
+    "Arguments": []
+  },
+  {
+    "Name": "isbeingwatched",
+    "Arguments": []
+  },
+  {
+    "Name": "isbigdog",
+    "Arguments": []
+  },
+  {
+    "Name": "isbinkfinished",
+    "Arguments": []
+  },
+  {
+    "Name": "isbonuscardactive",
+    "Arguments": []
+  },
+  {
+    "Name": "isburning",
+    "Arguments": []
+  },
+  {
+    "Name": "iscameraspiketoggled",
+    "Arguments": []
+  },
+  {
+    "Name": "iscarryingturret",
+    "Arguments": []
+  },
+  {
+    "Name": "iscinematicinprogress",
+    "Arguments": []
+  },
+  {
+    "Name": "iscinematicpreloading",
+    "Arguments": []
+  },
+  {
+    "Name": "iscinematicwebm",
+    "Arguments": []
+  },
+  {
+    "Name": "iscoopepd",
+    "Arguments": []
+  },
+  {
+    "Name": "isdangerous",
+    "Arguments": []
+  },
+  {
+    "Name": "isdefined",
+    "Arguments": [
+      "value"
+    ]
+  },
+  {
+    "Name": "isdeflected",
+    "Arguments": []
+  },
+  {
+    "Name": "isdemoplaying",
+    "Arguments": []
+  },
+  {
+    "Name": "isdog",
+    "Arguments": []
+  },
+  {
+    "Name": "isdriving",
+    "Arguments": []
+  },
+  {
+    "Name": "isdst",
+    "Arguments": []
+  },
+  {
+    "Name": "isempjammed",
+    "Arguments": []
+  },
+  {
+    "Name": "isextracam",
+    "Arguments": []
+  },
+  {
+    "Name": "isfiringturret",
+    "Arguments": []
+  },
+  {
+    "Name": "isflared",
+    "Arguments": []
+  },
+  {
+    "Name": "isfloat",
+    "Arguments": []
+  },
+  {
+    "Name": "isfxplaying",
+    "Arguments": []
+  },
+  {
+    "Name": "isglobalstatsserver",
+    "Arguments": []
+  },
+  {
+    "Name": "isgodmode",
+    "Arguments": []
+  },
+  {
+    "Name": "isgrenadedud",
+    "Arguments": []
+  },
+  {
+    "Name": "isgrenadepossafe",
+    "Arguments": []
+  },
+  {
+    "Name": "isgunnerfiring",
+    "Arguments": []
+  },
+  {
+    "Name": "ishidden",
+    "Arguments": []
+  },
+  {
+    "Name": "ishost",
+    "Arguments": []
+  },
+  {
+    "Name": "ishostforbots",
+    "Arguments": []
+  },
+  {
+    "Name": "isinarray",
+    "Arguments": []
+  },
+  {
+    "Name": "isingoal",
+    "Arguments": []
+  },
+  {
+    "Name": "isinhelicopter",
+    "Arguments": []
+  },
+  {
+    "Name": "isinmovemode",
+    "Arguments": []
+  },
+  {
+    "Name": "isinscriptedstate",
+    "Arguments": []
+  },
+  {
+    "Name": "isinsecondchance",
+    "Arguments": []
+  },
+  {
+    "Name": "isinsideheightlock",
+    "Arguments": []
+  },
+  {
+    "Name": "isinsideheliheightlock",
+    "Arguments": []
+  },
+  {
+    "Name": "isint",
+    "Arguments": []
+  },
+  {
+    "Name": "isinvehicle",
+    "Arguments": []
+  },
+  {
+    "Name": "isitemlocked",
+    "Arguments": []
+  },
+  {
+    "Name": "isitempurchased",
+    "Arguments": []
+  },
+  {
+    "Name": "isitemrestricted",
+    "Arguments": []
+  },
+  {
+    "Name": "isknownenemyinradius",
+    "Arguments": []
+  },
+  {
+    "Name": "isknownenemyinvolume",
+    "Arguments": []
+  },
+  {
+    "Name": "islinkedto",
+    "Arguments": []
+  },
+  {
+    "Name": "islocalclientdriver",
+    "Arguments": []
+  },
+  {
+    "Name": "islocalgame",
+    "Arguments": []
+  },
+  {
+    "Name": "islocalplayer",
+    "Arguments": []
+  },
+  {
+    "Name": "islocalplayerviewlinked",
+    "Arguments": []
+  },
+  {
+    "Name": "islocalplayerweaponviewonlylinked",
+    "Arguments": []
+  },
+  {
+    "Name": "islocaltohost",
+    "Arguments": []
+  },
+  {
+    "Name": "islookingat",
+    "Arguments": []
+  },
+  {
+    "Name": "isluienabled",
+    "Arguments": []
+  },
+  {
+    "Name": "ismantling",
+    "Arguments": []
+  },
+  {
+    "Name": "ismartyrdomgrenade",
+    "Arguments": []
+  },
+  {
+    "Name": "ismaturecontentenabled",
+    "Arguments": []
+  },
+  {
+    "Name": "ismeleecharged",
+    "Arguments": []
+  },
+  {
+    "Name": "ismeleeing",
+    "Arguments": []
+  },
+  {
+    "Name": "ismissileinsideheightlock",
+    "Arguments": []
+  },
+  {
+    "Name": "ismixerbehaviorhardcoded",
+    "Arguments": []
+  },
+  {
+    "Name": "ismixerlightbehaviorhardcoded",
+    "Arguments": []
+  },
+  {
+    "Name": "ismovesuppressed",
+    "Arguments": []
+  },
+  {
+    "Name": "ismovingplatform",
+    "Arguments": []
+  },
+  {
+    "Name": "ismp",
+    "Arguments": []
+  },
+  {
+    "Name": "isnodeoccupied",
+    "Arguments": []
+  },
+  {
+    "Name": "isnoreclosefoliage",
+    "Arguments": []
+  },
+  {
+    "Name": "isnotarget",
+    "Arguments": []
+  },
+  {
+    "Name": "isonground",
+    "Arguments": []
+  },
+  {
+    "Name": "isonladder",
+    "Arguments": []
+  },
+  {
+    "Name": "isonslide",
+    "Arguments": []
+  },
+  {
+    "Name": "isonturret",
+    "Arguments": []
+  },
+  {
+    "Name": "ispathdirect",
+    "Arguments": []
+  },
+  {
+    "Name": "ispc",
+    "Arguments": []
+  },
+  {
+    "Name": "ispeelingout",
+    "Arguments": []
+  },
+  {
+    "Name": "isphysicsvehicle",
+    "Arguments": []
+  },
+  {
+    "Name": "isplayer",
+    "Arguments": [
+      "entity"
+    ]
+  },
+  {
+    "Name": "isplayernumber",
+    "Arguments": []
+  },
+  {
+    "Name": "isplayeronsamemachine",
+    "Arguments": []
+  },
+  {
+    "Name": "isplayerreloading",
+    "Arguments": []
+  },
+  {
+    "Name": "isplayingloopsound",
+    "Arguments": []
+  },
+  {
+    "Name": "ispregameenabled",
+    "Arguments": []
+  },
+  {
+    "Name": "ispregamegamestarted",
+    "Arguments": []
+  },
+  {
+    "Name": "isragdoll",
+    "Arguments": []
+  },
+  {
+    "Name": "isreloading",
+    "Arguments": []
+  },
+  {
+    "Name": "issaverecentlyloaded",
+    "Arguments": []
+  },
+  {
+    "Name": "issavesuccessful",
+    "Arguments": []
+  },
+  {
+    "Name": "isscrambled",
+    "Arguments": []
+  },
+  {
+    "Name": "issentient",
+    "Arguments": []
+  },
+  {
+    "Name": "isshufflecovernode",
+    "Arguments": []
+  },
+  {
+    "Name": "issoundloop",
+    "Arguments": []
+  },
+  {
+    "Name": "isspawner",
+    "Arguments": []
+  },
+  {
+    "Name": "isspawnpointvisible",
+    "Arguments": []
+  },
+  {
+    "Name": "isspectating",
+    "Arguments": []
+  },
+  {
+    "Name": "issplitscreen",
+    "Arguments": []
+  },
+  {
+    "Name": "issplitscreenhost",
+    "Arguments": []
+  },
+  {
+    "Name": "issprinting",
+    "Arguments": []
+  },
+  {
+    "Name": "isstanceallowed",
+    "Arguments": []
+  },
+  {
+    "Name": "isstartingclassdefault",
+    "Arguments": []
+  },
+  {
+    "Name": "isstartingclasseraappropriate",
+    "Arguments": []
+  },
+  {
+    "Name": "isstereoon",
+    "Arguments": []
+  },
+  {
+    "Name": "isstring",
+    "Arguments": []
+  },
+  {
+    "Name": "issubstr",
+    "Arguments": []
+  },
+  {
+    "Name": "issuer",
+    "Arguments": []
+  },
+  {
+    "Name": "issuer_and_serial",
+    "Arguments": []
+  },
+  {
+    "Name": "issuppressed",
+    "Arguments": []
+  },
+  {
+    "Name": "isswitchingweapons",
+    "Arguments": []
+  },
+  {
+    "Name": "istable",
+    "Arguments": []
+  },
+  {
+    "Name": "istalking",
+    "Arguments": []
+  },
+  {
+    "Name": "istestclient",
+    "Arguments": []
+  },
+  {
+    "Name": "isthrowinggrenade",
+    "Arguments": []
+  },
+  {
+    "Name": "istouching",
+    "Arguments": []
+  },
+  {
+    "Name": "istouchingswept",
+    "Arguments": []
+  },
+  {
+    "Name": "istouchingvolume",
+    "Arguments": []
+  },
+  {
+    "Name": "istring",
+    "Arguments": []
+  },
+  {
+    "Name": "isturretactive",
+    "Arguments": []
+  },
+  {
+    "Name": "isturretfiring",
+    "Arguments": []
+  },
+  {
+    "Name": "isturretlockedon",
+    "Arguments": []
+  },
+  {
+    "Name": "isturretready",
+    "Arguments": []
+  },
+  {
+    "Name": "isusingoffhand",
+    "Arguments": []
+  },
+  {
+    "Name": "isvalidgametype",
+    "Arguments": []
+  },
+  {
+    "Name": "isvec",
+    "Arguments": []
+  },
+  {
+    "Name": "isvehicle",
+    "Arguments": []
+  },
+  {
+    "Name": "isvehicleimmunetodamage",
+    "Arguments": []
+  },
+  {
+    "Name": "isvehicleinwater",
+    "Arguments": []
+  },
+  {
+    "Name": "isvehicleturretoverheating",
+    "Arguments": []
+  },
+  {
+    "Name": "isvehicleusable",
+    "Arguments": []
+  },
+  {
+    "Name": "iswaitingonsound",
+    "Arguments": []
+  },
+  {
+    "Name": "isweaponcliponly",
+    "Arguments": []
+  },
+  {
+    "Name": "isweapondetonationtimed",
+    "Arguments": []
+  },
+  {
+    "Name": "isweaponequipment",
+    "Arguments": []
+  },
+  {
+    "Name": "isweaponoverheating",
+    "Arguments": []
+  },
+  {
+    "Name": "isweaponprimary",
+    "Arguments": []
+  },
+  {
+    "Name": "isweaponscopeoverlay",
+    "Arguments": []
+  },
+  {
+    "Name": "isweaponspecificuse",
+    "Arguments": []
+  },
+  {
+    "Name": "isweaponviewonlylinked",
+    "Arguments": []
+  },
+  {
+    "Name": "iswheelcolliding",
+    "Arguments": []
+  },
+  {
+    "Name": "iswheelsliding",
+    "Arguments": []
+  },
+  {
+    "Name": "iswounded",
+    "Arguments": []
+  },
+  {
+    "Name": "isxenon",
+    "Arguments": []
+  },
+  {
+    "Name": "iszbarrier",
+    "Arguments": []
+  },
+  {
+    "Name": "iszbarrierclosed",
+    "Arguments": []
+  },
+  {
+    "Name": "iszbarrieropen",
+    "Arguments": []
+  },
+  {
+    "Name": "loadfx",
+    "Arguments": [
+      "effect"
+    ]
+  },
+  {
+    "Name": "menu",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_changed",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_friends",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_leaderboard",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_cac_grad_stretch",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_cac_grad_stretch_add",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_killstreak_select",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_lobby_bar_name",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_lobby_bar_nem",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_lobby_bar_party",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_lobby_locked",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_lobby_new_small",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_lobby_scrollbar_block",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_lobby_scrollbar_main",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_pip_blue",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_pip_green",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_pip_outline",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_pip_red",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_star_rating",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_star_rating_empty",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_mp_star_rating_half",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_playercard",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_players",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_systemlink_lobby",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_systemlink_lobbyended",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_toast_popup",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_xboxlive",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_xboxlive_barracks",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_xboxlive_findgame",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_xboxlive_lobby",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_xboxlive_privatelobby",
+    "Arguments": []
+  },
+  {
+    "Name": "menu_xboxlive_theaterlobby",
+    "Arguments": []
+  },
+  {
+    "Name": "menuarea",
+    "Arguments": []
+  },
+  {
+    "Name": "menuelem",
+    "Arguments": []
+  },
+  {
+    "Name": "menufile",
+    "Arguments": []
+  },
+  {
+    "Name": "menuresponse",
+    "Arguments": []
+  },
+  {
+    "Name": "menus",
+    "Arguments": []
+  },
+  {
+    "Name": "node",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_ambush",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_balcony",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_concealment_crouch",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_concealment_prone",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_concealment_stand",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_cover_crouch",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_cover_crouch_window",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_cover_left",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_cover_pillar",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_cover_prone",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_cover_right",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_cover_stand",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_guard",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_negotiation_begin",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_negotiation_end",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_not_safe",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_pathnode",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_reacquire",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_relinquished",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_scripted",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_taken",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "node_turret",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "nodeoffsetpos",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "nodesarelinked",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "nodescanpath",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "nodesvisible",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "pixendevent",
+    "Arguments": []
+  },
+  {
+    "Name": "play",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playbattlechattertoteam",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playbink",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playclientairstrike",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playclientnapalm",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playdemo",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "played",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_breath_fire_delay",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_breath_gasp_lerp",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_breath_gasp_scale",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_breath_gasp_time",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_breath_hold_lerp",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_breath_hold_time",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_breath_snd_delay",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_breath_snd_lerp",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_corpse",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_die",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_lean_rotate",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_lean_rotate_crouch",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_lean_shift",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_lean_shift_crouch",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_mantle_over_low",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_move_factor_on_torso",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_name",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_obituary_callout",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_setoffscreendownmaterial",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_setoffscreenmaterial",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_slick_accel",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_slick_invspeed",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_slick_wishspeed",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_sliding_friction",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_sliding_velocity_cap",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_sliding_wishspeed",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_switch",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "player_view_pitch_down",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerads",
+    "Arguments": []
+  },
+  {
+    "Name": "playeranimscriptevent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playeranimscripteventend",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerbeingspectated",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerbreathgaspsound",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerbreathinsound",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerbreathoutsound",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerbullettrace",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playercamlinkto",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playercamunlink",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerclip",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerknockback",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerlinkedoffsetdisable",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerlinkedoffsetenable",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerlinkedsetusebaseangleforviewclamp",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerlinkto",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerlinktoabsolute",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerlinktoblend",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerlinktodelta",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerlinkweaponviewtodelta",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playername",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerpositionvalid",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "players",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playersetgroundreferenceent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playersighttrace",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerspawned",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerstatsbygametype",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerstatsbygametypegroup",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerstatslist",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playerweap",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playfx",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playfxondynent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playfxontag",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playing",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playingondedicated",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlist",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlist_enabled",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlist_entry",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlist_leaguematch",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlist_mp",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlist_next",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlist_playermatch",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlist_solomatch",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlist_wagermatch",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlistid",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlistpop",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlists",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playlocalsound",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playloopedfx",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playloopsound",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playrumble",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playrumblelooponentity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playrumblelooponposition",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playrumbleonentity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playrumbleonposition",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playsound",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playsoundasmaster",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playsoundatposition",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playsoundontag",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playsoundtoplayer",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playsoundtoteam",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playsoundwithnotify",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playviewmodelfx",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playweapondamageeffects",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "playweapondeatheffects",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "predictspawnpoint",
+    "Arguments": [
+      "origin",
+      "angles"
+    ]
+  },
+  {
+    "Name": "pressads",
+    "Arguments": [
+      "boolean"
+    ]
+  },
+  {
+    "Name": "pressattackbutton",
+    "Arguments": [
+      "duration"
+    ]
+  },
+  {
+    "Name": "pressmelee",
+    "Arguments": []
+  },
+  {
+    "Name": "pressusebutton",
+    "Arguments": [
+      "duration"
+    ]
+  },
+  {
+    "Name": "print",
+    "Arguments": [
+      "text"
+    ]
+  },
+  {
+    "Name": "println",
+    "Arguments": [
+      "text"
+    ]
+  },
+  {
+    "Name": "randomfloatrange",
+    "Arguments": [
+      "float1",
+      "float2"
+    ]
+  },
+  {
+    "Name": "remove",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "removeaieventlistener",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "removeallfriendlyscramblers",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "removeargus",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "removeflashlight",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "removeforcenocull",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "removefriendlyscrambler",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "removeinfluencer",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "removeip",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "removeredundantlinks",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "removevehiclefromcompass",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "sendaiscriptkeys",
+    "Arguments": []
+  },
+  {
+    "Name": "sendaiscriptvals",
+    "Arguments": []
+  },
+  {
+    "Name": "sendfaceevent",
+    "Arguments": []
+  },
+  {
+    "Name": "sendingstats",
+    "Arguments": []
+  },
+  {
+    "Name": "sendinstantmessage",
+    "Arguments": []
+  },
+  {
+    "Name": "sendkillstreakdamageevent",
+    "Arguments": []
+  },
+  {
+    "Name": "sendranks",
+    "Arguments": []
+  },
+  {
+    "Name": "sessinfo",
+    "Arguments": []
+  },
+  {
+    "Name": "session_nonblocking",
+    "Arguments": []
+  },
+  {
+    "Name": "session_rejoin",
+    "Arguments": []
+  },
+  {
+    "Name": "sessionmode",
+    "Arguments": []
+  },
+  {
+    "Name": "sessionmodeisonlinegame",
+    "Arguments": []
+  },
+  {
+    "Name": "sessionmodeisprivate",
+    "Arguments": []
+  },
+  {
+    "Name": "sessionmodeisprivateonlinegame",
+    "Arguments": []
+  },
+  {
+    "Name": "sessionmodeissystemlink",
+    "Arguments": []
+  },
+  {
+    "Name": "sessionmodeiszombiesgame",
+    "Arguments": []
+  },
+  {
+    "Name": "sessionteam",
+    "Arguments": []
+  },
+  {
+    "Name": "set_alpha",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "set_filter_bit_flag",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "set_filter_pass_constant",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "set_filter_pass_enabled",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "set_filter_pass_material",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "set_filter_pass_quads",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "set_gametype",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "set_overlay_constant",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "set_overlay_enabled",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "set_overlay_material",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "seta",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setacceleration",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setactionslot",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setactivemenu",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setactorweapon",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setadswidthandlerp",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setafteractionreportstate",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setailimit",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setaimanims",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setairresistance",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setaispread",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setalphafadeforname",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setambientpackage",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setambientroomcontextengine",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setambientsidechainduck",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setambientsnapshot",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setambienttrigger",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setangularvelocity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanim",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimdumpuseserveranims",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimforcenew",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimknob",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimknoball",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimknoballlimited",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimknoballlimitedrestart",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimknoballrestart",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimknoblimited",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimknoblimitedrestart",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimknobrestart",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimlimited",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimlimitedrestart",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimratecomplete",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimrestart",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimstate",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimstatefromasd",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setanimtime",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setarchive",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setattacker",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setautopickup",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setbackground",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setblockweaponpickup",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setblurbylocalclientnum",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setbombtimer",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setbottomarc",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setbrake",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setburn",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcameraspikeactive",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcandamage",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcellinvisible",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcellinvisibleatpos",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcellvisible",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcellvisibleatpos",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setchannelvolumes",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcharacterindex",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcheapflag",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientaimlockonpitchstrength",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientammocounterhide",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientbeingused",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientbeingusedandactive",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientbeingusedandprimary",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientcompass",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientdrawtalk",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientdvar",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientdvars",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientflag",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientflagasval",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientfov",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclienthudhardcore",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientminiscoreboardhide",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientnamemode",
+    "Arguments": [
+      "string"
+    ]
+  },
+  {
+    "Name": "setclientnotbeingused",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientplayerpushamount",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientplayersprinttime",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientplayersteponactors",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientprimary",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientprofilevar",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientscriptmainmenu",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientthirdperson",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientthirdpersonangle",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientuivisibilityflag",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclientvolumetricfog",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclock",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setclockup",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcollectible",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcolor",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcolorelem",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcompassicon",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcontents",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setconvergencetime",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setculldist",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcurrentspectatorclient",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcurrentweaponspinlerp",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setCursorHint",
+    "Arguments": [
+      "hint"
+    ]
+  },
+  {
+    "Name": "setcurvebspline",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcurvecameraent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcurvenotifyent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcurverounded",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcurvesmooth",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setcurvespeed",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdamagestage",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdangerous",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdebugangles",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdebugorigin",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdebugsideswitch",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdeceleration",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdefaultdroppitch",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdefaultpitch",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdemolockonvalues",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdepthoffield",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdoublevision",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdrawinfrared",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdrivepathphysicsscale",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdstat",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdvar",
+    "Arguments": [
+      "name",
+      "value"
+    ]
+  },
+  {
+    "Name": "setdvarbool",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdvarfloat",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdvarint",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdvartotime",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setdynentenabled",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setelectrified",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setempjammed",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setenablenode",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setenemyglobalscrambler",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setenemymodel",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setenemyscrambleramount",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setengagementmaxdist",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setentertime",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setentgravitytrajectory",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setentityanimrate",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setentityowner",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setentitytarget",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setentityweapon",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setenv",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "seteverhadweaponall",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setexcludeteamfortrigger",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setexploderid",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setextracamactive",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setextracamfov",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setextracamorigin",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setextracamstatic",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setfakeentorg",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setfenv",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setfixednodesafevolume",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setflagasaway",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setflaggedanim",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setflaggedanimknoball",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setflaggedanimknoballrestart",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setflaggedanimknoblimited",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setflaggedanimknoblimitedrestart",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setflaggedanimknobrestart",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setflaggedanimlimited",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setflaggedanimlimitedrestart",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setflaggedanimrestart",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setflashbanged",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setflashbangimmunity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setfname",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setfocus",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setfocusbydvar",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setforceads",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setforcenocull",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setforcenotsimple",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setfovforkillcam",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setfreecameralockonallowed",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setfriendlyscrambleramount",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgameendtime",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgametypesetting",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgametypestring",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgcweights",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgenericscenevalue",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgoalentity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgoalnode",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgoalpos",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgoalvolume",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgoalvolumeauto",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgoalyaw",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgpr",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgravity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgroupsnapshot",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgunnertargetent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgunnertargetvec",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setgunnerturretontargetrange",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "sethealthsnapshot",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setheightlockoffset",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setheldweaponmodel",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setheliheightlock",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setheliheightpatchenabled",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "sethidegumpalpha",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "sethighlighted",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "sethintlowpriority",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setHintString",
+    "Arguments": [
+      "text"
+    ]
+  },
+  {
+    "Name": "sethintstringforperk",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "sethostmigrationstatus",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "sethoverparams",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "sethudoutlinecolor",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "sethudwarningtype",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setignoreentfortrigger",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setignoremegroup",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setinfluencerteammask",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setinfraredvision",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setinfraredvisionset",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setinitialplayersconnected",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setinventoryweapon",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setinvisibletoall",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setinvisibletoplayer",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setitemcolor",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setjitterparams",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlaststandprevweap",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setleftarc",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlevelfadesnapshot",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlightcolor",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlightexponent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlightfovrange",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlightingentity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlightintensity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlightradius",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setloadoutitem",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlocal",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlocale",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlocalprofilearrayvar",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlocalprofilevar",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlocalradarenabled",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlocalradarposition",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlocalvarbool",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlocalvarint",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlocalvarstring",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlocalwindsource",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlookat",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlookatanimnodes",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlookatent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlookattext",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlookatyawlimits",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setloopstate",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setloweredweapon",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlowready",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlutscriptindex",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setlutvolumeactivebank",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmantleenabled",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmapcenter",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmaplatlong",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmapnamestring",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmatchflag",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmatchtalkflag",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmaterialoverride",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmaxhealth",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmaxpitchroll",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmenuroot",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmetatable",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmissilecoasting",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmissileowner",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerbehavior",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerexploderid",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerlightbehavior",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerlightcolor",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerlightexponent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerlightfovrange",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerlightintensity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerlightmodels",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerlightparam",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerlightradius",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerlightrotatetime",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerparam",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmixerspinmodels",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmode",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmodel",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmovespeedscale",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmovingplatformenabled",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setmultiextracamactive",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setname",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setnearestenemyscrambler",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setnemesisxuid",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setnodepriority",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setnormalhealth",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setnorthyaw",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setobjectivepointstatus",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setoffhandprimaryclass",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setoffhandsecondaryclass",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setoffhandvisible",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setontargetangle",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setorigin",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setowner",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setpathtransitiontime",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setpause",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setperk",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setperkfortrigger",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setperks",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setpersistentprofilevar",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setphysacceleration",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setphysangles",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setphysicsgravity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setphysicsgravitydir",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setphysparams",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setpitchorient",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplacementhint",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplanebarrelroll",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplanegoalpos",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplayerangles",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplayercurrentobjective",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplayercurrentstreak",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplayergravity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplayerignoreradiusdamage",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplayernamestring",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplayerrenderoptions",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplayerspread",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplayerteamrank",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setplayerviewratescale",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setpotentialthreat",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setpredatoreffect",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setpregameclass",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setpregameteam",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setprintchannel",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setprofile",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setprofilelocclass",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setproneanimnodes",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setpulsefx",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setqosgamedatapayload",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setredactfx",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setrenderinthirdpersonspectate",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setreverb",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setrevivehintstring",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setrimintensity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setriotshieldfailhint",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setrotorspeed",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setroundsplayed",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setruntopos",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setscale",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setscanningpitch",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setscoreboardcolumns",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setscriptenemy",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setscriptgoal",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setscripthintstring",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setscriptmoverflag",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setseatoccupied",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setservervolumetricfogdensity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsessstat",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setshaderconstant",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setslowmotion",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsonarattachmentenabled",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsonarenabled",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsoundblend",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsoundcontext",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsoundentcontext",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsoundpitch",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsoundpitchrate",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsoundvolume",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsoundvolumerate",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setspawnclientflag",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setspawnerteam",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setspawnpointrandomvariation",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setspawnpointsbaseweight",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setspawnweapon",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setspeed",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setspeedimmediate",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setspreadoverride",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsprintcooldown",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsprintduration",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setstablemissile",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setstance",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setstepmul",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsteptriggersound",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setstowedweapon",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setstunned",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsundirection",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsunlight",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setsuppressiontime",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setswitchnode",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settalktospecies",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settargetent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settargethighlight",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settargetorigin",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settargetyaw",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setteam",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setteamfortrigger",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setteamhasmeat",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setteamreviveicon",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setteamsatellite",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setteamscore",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settenthstimer",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settenthstimerup",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settext",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setthirdperson",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setthreatbias",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setthreatbiasagainstall",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setthreatbiasgroup",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settimer",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settimerup",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settimescale",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settings",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settoparc",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settransported",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setturningability",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setturretaccuracy",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setturretcarried",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setturretignoregoals",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setturretminimapvisible",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setturretnode",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setturretowner",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setturretspinning",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setturrettargetent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setturrettype",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "settypewriterfx",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setuinextlevel",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setup_worker_threads",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setupclientfieldanimspeedcallbacks",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setupclientfieldcodecallbacks",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setupvalue",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setupviewport",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setValue",
+    "Arguments": [
+      "value"
+    ]
+  },
+  {
+    "Name": "setvbuf",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvehgoalpos",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvehicleattachments",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvehicleavoidance",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvehiclelockedon",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvehiclelookattext",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvehiclenodeenabled",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvehicleteam",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvehicletype",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvehmaxspeed",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvehvelocity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvehweapon",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvelocity",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setviewangleresistance",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setviewclamp",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setviewlockent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setviewmodel",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setviewmodeldepthoffield",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setviewmodelrenderflag",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvisibletoall",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvisibletoallexceptteam",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvisibletoplayer",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvisibletoteam",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvisionsetforplayer",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvolfog",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvolfogforclient",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvotenocount",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvotestring",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setvotetime",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setwargamedata",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setwatchstyle",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setwaterbrush",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setwaterdrops",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setwaterfog",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setwatersheeting",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setwaypoint",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setweapon",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setweaponammoclip",
+    "Arguments": [
+      "weapon_name",
+      "weapon_clip_to_give"
+    ]
+  },
+  {
+    "Name": "setweaponammofuel",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setweaponammostock",
+    "Arguments": [
+      "weapon_name",
+      "weapon_stock_to_give"
+    ]
+  },
+  {
+    "Name": "setweaponheatpercent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setweaponoverheating",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setwetness",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setwinningplayer",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setwinningteam",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setworldfogactivebank",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setyawspeed",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setzbarriercolmodel",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setzbarrierpiecestate",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setzombiename",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "setzombieshrink",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "sound",
+    "Arguments": []
+  },
+  {
+    "Name": "sound_",
+    "Arguments": []
+  },
+  {
+    "Name": "sound_patch",
+    "Arguments": []
+  },
+  {
+    "Name": "soundexists",
+    "Arguments": []
+  },
+  {
+    "Name": "soundfade",
+    "Arguments": []
+  },
+  {
+    "Name": "soundgetplaybacktime",
+    "Arguments": []
+  },
+  {
+    "Name": "soundlineemitter",
+    "Arguments": []
+  },
+  {
+    "Name": "soundloopemitter",
+    "Arguments": []
+  },
+  {
+    "Name": "soundplaying",
+    "Arguments": []
+  },
+  {
+    "Name": "soundsetaiambientstate",
+    "Arguments": []
+  },
+  {
+    "Name": "soundsetambientstate",
+    "Arguments": []
+  },
+  {
+    "Name": "soundsetmusicstate",
+    "Arguments": []
+  },
+  {
+    "Name": "soundstoplineemitter",
+    "Arguments": []
+  },
+  {
+    "Name": "soundstoploopemitter",
+    "Arguments": []
+  },
+  {
+    "Name": "soundtimescale",
+    "Arguments": []
+  },
+  {
+    "Name": "spawn",
+    "Arguments": [
+      "classname",
+      "origin",
+      "angle",
+      "radius",
+      "height"
+    ]
+  },
+  {
+    "Name": "spawn_allies_start",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawn_axis_start",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawn_manager",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawn_time",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnactor",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnapalmgroundflame",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawncollision",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawndynent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawned",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawner",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnfakeent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnflags",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnfx",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnhelicopter",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnnapalmgroundflame",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnpathnode",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnplane",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnprotectionactive",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnstruct",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_allow_culling",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_allow_non_team_spawns",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_badspawn_aggression_delay",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_badspawn_damage_delay",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_badspawn_force_record",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_danger_time",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_archive",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_best_points",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_influencer_pulse",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_influencer_types",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_influencers",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_liveedit",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_player",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_point_weights",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_points",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_showclients",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_sideswitched",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_team",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_visibility",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_debug_visibility_time",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_demo_enable_parsing",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_enemy_influencer_stacking",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_friend_influencer_stacking",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_old_vis_mask",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_score_cull_min_points",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_score_cull_percent",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_score_cull_time_max",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_score_cull_time_min",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_sight_check_max_distance",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_sight_height_offset",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnsystem_weapon_influencer_min_length",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawntimedfx",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnturret",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "spawnvehicle",
+    "Arguments": [
+      "arg1",
+      "arg2",
+      "arg3"
+    ]
+  },
+  {
+    "Name": "stat_version",
+    "Arguments": []
+  },
+  {
+    "Name": "statechange",
+    "Arguments": []
+  },
+  {
+    "Name": "statechangereason",
+    "Arguments": []
+  },
+  {
+    "Name": "statechanges",
+    "Arguments": []
+  },
+  {
+    "Name": "static",
+    "Arguments": []
+  },
+  {
+    "Name": "stationary",
+    "Arguments": []
+  },
+  {
+    "Name": "stationary_turret",
+    "Arguments": []
+  },
+  {
+    "Name": "statresponse",
+    "Arguments": []
+  },
+  {
+    "Name": "stats",
+    "Arguments": []
+  },
+  {
+    "Name": "stats_downloaded",
+    "Arguments": []
+  },
+  {
+    "Name": "stats_version_check",
+    "Arguments": []
+  },
+  {
+    "Name": "status",
+    "Arguments": []
+  },
+  {
+    "Name": "statusicon",
+    "Arguments": []
+  },
+  {
+    "Name": "stop",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stop_attackidle",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stop_attackidle_bark",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stop_attackidle_growl",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stop_idle",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stop_soon",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopallrumbles",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopanimdistsq",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopanimscripted",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopbink",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopbinocs",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopburning",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopcarryturret",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopcurve",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopdemo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopdoorbreach",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopextracam",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopfireweapon",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopfiring",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopfx",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopignoringspotlight",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stoplocalsound",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stoplookat",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stoploopsound",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopmoveslide",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stoppoisoning",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stoprevive",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stoprumble",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopshellshock",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopshootturret",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopsound",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopsounds",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopspeed",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopuseanimtree",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopuseturret",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopusingturret",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopwatersheetfx",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "stopwatersheetingfx",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "switch",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "switchtoclientvolumetricfog",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "switchtooffhand",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "switchtoservervolumetricfog",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "switchtoweapon",
+    "Arguments": [
+      "weapon_name"
+    ]
+  },
+  {
+    "Name": "switchtoweaponimmediate",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "table",
+    "Arguments": []
+  },
+  {
+    "Name": "tablelookup",
+    "Arguments": []
+  },
+  {
+    "Name": "tablelookupcolumnforrow",
+    "Arguments": []
+  },
+  {
+    "Name": "tablelookupfindcoreasset",
+    "Arguments": []
+  },
+  {
+    "Name": "tablelookupistring",
+    "Arguments": []
+  },
+  {
+    "Name": "tablelookuprownum",
+    "Arguments": []
+  },
+  {
+    "Name": "takeallweapons",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "takedamage",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "takeplayercontrol",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "takeweapon",
+    "Arguments": [
+      "arg1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "tolower",
+    "Arguments": [
+      "text"
+    ]
+  },
+  {
+    "Name": "toupper",
+    "Arguments": [
+      "text"
+    ]
+  },
+  {
+    "Name": "usebuttonpressed",
+    "Arguments": []
+  },
+  {
+    "Name": "visionsetdamage",
+    "Arguments": []
+  },
+  {
+    "Name": "visionsetlaststand",
+    "Arguments": []
+  },
+  {
+    "Name": "visionsetlerpratio",
+    "Arguments": []
+  },
+  {
+    "Name": "visionsetnaked",
+    "Arguments": []
+  },
+  {
+    "Name": "visionsetnakedlerp",
+    "Arguments": []
+  },
+  {
+    "Name": "visionsetnight",
+    "Arguments": []
+  },
+  {
+    "Name": "visionsetunderwater",
+    "Arguments": []
+  },
+  {
+    "Name": "wait",
+    "Arguments": [
+      "seconds"
+    ]
+  },
+  {
+    "Name": "waittill",
+    "Arguments": [
+      "event",
+      "obj1",
+      "arg2"
+    ]
+  },
+  {
+    "Name": "weapon",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_assault",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_change",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_change_complete",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_change_on_turret",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_cqb",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_explosive",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_fired",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_flamethrower",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_grenade",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_grenadelauncher",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_launcher",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_lmg",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_masterkey",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_null",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_pistol",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_raising",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_shotgun",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_smg",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_sniper",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_special",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapon_switch_started",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponaccuracy",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponaltweaponname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponattachmentcount",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponbayonetinfo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponblocksprone",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponbottomarc",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponcamo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponclass",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponclipsize",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponcliptype",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapondef",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapondogibbing",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapondualwieldweaponname",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponfightdist",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponfiretime",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponfuellife",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponfull",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponguidedmissiletype",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponhasattachment",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponhasbayonet",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponinfo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponinfo_lowdef",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponinfo_mp",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponinventorytype",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponisboltaction",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponischargeshot",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponisdualwield",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponisgasweapon",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponissemiauto",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponissniperweapon",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponleftarc",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponlockfinalize",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponlockfree",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponlocknoclearance",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponlockonradius",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponlockonspeed",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponlockstart",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponlocktargettooclose",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponmaxammo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponmaxdist",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponmaxgibdistance",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponmountable",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponoption",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponpack",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponpacks",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponplayejectbrass",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponreloadtime",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponrightarc",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponspinsettings",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponstartammo",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponstate",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponstats",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapontoparc",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weapontype",
+    "Arguments": [
+      "arg1"
+    ]
+  },
+  {
+    "Name": "weaponvariant",
+    "Arguments": [
+      "arg1"
+    ]
+  }
 ]
