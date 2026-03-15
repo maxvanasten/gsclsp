@@ -229,6 +229,10 @@ func pathToURI(path string) string {
 		path = absPath
 	}
 	path = filepath.ToSlash(path)
+	// Handle Windows drive letter paths: C:/path → /C:/path
+	if len(path) >= 2 && path[1] == ':' {
+		path = "/" + path
+	}
 	if strings.HasPrefix(path, "/") {
 		return "file://" + path
 	}

@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.8.5
+
+- **Bug Fix**: Fixed workspace includes on Windows by handling drive letter paths correctly in `uriToPath()` and `pathToURI()` functions (#23)
+- **Enhancement**: Expanded builtin function signatures from 56 to 1792 (1,736 new builtin functions)
+
 ## 0.8.4
 
 - **Bug Fix**: Add `paddingRight` to active parameter inlay hints for open calls, improving visual spacing between hints and subsequent code

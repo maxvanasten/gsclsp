@@ -352,9 +352,19 @@ func uriToPath(uri string) string {
 	if strings.HasPrefix(uri, "file://") {
 		parsed, err := url.Parse(uri)
 		if err == nil {
-			return filepath.FromSlash(parsed.Path)
+			path := filepath.FromSlash(parsed.Path)
+			// Handle Windows drive letter paths: /C:/path → C:/path
+			if len(path) >= 3 && path[0] == filepath.Separator && path[2] == ':' {
+				return path[1:]
+			}
+			return path
 		}
-		return filepath.FromSlash(strings.TrimPrefix(uri, "file://"))
+		path := filepath.FromSlash(strings.TrimPrefix(uri, "file://"))
+		// Handle Windows drive letter paths: /C:/path → C:/path
+		if len(path) >= 3 && path[0] == filepath.Separator && path[2] == ':' {
+			return path[1:]
+		}
+		return path
 	}
 	return uri
 }
