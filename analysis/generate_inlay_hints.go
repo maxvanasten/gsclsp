@@ -130,7 +130,9 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 				for i := 0; i < activeCount; i++ {
 					label := labels[i] + ": "
 					col := stubCol
+					paddingRight := false
 					if i < paramIndex && i < len(n.Children) {
+						// Already-typed parameter: use its actual source position
 						a := n.Children[i]
 						col = a.Col - 1
 						if a.Line > n.Line && lineText != "" {
@@ -148,13 +150,18 @@ func GenerateInlayHints(signatures []FunctionSignature, nodes []p.Node, tokens [
 						if col <= 0 {
 							col = anchorCol
 						}
+					} else if i == paramIndex {
+						// Active parameter being typed: position at cursor with paddingRight
+						// stubCol is already set to the cursor position (after '(' or ',')
+						paddingRight = true
 					}
 					hints = append(hints, lsp.InlayHint{
 						Position: lsp.Position{
 							Line:      anchorLine,
 							Character: col,
 						},
-						Label: label,
+						Label:        label,
+						PaddingRight: paddingRight,
 					})
 				}
 				continue

@@ -15,6 +15,7 @@ type InlayHintResponse struct {
 }
 
 type InlayHint struct {
-	Position Position `json:"position"`
-	Label    string   `json:"label"`
+	Position     Position `json:"position"`
+	Label        string   `json:"label"`
+	PaddingRight bool     `json:"paddingRight,omitempty"`
 }
