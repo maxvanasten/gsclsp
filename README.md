@@ -126,7 +126,3 @@ Note: Many tests require `gscp` to be installed on PATH.
 Current version: **0.8.7**
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for detailed changelog.
-
-## License
-
-MIT © Max van Asten
