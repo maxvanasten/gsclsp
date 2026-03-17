@@ -1,7 +1,6 @@
 # GSCLSP
 
 [![Version](https://img.shields.io/github/v/release/maxvanasten/gsclsp)](https://github.com/maxvanasten/gsclsp/releases)
-[![License](https://img.shields.io/github/license/maxvanasten/gsclsp)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)]()
 
 Language intelligence for Call of Duty GSC scripting.
