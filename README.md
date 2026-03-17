@@ -1,203 +1,133 @@
-# gsclsp
+# GSCLSP
 
-`gsclsp` is a Language Server Protocol (LSP) server for `.gsc` scripts used in older Call of Duty titles.
+[![Version](https://img.shields.io/github/v/release/maxvanasten/gsclsp)](https://github.com/maxvanasten/gsclsp/releases)
+[![License](https://img.shields.io/github/license/maxvanasten/gsclsp)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)]()
 
-It runs over standard LSP stdio (`stdin`/`stdout`) and uses [`gscp`](https://github.com/maxvanasten/gscp) for parsing and diagnostics.
+Language intelligence for Call of Duty GSC scripting.
 
-VS Code extension: [GSCLSP for GSC](https://marketplace.visualstudio.com/items?itemName=maxvanasten.gsclsp-vscode)
+GSCLSP is a [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) implementation for `.gsc` files used in older Call of Duty titles. It provides IDE features like code completion, diagnostics, and go-to-definition for GSC scripts.
 
 ## Features
 
-`gsclsp` currently provides:
-
-- Semantic tokens (syntax-aware highlighting)
-- Hover signatures for function calls
-- Inlay hints for function call arguments
-- Go to definition for local, included, and stdlib functions
-- Diagnostics from the `gscp` parser
-- Document formatting (`textDocument/formatting`)
-- Code actions for bundling scripts into mod structure (`textDocument/codeAction` + `workspace/executeCommand`)
-
-## Supported LSP capabilities
-
-During `initialize`, the server advertises:
-
-- `textDocumentSync`: full document sync (`1`)
-- `hoverProvider`: `true`
-- `definitionProvider`: `true`
-- `documentFormattingProvider`: `true`
-- `codeActionProvider`: `true`
-- `executeCommandProvider`: `gsclsp.bundleMod`
-- `semanticTokensProvider`: full document support (`full: true`, `range: false`)
-- `inlayHintProvider`: `true`
-
-Semantic token legend:
-
-- `variable`
-- `keyword`
-- `string`
-- `number`
-- `function`
-- `property`
-- `comment`
-
-Bundle code action behavior:
-
-- Creates a nested mod folder named after the current directory
-- Replaces the existing nested mod folder on each run (no stale leftovers)
-- Writes `<modName>/mod.json` with default metadata
-- Recursively copies `.gsc` files into `<modName>/scripts` while preserving relative paths
-- Skips hidden directories (for example `.git`)
-- Keeps original source `.gsc` files in place
-
-## How it works
-
-At a high level:
-
-1. `gsclsp` receives LSP messages over stdio.
-2. On document open/change, it invokes `gscp` to parse text.
-3. It stores AST/tokens/signatures per document in memory.
-4. It augments signatures with embedded builtins and stdlib signature bundles.
-5. It serves hover/definition/inlay/semantic-token responses from this analysis state.
-
-Include handling details:
-
-- Supports local `#include` resolution relative to the current file URI
-- Supports recursive include traversal for definition lookup
-- Uses include file caching (mtime + file size) to avoid reparsing unchanged includes
-- Supports qualified calls like `maps\\mp\\zombies\\_zm_utility::init_utility`
-- Uses URI path heuristics (`/mp/` or `/zm/`) to prefer matching stdlib groups
-
-## Requirements
-
-- Go `1.25+` (module currently targets `go 1.25.7`)
-- [`gscp`](https://github.com/maxvanasten/gscp) installed and available on `PATH`
-
-`gscp` is required at runtime for parsing and diagnostics.
+- **Intelligent Code Completion** — Function signatures and parameter hints as you type
+- **Go to Definition** — Jump to function definitions across files and includes
+- **Real-time Diagnostics** — Syntax errors shown inline as you code
+- **Auto-formatting** — Consistent code formatting with configurable indentation
+- **Semantic Highlighting** — Syntax-aware token coloring for better readability
+- **Include Support** — Full support for `#include` statements with recursive resolution
 
 ## Installation
 
-### Option 1: VS Code (recommended for VS Code users)
+### VS Code
 
-Install from the marketplace:
+The easiest way to get started. The extension auto-downloads and manages `gsclsp` and its parser dependency.
 
-- [GSCLSP for GSC](https://marketplace.visualstudio.com/items?itemName=maxvanasten.gsclsp-vscode)
+1. Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=maxvanasten.gsclsp-vscode)
+2. Open any `.gsc` file — the extension handles the rest
 
-The extension manages compatible `gsclsp` and `gscp` releases for you.
+**Configuration options:**
+- `gsclsp.path` — Use a custom `gsclsp` binary instead of auto-download
+- `gsclsp.updates.enabled` — Enable/disable automatic updates (default: `true`)
+- `gsclsp.updates.check` — Update check frequency: `always`, `daily`, `weekly`, `never`
 
-### Option 2: Build from source
+### Neovim
 
-```bash
-git clone https://github.com/maxvanasten/gsclsp
-cd gsclsp
-go build -o dist/gsclsp ./
-```
-
-This produces a `gsclsp` binary at `dist/gsclsp`.
-
-Optional install:
-
-```bash
-sudo mv ./dist/gsclsp /usr/local/bin/gsclsp
-```
-
-Helper scripts:
-
-```bash
-./scripts/dev-check.sh
-./scripts/build-local.sh
-./scripts/build-releases.sh
-```
-
-Script environment variables are documented in `scripts/README.md`.
-
-## Neovim setup
-
-Example Neovim LSP configuration:
+Using [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig):
 
 ```lua
-vim.filetype.add({
-  extension = {
-    gsc = "gsc",
-  },
-})
+require('lspconfig').gsclsp.setup{
+  cmd = { "gsclsp" },
+  filetypes = { "gsc" },
+}
+```
 
-vim.lsp.config["gsclsp"] = {
+Or with the native LSP client (Neovim 0.11+):
+
+```lua
+vim.lsp.config['gsclsp'] = {
   cmd = { "gsclsp" },
   filetypes = { "gsc" },
   single_file_support = true,
 }
-
-vim.lsp.enable({ "gsclsp" })
+vim.lsp.enable('gsclsp')
 ```
 
-If `gsclsp` is not on your `PATH`, replace `cmd` with an absolute binary path.
+### Manual Installation
 
-## Stdlib signature generation
-
-The repository embeds signature bundles in `analysis/stdlib_signatures.json`, declaration bundles in `analysis/stdlib_declarations.json`, and builtins in `analysis/builtins_signatures.json`.
-
-To regenerate stdlib signatures from local script roots:
+Download a pre-built binary from [GitHub Releases](https://github.com/maxvanasten/gsclsp/releases):
 
 ```bash
-go run ./cmd/stdlibgen \
-  --mp-root "/path/to/t6-source/mp/core" \
-  --zm-root "/path/to/t6-source/zm/core" \
-  --mp-maps-root "/path/to/t6-source/mp/maps" \
-  --zm-maps-root "/path/to/t6-source/zm/maps" \
-  --out "analysis/stdlib_signatures.json" \
-  --out-declarations "analysis/stdlib_declarations.json"
+# Linux x64
+wget https://github.com/maxvanasten/gsclsp/releases/latest/download/gsclsp-linux-x64 -O gsclsp
+chmod +x gsclsp
+sudo mv gsclsp /usr/local/bin/
+
+# macOS (Intel)
+curl -L https://github.com/maxvanasten/gsclsp/releases/latest/download/gsclsp-darwin-x64 -o gsclsp
+chmod +x gsclsp
+sudo mv gsclsp /usr/local/bin/
+
+# macOS (Apple Silicon)
+curl -L https://github.com/maxvanasten/gsclsp/releases/latest/download/gsclsp-darwin-arm64 -o gsclsp
+chmod +x gsclsp
+sudo mv gsclsp /usr/local/bin/
+
+# Windows (PowerShell)
+Invoke-WebRequest -Uri https://github.com/maxvanasten/gsclsp/releases/latest/download/gsclsp-win32-x64.exe -OutFile gsclsp.exe
+# Move to a directory in your PATH
 ```
 
-Notes:
+**Building an extension for another editor?** gsclsp speaks standard LSP over stdio — check the [VS Code extension source](https://github.com/maxvanasten/gsclsp-vscode) as a reference implementation.
 
-- Both `--mp-root` and `--zm-root` are required.
-- `--mp-maps-root` and `--zm-maps-root` are optional and include map-specific scripts.
-- Map roots scan each map directory's `maps/mp` subtree only.
-- Map-specific scripts are normalized to runtime include keys under `maps/mp/...`.
-- The generator walks `.gsc` files, parses with `gscp`, and writes a JSON bundle keyed by normalized include paths.
+## How it Works
+
+GSCLSP runs as a language server over standard input/output, communicating via the Language Server Protocol. It uses [`gscp`](https://github.com/maxvanasten/gscp) for parsing GSC files into ASTs, then provides IDE features like hover information, diagnostics, and go-to-definition based on that analysis.
 
 ## Development
 
-Run tests:
+### Prerequisites
+
+- Go 1.25+
+- [`gscp`](https://github.com/maxvanasten/gscp) installed on PATH (required at runtime)
+
+### Building
+
+```bash
+# Local build
+./scripts/build-local.sh
+
+# Cross-platform releases
+./scripts/build-releases.sh
+
+# With stdlib regeneration from CoD sources
+./scripts/build-local.sh  # or build-releases.sh
+```
+
+### Testing
 
 ```bash
 go test ./...
 ```
 
-Important test notes:
+Note: Many tests require `gscp` to be installed on PATH.
 
-- Many analysis tests require `gscp` to be installed.
-- Include-based inlay tests create temporary fixture files at runtime and do not require repo-local test fixture files.
+## Project Structure
 
-## Release checklist
-
-Before building a new release:
-
-1. Update the version in `lsp/initialize.go` and `README.md`.
-2. Add release notes to `RELEASE_NOTES.md`.
-3. Run quality checks:
-
-   ```bash
-   ./scripts/dev-check.sh
-   ```
-
-4. Build release artifacts:
-
-   ```bash
-   ./scripts/build-releases.sh
-   ```
-
-5. Create a draft GitHub release and attach files from `dist/`.
-
-## Project structure
-
-- `main.go`: LSP message loop and request routing
-- `analysis/`: parser integration, signatures, diagnostics, hover/definition/inlay/semantic token logic
-- `lsp/`: LSP request/response structs and capability definitions
-- `rpc/`: LSP framing (`Content-Length`) encode/decode helpers
-- `cmd/stdlibgen/`: CLI tool to generate stdlib signature bundles
+```
+├── analysis/       # Core language analysis (parsing, signatures, diagnostics)
+├── cmd/stdlibgen/  # Tool to generate stdlib signatures from CoD sources
+├── lsp/            # LSP protocol types and responses
+├── rpc/            # LSP message framing (Content-Length)
+└── scripts/        # Build and development scripts
+```
 
 ## Version
 
-Current server version reported in `initialize` response: `0.8.7`.
+Current version: **0.8.7**
+
+See [RELEASE_NOTES.md](RELEASE_NOTES.md) for detailed changelog.
+
+## License
+
+MIT © Max van Asten
