@@ -1,5 +1,11 @@
 # Release Notes
 
+## 0.8.7
+
+- **Bug Fix**: Fixed formatting of function pointer syntax `[[ expression ]]()` in thread calls (#25)
+- **Bug Fix**: Fixed inlay hints not updating when functions in included files are modified (#26)
+- **Enhancement**: Improved cache invalidation with include file modification time tracking
+
 ## 0.8.6
 
 - **Bug Fix**: Fixed workspace includes on Windows by handling drive letter paths correctly in `uriToPath()` and `pathToURI()` functions (#23)
