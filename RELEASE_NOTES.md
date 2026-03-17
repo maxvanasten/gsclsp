@@ -1,8 +1,11 @@
 # Release Notes
 
-## 0.8.5
+## 0.8.6
 
 - **Bug Fix**: Fixed workspace includes on Windows by handling drive letter paths correctly in `uriToPath()` and `pathToURI()` functions (#23)
+
+## 0.8.5
+
 - **Enhancement**: Expanded builtin function signatures from 56 to 1792 (1,736 new builtin functions)
 
 ## 0.8.4
