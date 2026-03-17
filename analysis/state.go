@@ -31,8 +31,8 @@ type State struct {
 	Ast            map[string][]p.Node
 	Tokens         map[string][]l.Token
 	Signatures     map[string][]FunctionSignature
-	Resolved       map[string][]FunctionSignature
-	IncludeOrigins map[string]map[string]string
+	Resolved       map[string]resolvedCacheEntry
+	IncludeOrigins map[string]includeOriginsCacheEntry
 	Diagnostics    map[string][]lsp.Diagnostic
 	AstDirty       map[string]bool
 	includeCache   map[string]includeCacheEntry
@@ -58,6 +58,16 @@ type includeCacheEntry struct {
 	Signatures      []FunctionSignature
 }
 
+type resolvedCacheEntry struct {
+	Signatures      []FunctionSignature
+	IncludeModTimes map[string]int64 // map of resolved include path -> mtime
+}
+
+type includeOriginsCacheEntry struct {
+	Origins         map[string]string
+	IncludeModTimes map[string]int64 // map of resolved include path -> mtime
+}
+
 type inlayCallResolution struct {
 	Signature   FunctionSignature
 	OriginLabel string
@@ -76,8 +86,8 @@ func NewState() State {
 		Ast:                   map[string][]p.Node{},
 		Tokens:                map[string][]l.Token{},
 		Signatures:            map[string][]FunctionSignature{},
-		Resolved:              map[string][]FunctionSignature{},
-		IncludeOrigins:        map[string]map[string]string{},
+		Resolved:              map[string]resolvedCacheEntry{},
+		IncludeOrigins:        map[string]includeOriginsCacheEntry{},
 		Diagnostics:           map[string][]lsp.Diagnostic{},
 		AstDirty:              map[string]bool{},
 		includeCache:          map[string]includeCacheEntry{},
@@ -441,6 +451,11 @@ func (s *State) loadStdlibDeclarations() map[string]map[string][]StdlibDeclarati
 }
 
 func (s *State) applyIncludes(signatures []FunctionSignature, uri string, includePaths []string, stdlibGroup string, stdlib map[string]map[string][]FunctionSignature) []FunctionSignature {
+	visited := map[string]bool{}
+	return s.applyIncludesRecursive(signatures, uri, includePaths, stdlibGroup, stdlib, visited)
+}
+
+func (s *State) applyIncludesRecursive(signatures []FunctionSignature, uri string, includePaths []string, stdlibGroup string, stdlib map[string]map[string][]FunctionSignature, visited map[string]bool) []FunctionSignature {
 	s.mu.RLock()
 	workspaceFolders := s.workspaceFolders
 	s.mu.RUnlock()
@@ -460,12 +475,23 @@ func (s *State) applyIncludes(signatures []FunctionSignature, uri string, includ
 		if !ok {
 			continue
 		}
+		resolvedPath = filepath.Clean(resolvedPath)
+		if visited[resolvedPath] {
+			continue
+		}
+		visited[resolvedPath] = true
+
 		entry, err := s.getParsedInclude(resolvedPath)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR APPLYING INCLUDE %q: %v\n", includePath, err)
 			continue
 		}
 		signatures = mergeSignatures(signatures, entry.Signatures)
+
+		// Recursively apply nested includes
+		nestedIncludes := collectIncludePaths(entry.Ast)
+		includeURI := pathToURI(resolvedPath)
+		signatures = s.applyIncludesRecursive(signatures, includeURI, nestedIncludes, stdlibGroup, stdlib, visited)
 	}
 
 	return signatures
@@ -474,8 +500,15 @@ func (s *State) applyIncludes(signatures []FunctionSignature, uri string, includ
 func (s *State) resolvedSignatures(uri string) []FunctionSignature {
 	s.cacheMu.Lock()
 	defer s.cacheMu.Unlock()
+
+	// Check if we have a cached entry
 	if cached, ok := s.Resolved[uri]; ok {
-		return cached
+		// Verify cached include files haven't changed
+		currentModTimes := s.collectIncludeModTimes(uri)
+		if !includeModTimesChanged(cached.IncludeModTimes, currentModTimes) {
+			return cached.Signatures
+		}
+		// Cache is stale, continue to recompute
 	}
 
 	resolved := make([]FunctionSignature, 0, len(s.Signatures[uri]))
@@ -487,8 +520,26 @@ func (s *State) resolvedSignatures(uri string) []FunctionSignature {
 	stdlibGroup := guessStdlibGroup(uri)
 	resolved = s.applyIncludes(resolved, uri, includePaths, stdlibGroup, stdlib)
 
-	s.Resolved[uri] = resolved
+	// Collect current include mod times for cache
+	includeModTimes := s.collectIncludeModTimes(uri)
+	s.Resolved[uri] = resolvedCacheEntry{
+		Signatures:      resolved,
+		IncludeModTimes: includeModTimes,
+	}
 	return resolved
+}
+
+func includeModTimesChanged(cached, current map[string]int64) bool {
+	if len(cached) != len(current) {
+		return true
+	}
+	for path, cachedTime := range cached {
+		currentTime, ok := current[path]
+		if !ok || currentTime != cachedTime {
+			return true
+		}
+	}
+	return false
 }
 
 func lookupStdlibSignatures(stdlib map[string]map[string][]FunctionSignature, stdlibGroup, key string) ([]FunctionSignature, bool) {
@@ -521,6 +572,46 @@ func collectIncludePaths(nodes []p.Node) []string {
 	}
 
 	return paths
+}
+
+func (s *State) collectIncludeModTimes(uri string) map[string]int64 {
+	s.mu.RLock()
+	workspaceFolders := s.workspaceFolders
+	s.mu.RUnlock()
+
+	modTimes := map[string]int64{}
+	visited := map[string]bool{}
+	s.collectIncludeModTimesRecursive(uri, collectIncludePaths(s.Ast[uri]), workspaceFolders, visited, modTimes)
+	return modTimes
+}
+
+func (s *State) collectIncludeModTimesRecursive(uri string, includePaths []string, workspaceFolders []string, visited map[string]bool, modTimes map[string]int64) {
+	for _, includePath := range includePaths {
+		resolvedPath, ok := resolveIncludePath(uri, includePath, workspaceFolders)
+		if !ok {
+			continue
+		}
+		resolvedPath = filepath.Clean(resolvedPath)
+		if visited[resolvedPath] {
+			continue
+		}
+		visited[resolvedPath] = true
+
+		// Get file info for mtime
+		fileInfo, err := os.Stat(resolvedPath)
+		if err == nil {
+			modTimes[resolvedPath] = fileInfo.ModTime().UnixNano()
+		}
+
+		// Recursively check nested includes
+		entry, err := s.getParsedInclude(resolvedPath)
+		if err != nil {
+			continue
+		}
+		nestedIncludes := collectIncludePaths(entry.Ast)
+		includeURI := pathToURI(resolvedPath)
+		s.collectIncludeModTimesRecursive(includeURI, nestedIncludes, workspaceFolders, visited, modTimes)
+	}
 }
 
 func (s *State) GetTokenAtPosition(uri string, position lsp.Position) l.Token {
@@ -1076,15 +1167,28 @@ func (s *State) buildBuiltinSet() map[string]struct{} {
 func (s *State) buildIncludeOriginIndex(uri string, stdlib map[string]map[string][]FunctionSignature) map[string]string {
 	s.cacheMu.Lock()
 	defer s.cacheMu.Unlock()
+
+	// Check if we have a cached entry
 	if cached, ok := s.IncludeOrigins[uri]; ok {
-		return cached
+		// Verify cached include files haven't changed
+		currentModTimes := s.collectIncludeModTimes(uri)
+		if !includeModTimesChanged(cached.IncludeModTimes, currentModTimes) {
+			return cached.Origins
+		}
+		// Cache is stale, continue to recompute
 	}
 
 	index := map[string]string{}
 	visitedLocal := map[string]bool{}
 	visitedStdlib := map[string]bool{}
 	s.addIncludeOriginsRecursive(uri, collectIncludePaths(s.Ast[uri]), stdlib, visitedLocal, visitedStdlib, index)
-	s.IncludeOrigins[uri] = index
+
+	// Collect current include mod times for cache
+	includeModTimes := s.collectIncludeModTimes(uri)
+	s.IncludeOrigins[uri] = includeOriginsCacheEntry{
+		Origins:         index,
+		IncludeModTimes: includeModTimes,
+	}
 	return index
 }
 

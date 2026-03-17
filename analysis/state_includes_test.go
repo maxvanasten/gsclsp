@@ -677,3 +677,100 @@ func TestResolveIncludePathRelativePrefixes(t *testing.T) {
 		}
 	}
 }
+
+func TestInlayHintsUpdateWhenIncludedFileChanges(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	root := t.TempDir()
+	scriptsDir := filepath.Join(root, "scripts", "zm")
+	mainPath := filepath.Join(scriptsDir, "test.gsc")
+	includePath := filepath.Join(scriptsDir, "include.gsc")
+
+	// Create initial files - include file has one function
+	writeFile(t, includePath, "included_func(arg1) { }\n")
+	time.Sleep(10 * time.Millisecond) // Ensure different mtimes
+	writeFile(t, mainPath, "#include scripts\\zm\\include;\n"+
+		"main() { included_func(\"value\"); }\n")
+
+	uri := uriForPath(mainPath)
+	workspaceRoot := "file://" + root
+	state.SetWorkspaceFolders([]string{workspaceRoot})
+	state.OpenDocument(uri, "#include scripts\\zm\\include;\n"+
+		"main() { included_func(\"value\"); }\n")
+
+	// First request should show hint for included_func
+	response1 := state.InlayHints(1, uri)
+	if !hasInlayLabel(response1.Result, "arg1: ") {
+		t.Fatalf("expected inlay hint for included_func arg1 on first request, got: %v", response1.Result)
+	}
+
+	// Now modify the include file - add a second function
+	time.Sleep(10 * time.Millisecond) // Ensure different mtime
+	writeFile(t, includePath, "included_func(arg1) { }\n"+
+		"second_func(arg2, arg3) { }\n")
+
+	// Update main file to use the second function
+	state.UpdateDocument(uri, "#include scripts\\zm\\include;\n"+
+		"main() { second_func(\"a\", \"b\"); }\n")
+
+	// Second request should show hints for second_func's arguments
+	response2 := state.InlayHints(2, uri)
+	if !hasInlayLabel(response2.Result, "arg2: ") {
+		t.Fatalf("expected inlay hint for second_func arg2 after include update, got: %v", response2.Result)
+	}
+	if !hasInlayLabel(response2.Result, "arg3: ") {
+		t.Fatalf("expected inlay hint for second_func arg3 after include update, got: %v", response2.Result)
+	}
+}
+
+func TestInlayHintsUpdateWhenNestedIncludeChanges(t *testing.T) {
+	requireGscp(t)
+	state := NewState()
+	root := t.TempDir()
+	scriptsDir := filepath.Join(root, "scripts", "zm")
+	mainPath := filepath.Join(scriptsDir, "main.gsc")
+	midPath := filepath.Join(scriptsDir, "mid.gsc")
+	leafPath := filepath.Join(scriptsDir, "leaf.gsc")
+
+	// Create chain: main -> mid -> leaf
+	// First create leaf with one function
+	writeFile(t, leafPath, "leaf_func(x) { }\n")
+	time.Sleep(10 * time.Millisecond)
+	// Create mid that includes leaf and has its own function
+	writeFile(t, midPath, "#include scripts\\zm\\leaf;\nmid_helper(arg1) { }\n")
+	time.Sleep(10 * time.Millisecond)
+	// Create main that includes mid
+	mainContent := "#include scripts\\zm\\mid;\n" +
+		"main() { mid_helper(123); }\n"
+	writeFile(t, mainPath, mainContent)
+
+	uri := uriForPath(mainPath)
+	workspaceRoot := "file://" + root
+	state.SetWorkspaceFolders([]string{workspaceRoot})
+	state.OpenDocument(uri, mainContent)
+
+	// First request - should have hint for mid_helper (directly included)
+	response1 := state.InlayHints(1, uri)
+	if !hasInlayLabel(response1.Result, "arg1: ") {
+		t.Fatalf("expected inlay hint for mid_helper arg1 on first request, got: %v", response1.Result)
+	}
+
+	// Now modify the leaf file (nested include) to add a new function
+	time.Sleep(10 * time.Millisecond)
+	writeFile(t, leafPath, "leaf_func(x) { }\n"+
+		"new_leaf_func(arg2, arg3) { }\n")
+
+	// Update main file to use the new leaf function
+	newMainContent := "#include scripts\\zm\\mid;\n" +
+		"main() { new_leaf_func(\"a\", \"b\"); }\n"
+	state.UpdateDocument(uri, newMainContent)
+
+	// Second request - should show hints for new_leaf_func
+	response2 := state.InlayHints(2, uri)
+	if !hasInlayLabel(response2.Result, "arg2: ") {
+		t.Fatalf("expected inlay hint for new_leaf_func arg2 after nested include update, got: %v", response2.Result)
+	}
+	if !hasInlayLabel(response2.Result, "arg3: ") {
+		t.Fatalf("expected inlay hint for new_leaf_func arg3 after nested include update, got: %v", response2.Result)
+	}
+}

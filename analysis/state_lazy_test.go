@@ -79,8 +79,14 @@ func TestClearCaches_ClearsResolvedAndIncludeOrigins(t *testing.T) {
 	state := NewState()
 	uri := "file:///tmp/test.gsc"
 
-	state.Resolved[uri] = []FunctionSignature{{Name: "test"}}
-	state.IncludeOrigins[uri] = map[string]string{"foo": "bar"}
+	state.Resolved[uri] = resolvedCacheEntry{
+		Signatures:      []FunctionSignature{{Name: "test"}},
+		IncludeModTimes: map[string]int64{},
+	}
+	state.IncludeOrigins[uri] = includeOriginsCacheEntry{
+		Origins:         map[string]string{"foo": "bar"},
+		IncludeModTimes: map[string]int64{},
+	}
 
 	state.ClearCaches(uri)
 
