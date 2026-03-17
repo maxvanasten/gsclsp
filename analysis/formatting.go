@@ -33,9 +33,10 @@ func (s *State) Formatting(id int, uri string, options lsp.FormattingOptions) ls
 		generator.Indent = previousIndent
 	}()
 
+	originalLines := strings.Split(original, "\n")
 	formattedLines := make([]string, 0, len(parseResult.Ast))
 	for _, node := range parseResult.Ast {
-		formattedLines = append(formattedLines, generateNodeWithOriginalSpacing(node))
+		formattedLines = append(formattedLines, generateNodeWithOriginalSpacingAndLines(node, originalLines))
 	}
 	formatted := joinFormattedNodesWithOriginalSpacing(parseResult.Ast, formattedLines)
 
@@ -408,4 +409,202 @@ func collapseDuplicateStatementTerminators(line string) string {
 		trimmed = strings.TrimSuffix(trimmed, ";")
 	}
 	return trimmed + ";"
+}
+
+func generateNodeWithOriginalSpacingAndLines(node p.Node, originalLines []string) string {
+	// Handle scope specially to detect function pointer patterns
+	if node.Type == "scope" {
+		return formatScopeWithLines(node, originalLines)
+	}
+
+	// For function declarations with a scope body, process the body with lines
+	if node.Type == "function_declaration" && len(node.Children) > 1 {
+		header := strings.Builder{}
+		header.WriteString(node.Data.FunctionName)
+		header.WriteString("(")
+		if len(node.Children) > 0 && len(node.Children[0].Children) > 0 {
+			header.WriteString(joinInlineChildrenWithOriginalSpacing(node.Children[0].Children, ", "))
+		}
+		header.WriteString(")")
+
+		bodyScope := node.Children[1]
+		bodyContent := formatScopeWithLines(bodyScope, originalLines)
+
+		// Reconstruct: header + newline + { + body + newline + }
+		var result strings.Builder
+		result.WriteString(header.String())
+		result.WriteString("\n{")
+		if bodyContent != "" {
+			result.WriteString("\n")
+			result.WriteString(bodyContent)
+		}
+		result.WriteString("\n}")
+		return result.String()
+	}
+
+	return generateNodeWithOriginalSpacing(node)
+}
+
+func formatScopeWithLines(node p.Node, originalLines []string) string {
+	lines := make([]string, 0, len(node.Children))
+	for i := 0; i < len(node.Children); i++ {
+		child := node.Children[i]
+
+		// Check if this and subsequent nodes form a function pointer pattern (thread case)
+		if formatted, skipCount, ok := tryFormatFunctionPointerPattern(node.Children, i, originalLines); ok {
+			lines = append(lines, indentMultilineForFormatting(formatted, generator.Indent))
+			i += skipCount
+			continue
+		}
+
+		// Check if a function_call on this line has function pointer syntax (non-thread case)
+		if child.Type == "function_call" {
+			if child.Line > 0 && child.Line <= len(originalLines) {
+				originalLine := originalLines[child.Line-1]
+				if containsFunctionPointerSyntax(originalLine) {
+					statement := extractStatementFromLineWithCol(originalLine, child.Col, child)
+					if statement != "" {
+						lines = append(lines, indentMultilineForFormatting(statement, generator.Indent))
+						continue
+					}
+				}
+			}
+		}
+
+		line := generateNodeWithOriginalSpacing(child)
+		if child.Type == "function_call" {
+			line = ensureStatementTerminator(line)
+		}
+		line = collapseDuplicateStatementTerminators(line)
+		lines = append(lines, indentMultilineForFormatting(line, generator.Indent))
+	}
+	return joinFormattedNodesWithOriginalSpacing(node.Children, lines)
+}
+
+func tryFormatFunctionPointerPattern(children []p.Node, startIdx int, originalLines []string) (string, int, bool) {
+	if startIdx >= len(children) {
+		return "", 0, false
+	}
+
+	first := children[startIdx]
+	firstLine := first.Line
+	if firstLine <= 0 || firstLine > len(originalLines) {
+		return "", 0, false
+	}
+
+	originalLine := originalLines[firstLine-1]
+
+	// Check for function pointer syntax: method thread [[ expr ]]() or method [[ expr ]]()
+	// Pattern: variable_reference/thread_keyword/array_literal sequence on same line
+	if first.Type != "variable_reference" {
+		return "", 0, false
+	}
+
+	// Check if this line contains function pointer pattern in original text
+	if !containsFunctionPointerSyntax(originalLine) {
+		return "", 0, false
+	}
+
+	// Count how many nodes are part of this pattern (all on the same line)
+	endIdx := startIdx
+	for i := startIdx + 1; i < len(children); i++ {
+		if children[i].Line == firstLine {
+			endIdx = i
+		} else {
+			break
+		}
+	}
+
+	// Extract the statement using column information from nodes
+	statement := extractStatementFromLineWithCol(originalLine, first.Col, children[endIdx])
+	if statement == "" {
+		return "", 0, false
+	}
+
+	return statement, endIdx - startIdx, true
+}
+
+func extractStatementFromLineWithCol(line string, startCol int, lastNode p.Node) string {
+	// Use 0-indexed column (AST uses 1-indexed)
+	start := startCol - 1
+	if start < 0 {
+		start = 0
+	}
+	if start >= len(line) {
+		return ""
+	}
+
+	// Find the end position - need to include trailing (); if present
+	// The AST nodes may not include the () and ;, so look for them in the line
+	nodeEnd := lastNode.Col - 1 + lastNode.Length
+	if nodeEnd <= start {
+		nodeEnd = start
+	}
+
+	// Look for the statement terminator after the node end
+	searchStart := nodeEnd
+	if searchStart > len(line) {
+		searchStart = len(line)
+	}
+
+	// Find the semicolon to get the full statement including ();
+	semicolonIdx := strings.Index(line[searchStart:], ";")
+	if semicolonIdx >= 0 {
+		end := searchStart + semicolonIdx + 1 // Include the semicolon
+		if end <= len(line) {
+			return line[start:end]
+		}
+	}
+
+	// If no semicolon found, use the node end position
+	if nodeEnd > len(line) {
+		nodeEnd = len(line)
+	}
+
+	return line[start:nodeEnd]
+}
+
+func containsFunctionPointerSyntax(line string) bool {
+	// Check for [[...]] pattern followed by ()
+	doubleBracketStart := strings.Index(line, "[[")
+	if doubleBracketStart < 0 {
+		return false
+	}
+	doubleBracketEnd := strings.Index(line[doubleBracketStart:], "]]")
+	if doubleBracketEnd < 0 {
+		return false
+	}
+	doubleBracketEnd += doubleBracketStart
+
+	// Check for () after ]]
+	afterBrackets := line[doubleBracketEnd+2:]
+	parenStart := strings.Index(afterBrackets, "(")
+	if parenStart < 0 {
+		return false
+	}
+
+	// Check that there's a closing paren
+	afterOpenParen := afterBrackets[parenStart+1:]
+	if !strings.Contains(afterOpenParen, ")") {
+		return false
+	}
+
+	return true
+}
+
+func extractStatementFromLine(line string) string {
+	// Trim leading whitespace but preserve the statement
+	trimmed := strings.TrimLeft(line, " \t")
+	if trimmed == "" {
+		return ""
+	}
+
+	// Find the statement terminator
+	semicolonIdx := strings.Index(trimmed, ";")
+	if semicolonIdx >= 0 {
+		return trimmed[:semicolonIdx+1]
+	}
+
+	// If no semicolon, return the whole trimmed line
+	return trimmed
 }

@@ -211,6 +211,42 @@ func TestFormattingPreservesSingleBlankLineWithinSwitchCaseBody(t *testing.T) {
 	}
 }
 
+func TestFormattingPreservesThreadFunctionPointerSyntax(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	input := "main(){self thread [[ self.gobblegum.usefunc ]]();}"
+	state.Documents[uri] = input
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(20, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if !strings.Contains(formatted, "thread [[ self.gobblegum.usefunc ]]()") {
+		t.Fatalf("expected thread function pointer syntax to be preserved, got: %q", formatted)
+	}
+}
+
+func TestFormattingPreservesNonThreadFunctionPointerSyntax(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	input := "main(){self [[ self.gobblegum.usefunc ]]();}"
+	state.Documents[uri] = input
+
+	ensureParserAvailable(t, state.Documents[uri])
+
+	response := state.Formatting(21, uri, lsp.FormattingOptions{TabSize: 4, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if !strings.Contains(formatted, "[[ self.gobblegum.usefunc ]]()") {
+		t.Fatalf("expected function pointer syntax to be preserved, got: %q", formatted)
+	}
+}
+
 func TestFormattingPreservesMethodQualifierOnFunctionCalls(t *testing.T) {
 	state := NewState()
 	uri := "file:///tmp/test.gsc"
