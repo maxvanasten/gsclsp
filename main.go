@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -18,6 +19,12 @@ import (
 )
 
 var diagDebouncer *diagnosticDebouncer
+
+const (
+	watchdogInterval   = 30 * time.Second
+	watchdogTimeout    = 120 * time.Second // Log warning if no message received for 2 minutes
+	stdoutWriteTimeout = 10 * time.Second
+)
 
 type diagnosticDebouncer struct {
 	mu     sync.Mutex
@@ -39,9 +46,102 @@ func (d *diagnosticDebouncer) debounce(uri string, delay time.Duration, fn func(
 	d.timers[uri] = time.AfterFunc(delay, fn)
 }
 
+type watchdogTimer struct {
+	logger    *log.Logger
+	interval  time.Duration
+	timeout   time.Duration
+	ticker    *time.Ticker
+	stopCh    chan struct{}
+	isRunning bool
+}
+
+func (w *watchdogTimer) start(getLastMessage func() time.Time) {
+	w.ticker = time.NewTicker(w.interval)
+	w.stopCh = make(chan struct{})
+	w.isRunning = true
+
+	go func() {
+		for {
+			select {
+			case <-w.ticker.C:
+				if !w.isRunning {
+					return
+				}
+				lastMsg := getLastMessage()
+				if time.Since(lastMsg) > w.timeout {
+					w.logger.Printf("WATCHDOG WARNING: No message received for %v, server may be hung", time.Since(lastMsg))
+				}
+			case <-w.stopCh:
+				return
+			}
+		}
+	}()
+}
+
+func (w *watchdogTimer) stop() {
+	if !w.isRunning {
+		return
+	}
+	w.isRunning = false
+	w.ticker.Stop()
+	close(w.stopCh)
+}
+
+type timeoutWriter struct {
+	w       io.Writer
+	timeout time.Duration
+	logger  *log.Logger
+}
+
+func (tw *timeoutWriter) Write(p []byte) (n int, err error) {
+	done := make(chan struct{})
+	var writeErr error
+	var bytesWritten int
+
+	go func() {
+		bytesWritten, writeErr = tw.w.Write(p)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		return bytesWritten, writeErr
+	case <-time.After(tw.timeout):
+		tw.logger.Printf("Write timeout after %v", tw.timeout)
+		return 0, fmt.Errorf("write timeout after %v", tw.timeout)
+	}
+}
+
 func main() {
 	logger := getLogger()
 	logger.Println("Started")
+
+	// Initialize watchdog to detect hangs
+	lastMessageTime := time.Now()
+	var lastMsgMu sync.Mutex
+
+	watchdog := &watchdogTimer{
+		logger:    logger,
+		interval:  watchdogInterval,
+		timeout:   watchdogTimeout,
+		isRunning: true,
+	}
+
+	updateLastMessageTime := func() {
+		lastMsgMu.Lock()
+		lastMessageTime = time.Now()
+		lastMsgMu.Unlock()
+	}
+
+	getLastMessageTime := func() time.Time {
+		lastMsgMu.Lock()
+		defer lastMsgMu.Unlock()
+		return lastMessageTime
+	}
+
+	watchdog.start(getLastMessageTime)
+	defer watchdog.stop()
+
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Buffer(make([]byte, 0, 64*1024), 10*1024*1024)
 	scanner.Split(rpc.Split)
@@ -68,9 +168,14 @@ func main() {
 		os.Exit(0)
 	}()
 
-	writer := os.Stdout
+	writer := &timeoutWriter{
+		w:       os.Stdout,
+		timeout: stdoutWriteTimeout,
+		logger:  logger,
+	}
 
 	for scanner.Scan() {
+		updateLastMessageTime()
 		msg := scanner.Bytes()
 		method, contents, err := rpc.DecodeMessage(msg)
 		if err != nil {
@@ -81,6 +186,8 @@ func main() {
 	}
 	if err := scanner.Err(); err != nil {
 		logger.Printf("Scanner error: %s", err)
+		// Don't exit immediately - give watchdog a chance to detect the issue
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
@@ -250,19 +357,25 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 			return
 		}
 
-		response := lsp.CodeActionResponse{
-			Response: lsp.Response{RPC: "2.0", ID: &request.ID},
-			Result: []lsp.CodeAction{
-				{
-					Title: "Bundle scripts into mod folder",
-					Kind:  actionKind,
-					Command: &lsp.Command{
-						Title:     "Bundle scripts into mod folder",
-						Command:   "gsclsp.bundleMod",
-						Arguments: []any{request.Params.TextDocument.URI},
-					},
+		// Get code actions for missing includes
+		includeActions := getIncludeCodeActions(logger, state, request.Params.TextDocument.URI, actionKind)
+
+		actions := []lsp.CodeAction{
+			{
+				Title: "Bundle scripts into mod folder",
+				Kind:  actionKind,
+				Command: &lsp.Command{
+					Title:     "Bundle scripts into mod folder",
+					Command:   "gsclsp.bundleMod",
+					Arguments: []any{request.Params.TextDocument.URI},
 				},
 			},
+		}
+		actions = append(actions, includeActions...)
+
+		response := lsp.CodeActionResponse{
+			Response: lsp.Response{RPC: "2.0", ID: &request.ID},
+			Result:   actions,
 		}
 		writeResponse(logger, writer, response)
 	case "workspace/executeCommand":
@@ -285,6 +398,33 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 				break
 			}
 			result = message
+		case "gsclsp.addInclude":
+			if len(request.Params.Arguments) < 2 {
+				result = "add include failed: missing arguments"
+				break
+			}
+			uri, ok1 := request.Params.Arguments[0].(string)
+			includePath, ok2 := request.Params.Arguments[1].(string)
+			if !ok1 || !ok2 {
+				result = "add include failed: invalid arguments"
+				break
+			}
+			funcName := ""
+			if len(request.Params.Arguments) > 2 {
+				funcName, _ = request.Params.Arguments[2].(string)
+			}
+			// Add the include to the document
+			text := state.DocumentText(uri)
+			includeLine := fmt.Sprintf("#include %s;", includePath)
+			// Check if already included
+			if strings.Contains(text, includeLine) {
+				result = fmt.Sprintf("#include for '%s' already exists", funcName)
+				break
+			}
+			// Add at the beginning
+			newText := includeLine + "\n" + text
+			state.UpdateDocument(uri, newText)
+			result = fmt.Sprintf("Added #include for '%s'", funcName)
 		}
 
 		response := lsp.ExecuteCommandResponse{
@@ -356,6 +496,42 @@ func publishDiagnostics(logger *log.Logger, writer io.Writer, uri string, diagno
 		},
 	}
 	writeResponse(logger, writer, msg)
+}
+
+func getIncludeCodeActions(logger *log.Logger, state *analysis.State, uri string, actionKind string) []lsp.CodeAction {
+	missing := state.GetMissingFunctionIncludes(uri)
+	if len(missing) == 0 {
+		return nil
+	}
+
+	var actions []lsp.CodeAction
+	for funcName, sources := range missing {
+		if len(sources) == 0 {
+			continue
+		}
+
+		// Use the first (most likely) source
+		includePath := sources[0]
+		includePath = strings.ReplaceAll(includePath, "/", "\\")
+
+		title := fmt.Sprintf("Add #include for '%s' (%s)", funcName, includePath)
+		if len(sources) > 1 {
+			title = fmt.Sprintf("Add #include for '%s' (%s +%d more)", funcName, includePath, len(sources)-1)
+		}
+
+		action := lsp.CodeAction{
+			Title: title,
+			Kind:  actionKind,
+			Command: &lsp.Command{
+				Title:     title,
+				Command:   "gsclsp.addInclude",
+				Arguments: []any{uri, includePath, funcName},
+			},
+		}
+		actions = append(actions, action)
+	}
+
+	return actions
 }
 
 func getLogger() *log.Logger {

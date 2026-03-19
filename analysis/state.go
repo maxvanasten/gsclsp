@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/maxvanasten/gsclsp/lsp"
@@ -255,11 +256,18 @@ func Parse(input string) (ParseResult, error) {
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, "gscp")
+	// Ensure process group is killed on timeout
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+	}
+
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return ParseResult{}, fmt.Errorf("parse stdin pipe: %w", err)
 	}
 
+	// Use a channel to track write completion
+	writeDone := make(chan error, 1)
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -267,10 +275,24 @@ func Parse(input string) (ParseResult, error) {
 			}
 			stdin.Close()
 		}()
-		io.WriteString(stdin, input)
+		_, err := io.WriteString(stdin, input)
+		writeDone <- err
 	}()
 
 	out, err := cmd.CombinedOutput()
+
+	// Wait for stdin write to complete with timeout
+	select {
+	case writeErr := <-writeDone:
+		if writeErr != nil {
+			// Log but don't fail - the process may have exited early
+			fmt.Fprintf(os.Stderr, "Parse stdin write error (non-fatal): %v\n", writeErr)
+		}
+	case <-time.After(100 * time.Millisecond):
+		// Timeout is ok - process may have finished reading
+		stdin.Close()
+	}
+
 	if err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
 			return ParseResult{}, fmt.Errorf("gscp execution timed out after 5s")
@@ -452,7 +474,7 @@ func (s *State) parseAndStoreLocked(uri string) (err error) {
 	s.Ast[uri] = parseResult.Ast
 	s.Tokens[uri] = parseResult.Tokens
 	s.Signatures[uri] = sigs
-	s.Diagnostics[uri] = toLspDiagnostics(parseResult.Diagnostics)
+	s.Diagnostics[uri] = toLspDiagnostics(parseResult.Diagnostics, parseResult.Tokens)
 	return nil
 }
 
@@ -1430,4 +1452,104 @@ func (s *State) resolveIncludeOriginLabelRecursive(uri string, includePaths []st
 	}
 
 	return "", false
+}
+
+// GetMissingFunctionIncludes finds function calls that don't have a signature
+// in the current file or included files, and returns a map of function names
+// to possible stdlib source files.
+func (s *State) GetMissingFunctionIncludes(uri string) map[string][]string {
+	s.EnsureParsed(uri)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	stdlib := s.loadStdlib()
+	signatures := s.resolvedSignatures(uri)
+	builtinSet := s.buildBuiltinSet()
+	localDecls := buildLocalDeclarationSet(s.Ast[uri])
+
+	calledFunctions := collectAllFunctionCalls(s.Ast[uri])
+
+	missing := make(map[string][]string)
+	for funcName := range calledFunctions {
+		lowerName := strings.ToLower(strings.TrimSpace(funcName))
+		if lowerName == "" {
+			continue
+		}
+
+		if _, ok := localDecls[lowerName]; ok {
+			continue
+		}
+		if _, ok := builtinSet[lowerName]; ok {
+			continue
+		}
+		if _, ok := findSignatureByName(signatures, funcName); ok {
+			continue
+		}
+		if _, _, qualified := splitQualifiedName(funcName); qualified {
+			continue
+		}
+
+		sources := s.findFunctionInStdlib(funcName, stdlib)
+		if len(sources) > 0 {
+			missing[funcName] = sources
+		}
+	}
+
+	return missing
+}
+
+func (s *State) findFunctionInStdlib(funcName string, stdlib map[string]map[string][]FunctionSignature) []string {
+	if stdlib == nil {
+		return nil
+	}
+
+	lowerName := strings.ToLower(strings.TrimSpace(funcName))
+	if lowerName == "" {
+		return nil
+	}
+
+	var sources []string
+	seen := make(map[string]struct{})
+
+	for group, files := range stdlib {
+		_ = group
+		for filePath, sigs := range files {
+			for _, sig := range sigs {
+				if strings.ToLower(strings.TrimSpace(sig.Name)) == lowerName {
+					key := normalizeIncludeKey(filePath)
+					if _, ok := seen[key]; !ok && key != "" {
+						seen[key] = struct{}{}
+						sources = append(sources, key)
+					}
+					break
+				}
+			}
+		}
+	}
+
+	sort.Strings(sources)
+	return sources
+}
+
+func collectAllFunctionCalls(nodes []p.Node) map[string]struct{} {
+	result := make(map[string]struct{})
+	collectFunctionCallsRecursive(nodes, result)
+	return result
+}
+
+func collectFunctionCallsRecursive(nodes []p.Node, out map[string]struct{}) {
+	for _, n := range nodes {
+		if n.Type == "function_call" {
+			name := strings.TrimSpace(n.Data.FunctionName)
+			if name != "" {
+				if n.Data.Path != "" {
+					name = n.Data.Path + "::" + name
+				}
+				out[name] = struct{}{}
+			}
+		}
+		if len(n.Children) > 0 {
+			collectFunctionCallsRecursive(n.Children, out)
+		}
+	}
 }
