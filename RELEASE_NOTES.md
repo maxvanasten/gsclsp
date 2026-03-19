@@ -1,5 +1,14 @@
 # Release Notes
 
+## 0.9.0
+
+- **Enhancement**: Multiline array and function call formatting preservation (#28)
+  - Parser now supports multiline arrays: `array(\n  "a"\n  "b"\n)`
+  - Parser now supports multiline function arguments: `func(\n  arg1\n  arg2\n)`
+  - Formatter preserves multiline style with proper indentation
+  - Single-line arrays and calls remain compact
+  - Vector literals also support multiline formatting
+
 ## 0.8.8
 
 - **Bug Fix**: Prevent LSP crashes and hangs when editing strings and incomplete code (#27)
