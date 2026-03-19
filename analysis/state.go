@@ -1,6 +1,7 @@
 package analysis
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,6 +12,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/maxvanasten/gsclsp/lsp"
 	"github.com/maxvanasten/gscp/diagnostics"
@@ -243,19 +245,36 @@ func applyRangeChange(doc string, range_ *lsp.Range, newText string) (string, bo
 }
 
 func Parse(input string) (ParseResult, error) {
-	cmd := exec.Command("gscp")
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Fprintf(os.Stderr, "PANIC in Parse: %v\n", r)
+		}
+	}()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "gscp")
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return ParseResult{}, fmt.Errorf("parse stdin pipe: %w", err)
 	}
 
 	go func() {
-		defer stdin.Close()
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Fprintf(os.Stderr, "PANIC in Parse stdin writer: %v\n", r)
+			}
+			stdin.Close()
+		}()
 		io.WriteString(stdin, input)
 	}()
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			return ParseResult{}, fmt.Errorf("gscp execution timed out after 5s")
+		}
 		return ParseResult{}, fmt.Errorf("gscp execution failed: %w (%s)", err, strings.TrimSpace(string(out)))
 	}
 
@@ -396,14 +415,43 @@ func (s *State) updateAstLocked(uri string) {
 	delete(s.IncludeOrigins, uri)
 }
 
-func (s *State) parseAndStoreLocked(uri string) error {
+func (s *State) parseAndStoreLocked(uri string) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Fprintf(os.Stderr, "PANIC in parseAndStoreLocked for %s: %v\n", uri, r)
+			err = fmt.Errorf("parse panic: %v", r)
+		}
+	}()
+
+	// Clear old state first to prevent stale data on parse failure
+	s.Ast[uri] = nil
+	s.Tokens[uri] = nil
+	s.Signatures[uri] = nil
+	s.Diagnostics[uri] = nil
+
 	parseResult, err := Parse(s.Documents[uri])
 	if err != nil {
 		return err
 	}
+
+	// Safely generate signatures with panic recovery
+	var sigs []FunctionSignature
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Fprintf(os.Stderr, "PANIC in GenerateFunctionSignatures for %s: %v\n", uri, r)
+				err = fmt.Errorf("signature generation panic: %v", r)
+			}
+		}()
+		sigs = GenerateFunctionSignatures(parseResult.Ast)
+	}()
+	if err != nil {
+		return err
+	}
+
 	s.Ast[uri] = parseResult.Ast
 	s.Tokens[uri] = parseResult.Tokens
-	s.Signatures[uri] = GenerateFunctionSignatures(s.Ast[uri])
+	s.Signatures[uri] = sigs
 	s.Diagnostics[uri] = toLspDiagnostics(parseResult.Diagnostics)
 	return nil
 }
@@ -698,7 +746,16 @@ func (s *State) SemanticTokens(id int, uri string) lsp.SemanticTokensResponse {
 	s.EnsureParsed(uri)
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	tokens := GenerateSemanticTokens(s.Tokens[uri])
+
+	var tokens []int
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Fprintf(os.Stderr, "PANIC in GenerateSemanticTokens for %s: %v\n", uri, r)
+			}
+		}()
+		tokens = GenerateSemanticTokens(s.Tokens[uri])
+	}()
 
 	return lsp.SemanticTokensResponse{
 		Response: lsp.Response{

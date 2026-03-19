@@ -85,6 +85,12 @@ func main() {
 }
 
 func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, method string, contents []byte) {
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Printf("PANIC in handleMessage for method %s: %v", method, r)
+		}
+	}()
+
 	logger.Printf("Received message with method: %s", method)
 
 	switch method {
@@ -147,8 +153,16 @@ func handleMessage(logger *log.Logger, writer io.Writer, state *analysis.State, 
 		}
 		uri := request.Params.TextDocument.URI
 		diagDebouncer.debounce(uri, 150*time.Millisecond, func() {
+			defer func() {
+				if r := recover(); r != nil {
+					logger.Printf("PANIC in diagnostic debounce for %s: %v", uri, r)
+				}
+			}()
+			logger.Printf("Parsing: %s", uri)
 			state.EnsureParsed(uri)
-			publishDiagnostics(logger, writer, uri, state.Diagnostics[uri])
+			diagnostics := state.Diagnostics[uri]
+			logger.Printf("Publishing %d diagnostics for %s", len(diagnostics), uri)
+			publishDiagnostics(logger, writer, uri, diagnostics)
 		})
 	case "textDocument/hover":
 		var request lsp.HoverRequest

@@ -355,3 +355,33 @@ func TestHandleMessageDocumentFormattingMethod(t *testing.T) {
 		t.Fatal("expected formatted content")
 	}
 }
+
+func TestHandleMessagePanicsAreRecovered(t *testing.T) {
+	t.Helper()
+	state := analysis.NewState()
+	var logBuf bytes.Buffer
+	logger := log.New(&logBuf, "[test] ", 0)
+	var out bytes.Buffer
+
+	request := lsp.HoverRequest{
+		Request: lsp.Request{RPC: "2.0", ID: 99, Method: "textDocument/hover"},
+		Params: lsp.HoverParams{
+			TextDocumentPositionParams: lsp.TextDocumentPositionParams{
+				TextDocument: lsp.TextDocumentIdentifier{URI: "file:///tmp/test.gsc"},
+				Position:     lsp.Position{Line: 0, Character: 0},
+			},
+		},
+	}
+	contents, err := json.Marshal(request)
+	if err != nil {
+		t.Fatalf("marshal request: %v", err)
+	}
+
+	// This should not panic even though the document doesn't exist
+	// and may cause nil pointer dereference in some code paths
+	handleMessage(logger, &out, &state, "textDocument/hover", contents)
+
+	// Verify the function returned (didn't crash the test)
+	// The response might be empty but that's okay - we just want to ensure no panic
+	t.Log("handleMessage completed without panic")
+}

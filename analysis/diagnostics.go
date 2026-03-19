@@ -58,6 +58,10 @@ func mapSeverity(severity string) lsp.DiagnosticSeverity {
 }
 
 func parseFailureDiagnostic(err error) lsp.Diagnostic {
+	msg := fmt.Sprintf("parser error: %v", err)
+	if len(msg) > 200 {
+		msg = msg[:200] + "..."
+	}
 	return lsp.Diagnostic{
 		Range: lsp.Range{
 			Start: lsp.Position{Line: 0, Character: 0},
@@ -65,6 +69,6 @@ func parseFailureDiagnostic(err error) lsp.Diagnostic {
 		},
 		Severity: lsp.DiagnosticSeverityError,
 		Source:   "gsclsp",
-		Message:  fmt.Sprintf("parser error: %v", err),
+		Message:  msg,
 	}
 }

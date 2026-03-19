@@ -16,7 +16,8 @@ func GenerateFunctionSignatures(nodes []p.Node) []FunctionSignature {
 			functionSignatures = append(functionSignatures, signatureFromNode(n))
 		}
 
-		if len(n.Children) > 1 && len(n.Children[1].Children) > 0 {
+		// Safely recurse into children - avoid index out of bounds
+		if len(n.Children) > 0 {
 			functionSignatures = append(functionSignatures, GenerateFunctionSignatures(n.Children)...)
 		}
 	}
