@@ -1,5 +1,15 @@
 # Release Notes
 
+## 0.8.8
+
+- **Bug Fix**: Prevent LSP crashes and hangs when editing strings and incomplete code (#27)
+  - Add panic recovery throughout message handling and diagnostic generation
+  - Add 5-second timeout to gscp parser to prevent hanging on malformed input
+  - Clear stale AST/state before parsing to prevent diagnostic corruption
+  - Fix recursion bug in `GenerateFunctionSignatures` that could cause hangs
+  - Add panic recovery in `SemanticTokens` and signature generation
+  - Truncate long error messages to prevent oversized diagnostics
+
 ## 0.8.7
 
 - **Bug Fix**: Fixed formatting of function pointer syntax `[[ expression ]]()` in thread calls (#25)

@@ -123,6 +123,6 @@ Note: Many tests require `gscp` to be installed on PATH.
 
 ## Version
 
-Current version: **0.8.7**
+Current version: **0.8.8**
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for detailed changelog.
