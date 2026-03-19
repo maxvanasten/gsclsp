@@ -399,6 +399,99 @@ func TestFormattingReturnsNoEditsForMissingDocument(t *testing.T) {
 	}
 }
 
+func TestFormattingPreservesMultilineArrays(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	input := `x = [
+  1
+  2
+];`
+	expected := `x = [
+  1,
+  2
+];`
+
+	state.Documents[uri] = input
+	ensureParserAvailable(t, input)
+
+	response := state.Formatting(4, uri, lsp.FormattingOptions{TabSize: 2, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if formatted != expected {
+		t.Fatalf("expected multiline array preservation:\n%s\ngot:\n%s", expected, formatted)
+	}
+}
+
+func TestFormattingPreservesMultilineFunctionCalls(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	input := `my_func(
+  arg1
+  arg2
+);`
+	expected := `my_func(
+  arg1,
+  arg2
+);`
+
+	state.Documents[uri] = input
+	ensureParserAvailable(t, input)
+
+	response := state.Formatting(5, uri, lsp.FormattingOptions{TabSize: 2, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if formatted != expected {
+		t.Fatalf("expected multiline function call preservation:\n%s\ngot:\n%s", expected, formatted)
+	}
+}
+
+func TestFormattingKeepsSingleLineArrays(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	input := `x = [1, 2, 3];`
+
+	state.Documents[uri] = input
+	ensureParserAvailable(t, input)
+
+	response := state.Formatting(6, uri, lsp.FormattingOptions{TabSize: 2, InsertSpaces: true})
+	// No edits should be returned for already-formatted single-line array
+	if len(response.Result) != 0 {
+		t.Fatalf("expected no edits for single-line array, got %d", len(response.Result))
+	}
+}
+
+func TestFormattingPreservesMultilineVectorLiterals(t *testing.T) {
+	state := NewState()
+	uri := "file:///tmp/test.gsc"
+	// Input has inconsistent indentation that should be fixed
+	input := `pos = (
+0,
+1,
+2
+);`
+	expected := `pos = (
+  0,
+  1,
+  2
+);`
+
+	state.Documents[uri] = input
+	ensureParserAvailable(t, input)
+
+	response := state.Formatting(7, uri, lsp.FormattingOptions{TabSize: 2, InsertSpaces: true})
+	if len(response.Result) != 1 {
+		t.Fatalf("expected one formatting edit, got %d", len(response.Result))
+	}
+	formatted := response.Result[0].NewText
+	if formatted != expected {
+		t.Fatalf("expected multiline vector literal preservation:\n%s\ngot:\n%s", expected, formatted)
+	}
+}
+
 func ensureParserAvailable(t *testing.T, input string) {
 	t.Helper()
 	if _, err := Parse(input); err != nil {

@@ -175,6 +175,12 @@ func generateNodeWithOriginalSpacing(node p.Node) string {
 			return formatBlockWithOriginalSpacing(header.String(), node.Children[1])
 		}
 		return header.String() + "\n{\n}"
+	case "array_literal":
+		return formatArrayOrVectorWithOriginalSpacing(node, "[", "]")
+	case "vector_literal":
+		return formatArrayOrVectorWithOriginalSpacing(node, "(", ")")
+	case "function_call":
+		return formatFunctionCallWithOriginalSpacing(node)
 	case "scope":
 		lines := make([]string, 0, len(node.Children))
 		for _, child := range node.Children {
@@ -307,6 +313,26 @@ func generateNodeWithOriginalSpacing(node p.Node) string {
 			return "return;"
 		}
 		return "return " + value + ";"
+	case "assignment":
+		var b strings.Builder
+		b.WriteString(node.Data.VarName)
+		if node.Data.Index != "" {
+			b.WriteString("[")
+			b.WriteString(node.Data.Index)
+			b.WriteString("]")
+		}
+		b.WriteString(" = ")
+		if len(node.Children) == 1 {
+			b.WriteString(strings.TrimSuffix(generateNodeWithOriginalSpacing(node.Children[0]), ";"))
+		} else if len(node.Children) > 1 {
+			parts := make([]string, 0, len(node.Children))
+			for _, child := range node.Children {
+				parts = append(parts, strings.TrimSuffix(generateNodeWithOriginalSpacing(child), ";"))
+			}
+			b.WriteString(strings.Join(parts, ", "))
+		}
+		b.WriteRune(';')
+		return b.String()
 	default:
 		return generator.Generate(node)
 	}
@@ -391,6 +417,109 @@ func indentMultilineForFormatting(value, prefix string) string {
 		lines[i] = prefix + line
 	}
 	return strings.Join(lines, "\n")
+}
+
+// formatArrayOrVectorWithOriginalSpacing formats array or vector literals,
+// preserving multiline format if the original spanned multiple lines
+func formatArrayOrVectorWithOriginalSpacing(node p.Node, openBracket, closeBracket string) string {
+	if len(node.Children) == 0 {
+		return openBracket + closeBracket
+	}
+
+	// Check if elements span multiple lines
+	isMultiline := nodeSpansMultipleLines(node)
+
+	if isMultiline {
+		var b strings.Builder
+		b.WriteString(openBracket)
+		for i, child := range node.Children {
+			if i > 0 {
+				b.WriteString(",")
+			}
+			b.WriteString("\n")
+			childStr := strings.TrimSuffix(generateNodeWithOriginalSpacing(child), ";")
+			b.WriteString(indentMultilineForFormatting(childStr, generator.Indent))
+		}
+		b.WriteString("\n")
+		b.WriteString(closeBracket)
+		return b.String()
+	}
+
+	// Single line format
+	parts := make([]string, 0, len(node.Children))
+	for _, child := range node.Children {
+		parts = append(parts, strings.TrimSuffix(generateNodeWithOriginalSpacing(child), ";"))
+	}
+	return openBracket + strings.Join(parts, ", ") + closeBracket
+}
+
+// formatFunctionCallWithOriginalSpacing formats function calls,
+// preserving multiline format if the original spanned multiple lines
+func formatFunctionCallWithOriginalSpacing(node p.Node) string {
+	var b strings.Builder
+
+	if node.Data.Method != "" {
+		b.WriteString(node.Data.Method)
+		b.WriteString(" ")
+	}
+	if node.Data.Thread {
+		b.WriteString("thread ")
+	}
+	if node.Data.Path != "" {
+		b.WriteString(node.Data.Path)
+		b.WriteString("::")
+	}
+	b.WriteString(node.Data.FunctionName)
+	b.WriteString("(")
+
+	if len(node.Children) == 0 {
+		b.WriteString(");")
+		return b.String()
+	}
+
+	// Check if arguments span multiple lines
+	isMultiline := nodeSpansMultipleLines(node)
+
+	if isMultiline {
+		for i, child := range node.Children {
+			if i > 0 {
+				b.WriteString(",")
+			}
+			b.WriteString("\n")
+			childStr := strings.TrimSuffix(generateNodeWithOriginalSpacing(child), ";")
+			b.WriteString(indentMultilineForFormatting(childStr, generator.Indent))
+		}
+		b.WriteString("\n")
+		b.WriteString(");")
+	} else {
+		// Single line format
+		parts := make([]string, 0, len(node.Children))
+		for _, child := range node.Children {
+			parts = append(parts, strings.TrimSuffix(generateNodeWithOriginalSpacing(child), ";"))
+		}
+		b.WriteString(strings.Join(parts, ", "))
+		b.WriteString(");")
+	}
+
+	return b.String()
+}
+
+// nodeSpansMultipleLines checks if any child of the node is on a different line than the node itself
+func nodeSpansMultipleLines(node p.Node) bool {
+	if node.Line <= 0 || len(node.Children) == 0 {
+		return false
+	}
+
+	for _, child := range node.Children {
+		if child.Line > 0 && child.Line != node.Line {
+			return true
+		}
+		// Also check recursively if child has children that span lines
+		if len(child.Children) > 0 && nodeSpansMultipleLines(child) {
+			return true
+		}
+	}
+	return false
 }
 
 func ensureStatementTerminator(line string) string {
